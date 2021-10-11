@@ -1,0 +1,10 @@
+package server
+
+import (
+	a "golang.conradwood.net/apis/auth"
+	"golang.org/x/net/context"
+)
+
+func GetUserDetail(ctx context.Context) {
+
+}
