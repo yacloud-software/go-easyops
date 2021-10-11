@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package echoservice;
+option java_package = "uk.co.gurusys.golang.apis.framework";
+
+message CallTrace {
+  string Service = 1;
+  string Method = 2;
+  string Message = 3;
+}
+
+message FrameworkMessageDetail {
+  repeated CallTrace CallTraces = 1;
+  string Message = 2;
+  string RequestID = 3;
+}

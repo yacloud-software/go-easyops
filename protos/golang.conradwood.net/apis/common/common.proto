@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package common;
+option java_package = "uk.co.gurusys.golang.apis.common";
+
+// A Sensor represents a single sensor.
+// Each Sensor has a specific unit which stays constant over time
+message Sensor {
+  // Id is an integer ID used to uniquely identify this Sensor.
+  uint32 SensorLocationID = 1;
+
+  // the unit this sensor stores values in (e.g. kW/h)
+  UnitsEnum BaseUnit = 2;
+}
+
+// A Measurement represents a point-in-time measurement for
+// a single Sensor. It is explicitly unit-less; that information
+// is derived from the parent Sensor. It has a timestamp and
+// value.
+message Measurement {
+  // SensorLocationId is an integer ID representing this measurement's parent
+  // Sensor Location.
+  uint32 SensorLocationID = 1;
+
+  // Value is the point-in-time measurement. This is a double
+  // value, anticipating that the range of possible values is going
+  // to be fairly wide but non-textual in content.
+  double Value = 2;
+
+  // Timestamp represents the time at which the measurement was taken.
+  // This is an integer value representing the number of seconds
+  // since the UNIX epoch (January 1, 1970, 00:00:00 UTC).
+  uint32 Timestamp = 3;
+}
+
+// Void should be used when no explicit request or response is required.
+message Void {
+  // No fields, deliberately.
+}
+
+// Status represents whether or not the specified operation
+// was successful, and what error occurred if it was not.
+message Status {
+  // Success is set to true or false depending on whether or
+  // not the operation was successful.
+  // In the event of an error, further details can be found
+  // in the `ErrorCode` and `ErrorDescription` fields.
+  bool Success = 1;
+
+  // ErrorCode is present if an error has occurred during the
+  // operation. ErrorCode mappings will be listed in our
+  // documentation.
+  int32 ErrorCode = 2;
+
+  // ErrorDescription is present if an error has occurred during
+  // the operation. This is intended to be human-readable (machines
+  // should use the ErrorCode instead).
+  string ErrorDescription = 3;
+}
+
+// UnitsEnum describes the units being used to store and report measurements
+// these are stored in a smallint so no large numbers, please
+enum UnitsEnum {
+  UNDEFINED = 0;
+  WATTS = 1;
+  WATT_HOURS = 2;
+  MILLILITRES = 3;
+  MILLILITRES_PER_HOUR = 4;
+  CUBIC_METRES = 5;
+  CUBIC_METRES_PER_HOUR = 6;
+  DEGREES_CELSIUS = 7;
+  VOLTS = 8;
+  GBP = 9;
+  EUR = 10;
+  USD = 11;
+  ENUM = 12;
+
+  // these units are returned by hub2 API as they reflect what the HUB reports
+  // measurement in these units are converted to the preferred units above
+  // before storage
+  KILOWATTS = 13;
+  KILOWATT_HOURS = 14;
+  LITRES = 15;
+  LITRES_PER_HOUR = 16;
+}
+
+enum MeasurementTypesEnum {
+  UNKNOWN = 0;
+  INLET_TEMPERATURE = 1;
+  OUTLET_TEMPERATURE = 2;
+  CREDIT_REMAINING = 3;
+  CURRENT_SUMMATION_DELIVERED = 4;
+  CURRENT_INLET_ENERGY_CARRIER_SUMMATION = 5;
+  CURRENT_INLET_ENERGY_CARRIER_DEMAND = 6;
+  INSTANTANEOUS_DEMAND = 7;
+  CREDIT_STATUS = 8;
+  SUPPLY_STATUS = 9;
+}
+
+// an enum to identify data sources
+enum DataSourceEnum {
+  HUBEXTRACTOR = 0;
+  ELVACOEXTRACTOR = 1;
+  ACMEEXTRACTOR = 2;
+  // etc.
+  TESTEXTRACTOR = 999;
+}
+
+enum ErrorEnum {
+  UNSPECIFIED = 0;              // use only as last resort
+  ACCOUNT_UPGRADE_REQUIRED = 1; // polite way of telling user hes asking for too much data
+}
