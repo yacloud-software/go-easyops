@@ -4,7 +4,7 @@ import (
 	"fmt"
 	pm "github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
-	"os"
+	//	"os"
 	"strings"
 	"sync"
 	"time"
@@ -96,7 +96,7 @@ func (p *promRegistry) Register(c pm.Collector) error {
 			p.reg = pm.NewRegistry()
 			// install stuff that the normal registry also includes
 			p.reg.MustRegister(pm.NewGoCollector())
-			p.reg.MustRegister(pm.NewProcessCollector(os.Getpid(), ""))
+			//			p.reg.MustRegister(pm.NewProcessCollector(os.Getpid(), ""))
 		}
 		lock.Unlock()
 	}

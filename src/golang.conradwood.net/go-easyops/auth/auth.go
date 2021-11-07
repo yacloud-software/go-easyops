@@ -117,6 +117,7 @@ func UserIDString(user *apb.User) string {
 	return "user #" + user.ID
 }
 
+// returns  "User ID (email)"
 func CurrentUserString(ctx context.Context) string {
 	u := GetUser(ctx)
 	if u == nil {
