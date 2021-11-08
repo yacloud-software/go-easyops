@@ -3,6 +3,7 @@ package cmdline
 import (
 	"flag"
 	"fmt"
+	"golang.conradwood.net/go-easyops/appinfo"
 	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"strings"
@@ -60,11 +61,21 @@ func PrintUsage() {
 	fmt.Fprintf(os.Stdout, "  Go-Easyops build time       : %s\n", time.Unix(BUILD_TIMESTAMP, 0))
 	fmt.Fprintf(os.Stdout, "  Go-Easyops description      : %s\n", BUILD_DESCRIPTION)
 
-	fmt.Fprintf(os.Stdout, "  App version                 : %d\n", APP_BUILD_NUMBER)
-	fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", APP_BUILD_TIMESTAMP)
-	fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(APP_BUILD_TIMESTAMP, 0))
-	fmt.Fprintf(os.Stdout, "  App description             : %s\n", APP_BUILD_DESCRIPTION)
-	fmt.Fprintf(os.Stdout, "  App repository              : %s\n", APP_BUILD_REPOSITORY)
+	if appinfo.AppInfo == nil {
+		fmt.Fprintf(os.Stdout, "  [old style vendor repository] \n")
+		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", APP_BUILD_NUMBER)
+		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", APP_BUILD_TIMESTAMP)
+		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(APP_BUILD_TIMESTAMP, 0))
+		fmt.Fprintf(os.Stdout, "  App description             : %s\n", APP_BUILD_DESCRIPTION)
+		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", APP_BUILD_REPOSITORY)
+
+	} else {
+		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", appinfo.AppInfo.Number)
+		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", appinfo.AppInfo.Timestamp)
+		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(appinfo.AppInfo.Timestamp, 0))
+		fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo.Description)
+		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", appinfo.AppInfo.RepositoryID)
+	}
 	PrintDefaults()
 }
 func PrintDefaults() {
