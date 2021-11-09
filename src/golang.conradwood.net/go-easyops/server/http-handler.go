@@ -3,6 +3,7 @@ package server
 import (
 	"flag"
 	"fmt"
+	"golang.conradwood.net/go-easyops/appinfo"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	pp "golang.conradwood.net/go-easyops/profiling"
@@ -183,12 +184,21 @@ func serveVersion(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	fmt.Fprintf(w, "go_framework_buildid: %d\n", cmdline.BUILD_NUMBER)
 	fmt.Fprintf(w, "go_framework_timestamp: %d\n", cmdline.BUILD_TIMESTAMP)
 	fmt.Fprintf(w, "go_framework_description: %s\n", cmdline.BUILD_DESCRIPTION)
-	fmt.Fprintf(w, "app_buildid: %d\n", cmdline.APP_BUILD_NUMBER)
-	fmt.Fprintf(w, "app_timestamp: %d\n", cmdline.APP_BUILD_TIMESTAMP)
-	fmt.Fprintf(w, "app_description: %s\n", cmdline.APP_BUILD_DESCRIPTION)
-	fmt.Fprintf(w, "app_repository: %s\n", cmdline.APP_BUILD_REPOSITORY)
-	fmt.Fprintf(w, "app_repository_id: %d\n", cmdline.APP_BUILD_REPOSITORY_ID)
-	fmt.Fprintf(w, "app_commit: %s\n", cmdline.APP_BUILD_COMMIT)
+	if appinfo.AppInfo == nil {
+		fmt.Fprintf(w, "app_buildid: %d\n", cmdline.APP_BUILD_NUMBER)
+		fmt.Fprintf(w, "app_timestamp: %d\n", cmdline.APP_BUILD_TIMESTAMP)
+		fmt.Fprintf(w, "app_description: %s\n", cmdline.APP_BUILD_DESCRIPTION)
+		fmt.Fprintf(w, "app_repository: %s\n", cmdline.APP_BUILD_REPOSITORY)
+		fmt.Fprintf(w, "app_repository_id: %d\n", cmdline.APP_BUILD_REPOSITORY_ID)
+		fmt.Fprintf(w, "app_commit: %s\n", cmdline.APP_BUILD_COMMIT)
+	} else {
+		fmt.Fprintf(w, "app_buildid: %d\n", appinfo.AppInfo().Number)
+		fmt.Fprintf(w, "app_timestamp: %d\n", appinfo.AppInfo().Timestamp)
+		fmt.Fprintf(w, "app_description: %s\n", appinfo.AppInfo().Description)
+		fmt.Fprintf(w, "app_repository: %s\n", appinfo.AppInfo().RepositoryName)
+		fmt.Fprintf(w, "app_repository_id: %d\n", appinfo.AppInfo().RepositoryID)
+		fmt.Fprintf(w, "app_commit: %s\n", appinfo.AppInfo().CommitID)
+	}
 }
 
 // this servers /internal/parameters url

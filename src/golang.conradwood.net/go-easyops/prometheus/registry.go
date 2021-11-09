@@ -97,6 +97,7 @@ func (p *promRegistry) Register(c pm.Collector) error {
 			// install stuff that the normal registry also includes
 			p.reg.MustRegister(pm.NewGoCollector())
 			//			p.reg.MustRegister(pm.NewProcessCollector(os.Getpid(), ""))
+			p.reg.MustRegister(pm.NewProcessCollector(pm.ProcessCollectorOpts{}))
 		}
 		lock.Unlock()
 	}

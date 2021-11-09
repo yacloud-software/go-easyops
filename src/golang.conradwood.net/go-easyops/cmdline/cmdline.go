@@ -37,6 +37,14 @@ func init() {
 			go print_late_usage()
 		}
 	}
+	appinfo.OldAppInfo = &appinfo.AppVersionInfo{
+		Number:         APP_BUILD_NUMBER,
+		Description:    APP_BUILD_DESCRIPTION,
+		Timestamp:      APP_BUILD_TIMESTAMP,
+		RepositoryID:   APP_BUILD_REPOSITORY_ID,
+		RepositoryName: APP_BUILD_REPOSITORY,
+		CommitID:       APP_BUILD_COMMIT,
+	}
 }
 
 // if we have a -X argument we will print extended usage AFTER flags are parsed.
@@ -70,11 +78,11 @@ func PrintUsage() {
 		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", APP_BUILD_REPOSITORY)
 
 	} else {
-		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", appinfo.AppInfo.Number)
-		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", appinfo.AppInfo.Timestamp)
-		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(appinfo.AppInfo.Timestamp, 0))
-		fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo.Description)
-		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", appinfo.AppInfo.RepositoryID)
+		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", appinfo.AppInfo().Number)
+		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", appinfo.AppInfo().Timestamp)
+		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(appinfo.AppInfo().Timestamp, 0))
+		fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo().Description)
+		fmt.Fprintf(os.Stdout, "  App repository              : %d\n", appinfo.AppInfo().RepositoryID)
 	}
 	PrintDefaults()
 }
