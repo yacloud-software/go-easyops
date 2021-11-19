@@ -52,16 +52,16 @@ require (
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	golang.conradwood.net/apis/auth v1.1.1410 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.1410 // indirect
-	golang.conradwood.net/apis/common v1.1.1410 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.1410 // indirect
-	golang.conradwood.net/apis/echoservice v1.1.1410 // indirect
-	golang.conradwood.net/apis/errorlogger v1.1.1410 // indirect
-	golang.conradwood.net/apis/framework v1.1.1410 // indirect
-	golang.conradwood.net/apis/objectstore v1.1.1410 // indirect
-	golang.conradwood.net/apis/registry v1.1.1410 // indirect
-	golang.conradwood.net/apis/rpcinterceptor v1.1.1410 // indirect
+	golang.conradwood.net/apis/auth v1.1.1429 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.1429 // indirect
+	golang.conradwood.net/apis/common v1.1.1429 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.1429 // indirect
+	golang.conradwood.net/apis/echoservice v1.1.1429 // indirect
+	golang.conradwood.net/apis/errorlogger v1.1.1429 // indirect
+	golang.conradwood.net/apis/framework v1.1.1429 // indirect
+	golang.conradwood.net/apis/objectstore v1.1.1429 // indirect
+	golang.conradwood.net/apis/registry v1.1.1429 // indirect
+	golang.conradwood.net/apis/rpcinterceptor v1.1.1429 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
