@@ -19,6 +19,7 @@ import (
 )
 
 var (
+	rand_port     = flag.Bool("random_port", true, "if true, add random number to port")
 	port          = flag.Int("port", 4106, "The grpc server port")
 	ping          = flag.Bool("ping", false, "ping continously")
 	ping_once     = flag.Bool("ping_once", false, "ping once")
@@ -45,11 +46,13 @@ func main() {
 			u := auth.GetUser(ctx)
 			fmt.Printf("   pinging as %s\n", auth.Description(u))
 			_, err := c.Ping(ctx, &common.Void{})
+			s := "Pinged"
 			if err != nil {
 				fmt.Printf("Error :%s\n", utils.ErrorString(err))
+				s = "failed"
 			}
 			dur := time.Since(now).Milliseconds()
-			fmt.Printf("%d Pinged (%d milliseconds)\n", ctr, dur)
+			fmt.Printf("%d %s (%d milliseconds)\n", ctr, s, dur)
 			ctr++
 			if !*ping {
 				return
@@ -71,7 +74,9 @@ func main() {
 	}
 
 	p := *port
-	p = p + utils.RandomInt(50)
+	if *rand_port {
+		p = p + utils.RandomInt(50)
+	}
 	sd.AddTag("foo", "bar")
 	sd.Port = p
 	sd.Register = server.Register(

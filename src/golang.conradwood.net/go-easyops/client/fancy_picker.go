@@ -6,6 +6,7 @@ import (
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc/balancer"
+	"google.golang.org/grpc/connectivity"
 	//	"google.golang.org/grpc/metadata"
 )
 
@@ -80,6 +81,15 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 	matching := lf.SelectValid(info.Ctx)
 
 	if len(matching) == 0 {
+		for _, a := range lf.addresses {
+			// this is not right here. We probably should periodically keep them alive rather than wait until
+			// we have no more READY ones
+			// but this is a 'hotfix' to stop breakage
+			if a.state == connectivity.Idle {
+				a.subcon.Connect()
+			}
+			fancyPrintf(f, "picker address: %s\n", a.String())
+		}
 		fancyPrintf(f, "Picker - No valid connections for %s\n", info.FullMethodName)
 		return balancer.PickResult{}, balancer.ErrNoSubConnAvailable
 	}

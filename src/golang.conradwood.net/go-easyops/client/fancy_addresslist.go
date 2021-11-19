@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/auth"
 	"google.golang.org/grpc/balancer"
@@ -26,6 +27,9 @@ type fancy_adr struct {
 	Target  *registry.Target
 }
 
+func (fa *fancy_adr) String() string {
+	return fmt.Sprintf("%s: %s[%s] removed=%v", fa.Target.ServiceName, fa.addr, fa.state.String(), fa.removed)
+}
 func (fal *FancyAddressList) Count() int {
 	return len(fal.addresses)
 }
