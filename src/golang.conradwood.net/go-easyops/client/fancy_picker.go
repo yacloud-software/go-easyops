@@ -86,7 +86,9 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 			// we have no more READY ones
 			// but this is a 'hotfix' to stop breakage
 			if a.state == connectivity.Idle {
-				a.subcon.Connect()
+				// this doesn't do the trick. it just makes it worse actually,
+				// it covers for quick reconnects on the same port only, but breaks after long periods too
+				//a.subcon.Connect()
 			}
 			fancyPrintf(f, "picker address: %s\n", a.String())
 		}

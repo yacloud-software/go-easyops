@@ -3,8 +3,8 @@ package client
 import (
 	_ "context"
 	"fmt"
-	"golang.conradwood.net/go-easyops/prometheus"
 	pp "golang.conradwood.net/go-easyops/profiling"
+	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -46,7 +46,7 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 		}
 	}
 	if *dialer_debug || *debug_rpc_client {
-		cs.PrintContext()
+		//		cs.PrintContext()
 		us := "none"
 		if cs.User() != nil {
 			us = fmt.Sprintf("UserID=%s, Email=%s", cs.User().ID, cs.User().Email)

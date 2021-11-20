@@ -71,6 +71,7 @@ type FancyBalancer struct {
 // EXPERIMENTAL: this is the new-style grpc callback
 func (f *FancyBalancer) ResolverError(err error) {
 	fmt.Printf("[go-easyops] Resolver reported an error, which is not handled yet: %s\n", err)
+	//	panic("[go-easyops] compiled with incompatible grpc library version")
 }
 
 // EXPERIMENTAL: this is the new-style grpc callback, called by the resolver when a state changes
@@ -78,11 +79,17 @@ func (f *FancyBalancer) ResolverError(err error) {
 func (f *FancyBalancer) UpdateClientConnState(bc balancer.ClientConnState) error {
 	fancyPrintf(f, "balancer: updateclientconnstate (ResolverState: %d addresses)\n", len(bc.ResolverState.Addresses))
 	f.HandleResolvedAddrs(bc.ResolverState.Addresses, nil)
+	f.cc.UpdateState(balancer.State{
+		ConnectivityState: connectivity.Ready,
+		Picker:            f.Picker(),
+	})
+
 	return nil
 }
 
 // EXPERIMENTAL: this is the new-style grpc callback
 func (f *FancyBalancer) UpdateSubConnState(sc balancer.SubConn, bc balancer.SubConnState) {
+	fancyPrintf(f, "balancer: updatesubconnstate\n")
 	f.HandleSubConnStateChange(sc, bc.ConnectivityState)
 }
 
@@ -97,6 +104,11 @@ func (f *FancyBalancer) HandleSubConnStateChange(sc balancer.SubConn, state conn
 	fa := f.addresslist.BySubCon(sc)
 	if fa == nil {
 		fancyPrintf(f, "balancer: SubConnState on a subconnection we don't know (%#v)!\n", sc)
+		f.cc.UpdateState(balancer.State{
+			ConnectivityState: connectivity.Ready,
+			Picker:            f.Picker(),
+		})
+
 		return
 	}
 	oldstate := fa.state
@@ -160,7 +172,8 @@ func (f *FancyBalancer) HandleResolvedAddrs(addresses []resolver.Address, err er
 		}
 		//	sc = append(sc, sco)
 		f.addresslist.Add(&fancy_adr{
-			state:  connectivity.Ready, // docs say use CONNECTING here, but that never calls the picker nor the stateupdate. how does that work?
+			//			state:  connectivity.Ready, // docs say use CONNECTING here, but that never calls the picker nor the stateupdate. how does that work?
+			state:  connectivity.Idle, //
 			addr:   resolverAddr.Addr,
 			subcon: sco,
 			Target: sa,
@@ -175,6 +188,10 @@ func (f *FancyBalancer) HandleResolvedAddrs(addresses []resolver.Address, err er
 	removed := len(remlist) != 0
 	if !added && !removed {
 		fancyPrintf(f, "balancer: no state change for \"%s\"\n", f.target)
+		f.cc.UpdateState(balancer.State{ // got to send it anyway (connections might have changed)
+			ConnectivityState: connectivity.Ready,
+			Picker:            f.Picker(),
+		})
 		return
 	}
 	f.failing = false
@@ -240,6 +257,12 @@ func balancer_thread() {
 
 // periodically called by go routine, checks if it's blocking for too long
 func (f *FancyBalancer) Check() {
+	for _, a := range f.addresslist.addresses {
+		if a.state == connectivity.Idle {
+			fancyPrintf(f, "connect()")
+			a.subcon.Connect()
+		}
+	}
 	if !f.addresslist.IsEmpty() {
 		return // not blocked
 	}
