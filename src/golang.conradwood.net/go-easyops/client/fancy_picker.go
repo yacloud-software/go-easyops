@@ -111,6 +111,7 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 	}
 
 	res := balancer.PickResult{SubConn: fa.subcon}
+	fa.subcon.Connect()
 	return res, nil
 }
 

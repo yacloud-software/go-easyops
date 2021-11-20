@@ -79,11 +79,12 @@ func (f *FancyBalancer) ResolverError(err error) {
 func (f *FancyBalancer) UpdateClientConnState(bc balancer.ClientConnState) error {
 	fancyPrintf(f, "balancer: updateclientconnstate (ResolverState: %d addresses)\n", len(bc.ResolverState.Addresses))
 	f.HandleResolvedAddrs(bc.ResolverState.Addresses, nil)
-	f.cc.UpdateState(balancer.State{
-		ConnectivityState: connectivity.Ready,
-		Picker:            f.Picker(),
-	})
-
+	/*
+		f.cc.UpdateState(balancer.State{
+			ConnectivityState: connectivity.Ready,
+			Picker:            f.Picker(),
+		})
+	*/
 	return nil
 }
 
@@ -104,6 +105,7 @@ func (f *FancyBalancer) HandleSubConnStateChange(sc balancer.SubConn, state conn
 	fa := f.addresslist.BySubCon(sc)
 	if fa == nil {
 		fancyPrintf(f, "balancer: SubConnState on a subconnection we don't know (%#v)!\n", sc)
+		//		panic("what to do with this subconnection??")
 		f.cc.UpdateState(balancer.State{
 			ConnectivityState: connectivity.Ready,
 			Picker:            f.Picker(),
@@ -172,8 +174,9 @@ func (f *FancyBalancer) HandleResolvedAddrs(addresses []resolver.Address, err er
 		}
 		//	sc = append(sc, sco)
 		f.addresslist.Add(&fancy_adr{
-			//			state:  connectivity.Ready, // docs say use CONNECTING here, but that never calls the picker nor the stateupdate. how does that work?
-			state:  connectivity.Idle, //
+			state: connectivity.Ready, // docs say use CONNECTING here, but that never calls the picker nor the stateupdate. how does that work?
+			//			state:  connectivity.Idle,
+			//state:  connectivity.Connecting,
 			addr:   resolverAddr.Addr,
 			subcon: sco,
 			Target: sa,
