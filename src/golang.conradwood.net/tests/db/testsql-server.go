@@ -7,16 +7,18 @@ import (
 	"golang.conradwood.net/apis/common"
 	pb "golang.conradwood.net/apis/echoservice"
 	"golang.conradwood.net/go-easyops/auth"
-	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/sql"
-	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"os"
 	"strings"
 	"time"
+)
+
+const (
+	INTERVAL = time.Duration(300) * time.Millisecond
 )
 
 var (
@@ -25,6 +27,7 @@ var (
 	ping_once = flag.Bool("ping_once", false, "ping once")
 	tag       = flag.String("tag", "", "key=value tag optional")
 	ctr       = 0
+	dbcon     *sql.DB
 )
 
 // create a simple standard server
@@ -33,31 +36,22 @@ type echoServer struct {
 
 func main() {
 	flag.Parse()
-	_, serr := sql.Open()
-	utils.Bail("failed to open db: %s", serr)
+	var err error
+	dbcon, err = sql.Open()
+	utils.Bail("failed to open db: %s", err)
 	fmt.Printf("GO-EASYOPS Echo test server/client\n")
 	if *ping || *ping_once {
-		c := pb.GetEchoClient()
 		for {
-			now := time.Now()
-			ctx := authremote.Context()
-			ctx = tokens.ContextWithToken()
-			ctx = authremote.Context()
-			ctx = authremote.Context()
-			u := auth.GetUser(ctx)
-			fmt.Printf("   pinging as %s\n", auth.Description(u))
-			_, err := c.Ping(ctx, &common.Void{})
-			if err != nil {
-				fmt.Printf("Error :%s\n", utils.ErrorString(err))
-			}
-			dur := time.Since(now).Milliseconds()
-			fmt.Printf("%d Pinged (%d milliseconds)\n", ctr, dur)
-			ctr++
-			if !*ping {
-				return
-			}
-			time.Sleep(time.Duration(300) * time.Millisecond)
+			do_ping()
+			time.Sleep(INTERVAL)
+			fmt.Printf("Successes: %d out of %d. Failures: %d out of %d\n",
+				dbcon.GetFailureCounter().GetCounter(0),
+				dbcon.GetFailureCounter().GetCounts(0),
+				dbcon.GetFailureCounter().GetCounter(1),
+				dbcon.GetFailureCounter().GetCounts(1),
+			)
 		}
+
 	}
 
 	sd := server.NewServerDef()
@@ -82,7 +76,7 @@ func main() {
 			return nil
 		},
 	)
-	err := server.ServerStartup(sd)
+	err = server.ServerStartup(sd)
 	//	err := create.NewEchoServiceServer(&echoServer{}, p)
 	utils.Bail("Unable to start server", err)
 }
@@ -96,4 +90,27 @@ func (e *echoServer) Ping(ctx context.Context, req *common.Void) (*pb.PingRespon
 		return nil, errors.Unavailable(ctx, "Ping()")
 	}
 	return &pb.PingResponse{}, nil
+}
+
+func do_ping() {
+	ctx := context.Background()
+	var now time.Time
+	rows, err := dbcon.QueryContext(ctx, "nowquery", "SELECT NOW() as now")
+	if err != nil {
+		fmt.Printf("Query Error: %v\n", err)
+		return
+	}
+	if !rows.Next() {
+		fmt.Printf("Next error (no rows)\n")
+		return
+	}
+	err = rows.Scan(&now)
+	if err != nil {
+		fmt.Printf("Scan Error: %v\n", err)
+		return
+	}
+	rows.Close()
+
+	fmt.Printf("Result: %v\n", now)
+
 }

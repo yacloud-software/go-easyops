@@ -79,6 +79,9 @@ type DB struct {
 	dbhost          string // hostname as specified on commandline
 	dbshorthost     string // hostname only (no domain)
 	MaxQueryTimeout int
+	failurectr      *utils.SlidingAverage
+	lastReconnect   time.Time
+	reconnectLock   sync.RWMutex
 }
 
 func maxConnections() int {
@@ -148,6 +151,9 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		dbshort = names[0]
 	}
 	c := &DB{dbcon: dbcon, dbname: dbdb, dbinfo: dbinfo, MaxQueryTimeout: DEFAULT_MAX_QUERY_MILLIS, dbhost: dbhost, dbshorthost: dbshort}
+	c.failurectr = utils.NewSlidingAverage()
+	c.failurectr.MinSamples = 10
+	c.failurectr.MinAge = time.Duration(60) * time.Second
 	databases = append(databases, c)
 	if len(databases) > 5 {
 		fmt.Printf("[go-easyops] WARNING OPENED %d databases\n", len(databases))
@@ -157,6 +163,8 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		panic("too many databases")
 	}
 	return c, nil
+}
+func reopen() {
 }
 
 /*****
@@ -169,6 +177,48 @@ func IsSQLSafe(txt string) bool {
 func (d *DB) GetDatabaseName() string {
 	return d.dbname
 }
+func (d *DB) GetFailureCounter() *utils.SlidingAverage {
+	return d.failurectr
+}
+
+func (d *DB) reconnect_if_required() {
+	if !must_reconnect(d.GetFailureCounter()) {
+		return
+	}
+	if time.Since(d.lastReconnect) < time.Duration(60)*time.Second {
+		// recently reconnected, ignore..
+		return
+	}
+	fmt.Printf("[go-easyops] sql reconnect required.\n")
+	d.reconnectLock.Lock()
+	defer d.reconnectLock.Unlock()
+	d.lastReconnect = time.Now()
+	fmt.Printf("[go-easyops] sql reconnecting...\n")
+	d.dbcon.Close()
+	dc, err := sql.Open("postgres", d.dbinfo)
+	if err != nil {
+		fmt.Printf("[go-easyops] sql failed to reconnect: %s\n", err)
+		return
+	}
+	d.dbcon = dc
+
+}
+
+func must_reconnect(sa *utils.SlidingAverage) bool {
+	if sa.GetCounter(0) != 0 {
+		// at least one succeeded
+		return false
+	}
+	if sa.GetCounter(1) == 0 {
+		// no failures
+		return false
+	}
+	if sa.GetCounter(1) != sa.GetCounts(1) {
+		// some failure counts where not "1"?? so we counted a failure as 0 or 2 failures?
+		return false
+	}
+	return true
+}
 
 /*****
 // wrapping the calls
@@ -176,6 +226,9 @@ func (d *DB) GetDatabaseName() string {
 
 // "name" will be used to provide timing information as prometheus metric.
 func (d *DB) QueryContext(ctx context.Context, name string, query string, args ...interface{}) (*sql.Rows, error) {
+	d.reconnect_if_required()
+	d.reconnectLock.RLock()
+	defer d.reconnectLock.RUnlock()
 	pp.SqlEntered()
 	defer pp.SqlDone()
 	if *sqldebug {
@@ -192,10 +245,13 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 		err = ctx.Err()
 	}
 	if err != nil {
+		d.failurectr.Add(1, 1)
 		if *sqldebug {
 			fmt.Printf("[sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
+	} else {
+		d.failurectr.Add(0, 1)
 	}
 	sqlTotalTime.With(l).Add(duration)
 	pqtime(name, duration)
@@ -204,6 +260,9 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 
 // "name" will be used to provide timing information as prometheus metric.
 func (d *DB) ExecContext(ctx context.Context, name string, query string, args ...interface{}) (sql.Result, error) {
+	d.reconnect_if_required()
+	d.reconnectLock.RLock()
+	defer d.reconnectLock.RUnlock()
 	pp.SqlEntered()
 	defer pp.SqlDone()
 	l := prometheus.Labels{"dbhost": d.dbshorthost, "database": d.dbname, "queryname": name}
@@ -220,10 +279,13 @@ func (d *DB) ExecContext(ctx context.Context, name string, query string, args ..
 		err = ctx.Err()
 	}
 	if err != nil {
+		d.failurectr.Add(1, 1)
 		if *sqldebug {
 			fmt.Printf("[sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
+	} else {
+		d.failurectr.Add(0, 1)
 	}
 	sqlTotalTime.With(l).Add(duration)
 	pqtime(name, duration)
@@ -233,6 +295,9 @@ func (d *DB) ExecContext(ctx context.Context, name string, query string, args ..
 // discouraged use. QueryRow() does not provide an error on the query, nor do we get a good timing
 // value. Use QueryContext() instead.
 func (d *DB) QueryRowContext(ctx context.Context, name string, query string, args ...interface{}) *sql.Row {
+	d.reconnect_if_required()
+	d.reconnectLock.RLock()
+	defer d.reconnectLock.RUnlock()
 	pp.SqlEntered()
 	defer pp.SqlDone()
 	if *sqldebug {
