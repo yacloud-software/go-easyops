@@ -15,22 +15,22 @@ require (
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	golang.conradwood.net/apis/auth v1.1.1433
-	golang.conradwood.net/apis/autodeployer v1.1.1433 // indirect
-	golang.conradwood.net/apis/common v1.1.1433
-	golang.conradwood.net/apis/deploymonkey v1.1.1433 // indirect
-	golang.conradwood.net/apis/echoservice v1.1.1433
-	golang.conradwood.net/apis/errorlogger v1.1.1433
-	golang.conradwood.net/apis/framework v1.1.1433
-	golang.conradwood.net/apis/logservice v1.1.1433
-	golang.conradwood.net/apis/objectstore v1.1.1433
-	golang.conradwood.net/apis/registry v1.1.1433
-	golang.conradwood.net/apis/rpcinterceptor v1.1.1433
-	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4
-	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
+	golang.conradwood.net/apis/auth v1.1.1440
+	golang.conradwood.net/apis/autodeployer v1.1.1440 // indirect
+	golang.conradwood.net/apis/common v1.1.1440
+	golang.conradwood.net/apis/deploymonkey v1.1.1440 // indirect
+	golang.conradwood.net/apis/echoservice v1.1.1440
+	golang.conradwood.net/apis/errorlogger v1.1.1440
+	golang.conradwood.net/apis/framework v1.1.1440
+	golang.conradwood.net/apis/logservice v1.1.1440
+	golang.conradwood.net/apis/objectstore v1.1.1440
+	golang.conradwood.net/apis/registry v1.1.1440
+	golang.conradwood.net/apis/rpcinterceptor v1.1.1440
+	golang.org/x/net v0.0.0-20211209124913-491a49abca63
+	golang.org/x/sys v0.0.0-20211210111614-af8b64212486
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1 // indirect
+	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1 // indirect
 )

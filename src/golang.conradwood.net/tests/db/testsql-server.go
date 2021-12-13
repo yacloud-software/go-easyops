@@ -93,7 +93,8 @@ func (e *echoServer) Ping(ctx context.Context, req *common.Void) (*pb.PingRespon
 }
 
 func do_ping() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
+	defer cancel()
 	var now time.Time
 	rows, err := dbcon.QueryContext(ctx, "nowquery", "SELECT NOW() as now")
 	if err != nil {
