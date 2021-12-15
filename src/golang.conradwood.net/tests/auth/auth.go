@@ -61,3 +61,28 @@ func main() {
 	fmt.Printf("Done\n")
 
 }
+
+/*
+create another context, independent of the original one
+*/
+func ForkContext(ctx context.Context) context.Context {
+	return ForkContextWithTimeout(ctx, time.Duration(10)*time.Second)
+}
+
+/*
+* create another context, independent of the original one, with the authentication and metadata intact and a given timeout.
+ */
+func ForkContextWithTimeout(ctx context.Context, t time.Duration) context.Context {
+	b, err := auth.SerialiseContext(ctx)
+	if err != nil {
+		fmt.Printf("forkContext() Failed to serialise context: %s\n", err)
+		return ctx
+	}
+	nctx, err := auth.RecreateContextWithTimeout(t, b)
+	if err != nil {
+		fmt.Printf("forkContext() failed to recreate context: %s\n", err)
+		return ctx
+	}
+	return nctx
+
+}
