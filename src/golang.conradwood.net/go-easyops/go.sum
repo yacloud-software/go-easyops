@@ -82,6 +82,7 @@ github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vb
 github.com/go-logfmt/logfmt v0.3.0/go.mod h1:Qt1PoO58o5twSAckw1HlFXLmHsOX5/0LbT9GBnD5lWE=
 github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V4qmtdjCk=
 github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG1KdI/P7A=
+github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
@@ -229,10 +230,7 @@ golang.conradwood.net/apis/errorlogger v1.1.1464 h1:8wRjCLdsh+PjSxAdu+So4KzoBnfM
 golang.conradwood.net/apis/errorlogger v1.1.1464/go.mod h1:+eKYK50e04sTKr9qD9U44eztaeMSafHkzfjejBdMaqw=
 golang.conradwood.net/apis/framework v1.1.1464 h1:G+2nXhK3eyYU3W6twX+RykA6aYnpor4w8M2w0EEzIaI=
 golang.conradwood.net/apis/framework v1.1.1464/go.mod h1:aakclkFxoK6Rwfb6wWbfyCPRiWsAZM94xYz69Y9fid4=
-golang.conradwood.net/apis/gitserver v1.1.1440 h1:iq567L+ZRkaixhXKOJmNuuYe506JQZoPDT7I/bJBB08=
-golang.conradwood.net/apis/gitserver v1.1.1440/go.mod h1:NaET2knVJg3IU9bgx50nO4FWNpKHh1O3Rd3IDZwJnQY=
-golang.conradwood.net/apis/goeasyops v1.1.1440 h1:5rxq32qPZz47vuf4ohPr7R+9t8QRsWiLiN0q5U2+v0s=
-golang.conradwood.net/apis/goeasyops v1.1.1440/go.mod h1:tecmKoGj8rpD4Kri6kj0WHaY+U5ici0n3tb0hR3Nnfw=
+golang.conradwood.net/apis/logservice v1.1.1464 h1:EE4P/L8r5p8u8ijfVw9wvb73H2+L/PTnY5zLcUfcVZA=
 golang.conradwood.net/apis/logservice v1.1.1464/go.mod h1:lHKq9Oj6vUE77MOwAsk/zqTvfuJw3i0FEkhAz4w7I4c=
 golang.conradwood.net/apis/objectstore v1.1.1464 h1:i/czWuE15kyIeTYq5ychjAw562F+HHencIJjUwVgKsU=
 golang.conradwood.net/apis/objectstore v1.1.1464/go.mod h1:e2yf47IrPI8nSmbDODyI1zvhtP/f22VWK32GvFZgYjU=

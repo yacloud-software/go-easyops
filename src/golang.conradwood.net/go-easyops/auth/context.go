@@ -7,6 +7,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"golang.conradwood.net/apis/auth"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
+	//"google.golang.org/protobuf/proto"
 	//	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/rpc"

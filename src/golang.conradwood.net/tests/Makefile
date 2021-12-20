@@ -1,2 +1,2 @@
 all:
-	for thi in *; do [ -f $thi/Makefile ] && ( cd $thi && make ); done
+	for thi in *; do if [ -f $$thi/Makefile ]; then ( cd $$thi && make ) || exit 10 ; fi; done

@@ -5,15 +5,15 @@ go 1.17
 replace golang.conradwood.net/go-easyops => ../go-easyops
 
 require (
-	golang.conradwood.net/apis/auth v1.1.1440
-	golang.conradwood.net/apis/common v1.1.1440
-	golang.conradwood.net/apis/echoservice v1.1.1440
+	golang.conradwood.net/apis/auth v1.1.1464
+	golang.conradwood.net/apis/common v1.1.1464
+	golang.conradwood.net/apis/echoservice v1.1.1464
 	golang.conradwood.net/apis/gitserver v1.1.1440
 	golang.conradwood.net/apis/goeasyops v1.1.1440
-	golang.conradwood.net/apis/registry v1.1.1440
-	golang.conradwood.net/apis/rpcinterceptor v1.1.1440
+	golang.conradwood.net/apis/registry v1.1.1464
+	golang.conradwood.net/apis/rpcinterceptor v1.1.1464
 	golang.conradwood.net/go-easyops v1.0.0
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.43.0
 )
 
 require (
@@ -27,13 +27,13 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.1440 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.1440 // indirect
-	golang.conradwood.net/apis/errorlogger v1.1.1440 // indirect
-	golang.conradwood.net/apis/framework v1.1.1440 // indirect
-	golang.conradwood.net/apis/objectstore v1.1.1440 // indirect
-	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
-	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.1464 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.1464 // indirect
+	golang.conradwood.net/apis/errorlogger v1.1.1464 // indirect
+	golang.conradwood.net/apis/framework v1.1.1464 // indirect
+	golang.conradwood.net/apis/objectstore v1.1.1464 // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
