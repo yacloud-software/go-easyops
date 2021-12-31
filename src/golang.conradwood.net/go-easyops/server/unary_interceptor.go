@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
-	"golang.conradwood.net/go-easyops/prometheus"
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
+	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/rpc"
 	//	"golang.org/x/net/context"
 	"context"
@@ -80,7 +80,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	i, err := handler(cs.Context, req)
 
 	if *debug_rpc_serve {
-		fmt.Printf("[go-easyops] Call %s.%s timing: %v\n", cs.ServiceName, cs.MethodName, time.Since(started))
+		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" timing: %v\n", cs.ServiceName, cs.MethodName, time.Since(started))
 	}
 	if err == nil {
 		grpc_server_req_durations.WithLabelValues(cs.ServiceName, cs.MethodName).Observe(time.Since(cs.Started).Seconds())
@@ -89,10 +89,10 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	// it falied!
 	dur := time.Since(cs.Started).Seconds()
 	if dur > 5 { // >5 seconds processing time? warn
-		fmt.Printf("[go-easyops] Call %s.%s took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, dur, err)
+		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, dur, err)
 	}
 	if *debug_rpc_serve {
-		fmt.Printf("[go-easyops] Call %s.%s failed: %s\n", cs.ServiceName, cs.MethodName, err)
+		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" failed: %s\n", cs.ServiceName, cs.MethodName, err)
 	}
 	incFailure(cs.ServiceName, cs.MethodName, err)
 	//stdMetrics.grpc_failed_requests.With(prometheus.Labels{"method": method, "servicename": def.name}).Inc()
