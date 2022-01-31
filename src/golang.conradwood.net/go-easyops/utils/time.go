@@ -29,12 +29,21 @@ func TimestampAgeString(timestamp uint32) string {
 		return "now"
 	}
 	minutes := uint32(0)
+	hours := uint32(0)
+	if secs_age > 60*60 {
+		hours = secs_age / 60 / 60
+		secs_age = secs_age - hours*60*60
+	}
+
 	secs := secs_age
 	if secs_age > 60 {
 		minutes = uint32(secs_age / 60)
 		secs = secs_age - minutes*60
 	}
 	var ts []string
+	if hours != 0 {
+		ts = append(ts, fmt.Sprintf("%dh", hours))
+	}
 	if minutes != 0 {
 		ts = append(ts, fmt.Sprintf("%dm", minutes))
 	}

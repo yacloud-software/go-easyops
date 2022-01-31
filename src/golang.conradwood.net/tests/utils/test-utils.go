@@ -18,6 +18,8 @@ func main() {
 	print(125)
 	print(120)
 	print(0)
+	print(60*60 + 3 + 24)
+	print(60*60*2 + 60*5 + 40)
 	secs := uint32(0)
 	fmt.Printf("'not set' as Age: %s\n", utils.TimestampAgeString(secs))
 	s := fmt.Sprintf("I am a test hexdump buffer with some text and stuff\n")

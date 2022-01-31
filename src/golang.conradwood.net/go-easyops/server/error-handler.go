@@ -1,6 +1,7 @@
 package server
 
 import (
+	"flag"
 	"fmt"
 	el "golang.conradwood.net/apis/errorlogger"
 	fw "golang.conradwood.net/apis/framework"
@@ -17,6 +18,7 @@ var (
 	logChan       = make(chan *le, 200)
 	els           el.ErrorLoggerClient
 	error_looping = false
+	debug_elog    = flag.Bool("ge_debug_error_log", false, "if true debug what is being sent to the error logger")
 )
 
 type le struct {
@@ -58,14 +60,15 @@ func log(l *le) {
 	}
 	st := status.Convert(l.err)
 	e := &el.ErrorLogRequest{
-		UserID:       uid,
-		ErrorCode:    uint32(st.Code()),
-		ErrorMessage: fmt.Sprintf("%s", l.err),
-		LogMessage:   utils.ErrorString(l.err),
-		ServiceName:  l.cs.ServiceName,
-		MethodName:   l.cs.MethodName,
-		Timestamp:    uint32(l.ts.Unix()),
-		RequestID:    l.cs.RequestID(),
+		UserID:         uid,
+		ErrorCode:      uint32(st.Code()),
+		ErrorMessage:   fmt.Sprintf("%s", l.err),
+		LogMessage:     utils.ErrorString(l.err),
+		ServiceName:    l.cs.ServiceName,
+		MethodName:     l.cs.MethodName,
+		Timestamp:      uint32(l.ts.Unix()),
+		RequestID:      l.cs.RequestID(),
+		CallingService: l.cs.CallerService(),
 	}
 	for _, a := range st.Details() {
 		if a == nil {
@@ -78,5 +81,8 @@ func log(l *le) {
 		e.Messages = append(e.Messages, fmd)
 	}
 	ctx := tokens.ContextWithToken()
+	if *debug_elog {
+		fmt.Printf("[go-easyops] errorlog: %v\n", e)
+	}
 	els.Log(ctx, e)
 }

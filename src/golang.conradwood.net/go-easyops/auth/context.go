@@ -26,6 +26,11 @@ var (
 //	rpci rc.RPCInterceptorServiceClient
 )
 
+func ForkContext(ctx context.Context) (context.Context, error) {
+	u := GetUser(ctx)
+	return ContextForUser(u)
+}
+
 // return a context with token and/or from environment or so
 func Context(t time.Duration) context.Context {
 	if tokens.GetUserTokenParameter() != "" || tokens.GetServiceTokenParameter() != "" {

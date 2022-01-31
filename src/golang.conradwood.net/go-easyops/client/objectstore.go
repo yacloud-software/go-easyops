@@ -59,6 +59,19 @@ func PutWithIDAndExpiry(ctx context.Context, key string, buf []byte, expiry time
 	}
 	return err
 }
+
+// evict (remove) an object from the objectstore by key
+func Evict(ctx context.Context, key string) ([]byte, error) {
+	if key == "" {
+		return nil, errors.InvalidArgs(ctx, "missing key to evict from objectstore", "missing key to evict from objectstore")
+	}
+	getostore()
+	gr := &os.EvictRequest{ID: key}
+	_, err := ostore.Evict(ctx, gr)
+	return nil, err
+}
+
+// get an object from the objectstore by key
 func Get(ctx context.Context, key string) ([]byte, error) {
 	if key == "" {
 		return nil, errors.InvalidArgs(ctx, "missing key to retrieve from objectstore", "missing key to retrieve from objectstore")

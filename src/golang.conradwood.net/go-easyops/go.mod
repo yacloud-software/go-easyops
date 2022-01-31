@@ -9,17 +9,17 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
-	golang.conradwood.net/apis/auth v1.1.1464
-	golang.conradwood.net/apis/common v1.1.1464
-	golang.conradwood.net/apis/echoservice v1.1.1464
-	golang.conradwood.net/apis/errorlogger v1.1.1464
-	golang.conradwood.net/apis/framework v1.1.1464
-	golang.conradwood.net/apis/logservice v1.1.1464
-	golang.conradwood.net/apis/objectstore v1.1.1464
-	golang.conradwood.net/apis/registry v1.1.1464
-	golang.conradwood.net/apis/rpcinterceptor v1.1.1464
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+	golang.conradwood.net/apis/auth v1.1.1498
+	golang.conradwood.net/apis/common v1.1.1498
+	golang.conradwood.net/apis/echoservice v1.1.1498
+	golang.conradwood.net/apis/errorlogger v1.1.1498
+	golang.conradwood.net/apis/framework v1.1.1498
+	golang.conradwood.net/apis/logservice v1.1.1498
+	golang.conradwood.net/apis/objectstore v1.1.1498
+	golang.conradwood.net/apis/registry v1.1.1498
+	golang.conradwood.net/apis/rpcinterceptor v1.1.1498
+	golang.org/x/net v0.0.0-20220111093109-d55c255bac03
+	golang.org/x/sys v0.0.0-20220111092808-5a964db01320
 	google.golang.org/grpc v1.43.0
 )
 
@@ -29,8 +29,9 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.1464 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.1464 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.1498 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.1498 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
+	google.golang.org/genproto v0.0.0-20220112215332-a9c7c0acf9f2 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
