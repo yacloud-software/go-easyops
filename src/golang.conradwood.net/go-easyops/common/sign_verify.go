@@ -75,6 +75,11 @@ func VerifySignature(u *pb.User) bool {
 	return v
 }
 
+func VerifyBytes(b []byte, signature []byte) bool {
+	v := ed.Verify(signPublicKey(), b, signature)
+	return v
+}
+
 // check signature from signed user, and if valid return user. otherwise nil
 func VerifySignedUser(u *pb.SignedUser) *pb.User {
 	if u == nil {

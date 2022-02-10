@@ -261,3 +261,9 @@ func ContextWithCallState(ctx context.Context) (context.Context, *CallState) {
 	nc := context.WithValue(ctx, LOCALCONTEXTNAME, cs)
 	return nc, cs
 }
+func (cs *CallState) SignedSession() *auth.SignedSession {
+	if cs.Metadata == nil {
+		return nil
+	}
+	return cs.Metadata.SignedSession
+}
