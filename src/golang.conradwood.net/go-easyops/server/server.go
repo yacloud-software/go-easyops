@@ -86,6 +86,7 @@ type serverDef struct {
 	serviceID       uint64
 	asUser          *au.SignedUser // if we're running as a user rather than a server this is the account
 	tags            map[string]string
+	ErrorHandler    func(ctx context.Context, function_name string, err error)
 }
 
 func init() {
