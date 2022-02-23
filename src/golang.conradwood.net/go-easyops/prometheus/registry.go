@@ -38,6 +38,14 @@ func NewHistogram(opts HistogramOpts) *HistogramVec {
 	return (&HistogramVec{opts: opts, labelnames: []string{}}).init()
 }
 func NewSummaryVec(opts SummaryOpts, label_names []string) *SummaryVec {
+	if opts.Objectives == nil || len(opts.Objectives) == 0 {
+		opts.Objectives = map[float64]float64{
+			0.2:  0.2,
+			0.5:  0.5,
+			0.9:  0.9,
+			0.99: 0.99,
+		}
+	}
 	return (&SummaryVec{opts: opts, labelnames: label_names}).init()
 }
 func NewSummary(opts SummaryOpts) *SummaryVec {

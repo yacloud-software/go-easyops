@@ -86,7 +86,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		grpc_server_req_durations.WithLabelValues(cs.ServiceName, cs.MethodName).Observe(time.Since(cs.Started).Seconds())
 		return i, nil
 	}
-	// it failed!
+	// it falied!
 	dur := time.Since(cs.Started).Seconds()
 	if dur > 5 { // >5 seconds processing time? warn
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, dur, err)
@@ -107,9 +107,6 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	st = AddStatusDetail(st, fm)
 	re := st.Err()
 	sd.logError(cs, re)
-	eh := sd.ErrorHandler
-	if eh != nil {
-		eh(cs.Context, cs.MethodName, err)
-	}
+
 	return i, st.Err()
 }
