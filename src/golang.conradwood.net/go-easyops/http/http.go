@@ -296,7 +296,9 @@ func (h *HTTPResponse) do(req *http.Request) *HTTPResponse {
 	}
 
 	for _, c := range h.ht.jar.cookies {
-		fmt.Printf("Adding cookie %s\n", c.Name)
+		if *debug {
+			fmt.Printf("Adding cookie %s\n", c.Name)
+		}
 		req.Header.Add("Cookie", fmt.Sprintf("%s=%s", c.Name, c.Value))
 	}
 	started := time.Now()
