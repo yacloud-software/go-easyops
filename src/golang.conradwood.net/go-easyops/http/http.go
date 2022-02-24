@@ -280,7 +280,9 @@ func (h *HTTPResponse) do(req *http.Request) *HTTPResponse {
 		tr = h.ht.transport
 	}
 	hclient := &http.Client{Transport: tr, Jar: h.ht.jar}
-	h.ht.jar.Print()
+	if *debug {
+		h.ht.jar.Print()
+	}
 	if h.ht.headers != nil {
 		for k, v := range h.ht.headers {
 			if *debug {
