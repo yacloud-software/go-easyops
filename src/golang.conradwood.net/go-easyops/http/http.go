@@ -113,19 +113,22 @@ type header struct {
 	Value string
 }
 type HTTPResponse struct {
-	httpCode   int
-	ht         *HTTP
-	body       []byte
-	err        error
-	finalurl   string
-	header     map[string]string
-	allheaders []*header // responses need multiple headers of same name, e.g. "Cookie"
+	httpCode         int
+	ht               *HTTP
+	body             []byte
+	err              error
+	finalurl         string
+	header           map[string]string
+	allheaders       []*header // responses need multiple headers of same name, e.g. "Cookie"
+	received_cookies []*http.Cookie
 }
 
 func (h *HTTPResponse) HTTPCode() int {
 	return h.httpCode
 }
-
+func (h *HTTPResponse) Cookies() []*http.Cookie {
+	return h.received_cookies
+}
 func (h *HTTPResponse) AllHeaders() []*header {
 	return h.allheaders
 }
@@ -328,7 +331,7 @@ func (h *HTTPResponse) do(req *http.Request) *HTTPResponse {
 		}
 		h.header[k] = va[0]
 	}
-
+	h.received_cookies = resp.Cookies()
 	defer resp.Body.Close()
 	pbody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
