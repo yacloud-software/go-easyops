@@ -1,7 +1,6 @@
 package client
 
 import (
-	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/rpc"
@@ -16,8 +15,7 @@ type FancyPicker struct {
 }
 
 var (
-	ctr         uint32
-	honour_tags = flag.Bool("ge_honour_tags", true, "whether or not to honour tag-based routing")
+	ctr uint32
 )
 
 // Pick returns the connection to use for this RPC and related information.
@@ -60,21 +58,20 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 	}
 
 	lf := f.addresslist
-	if *honour_tags {
-		value := info.Ctx.Value("routingtags")
-		if value != nil {
-			// convert tags to map[string]string, returning empty if invalid type assertion
-			tags, ok := value.(map[string]string)
-			if !ok {
-				return balancer.PickResult{}, fmt.Errorf("Invalid tags object supplied (%v)", value)
-			}
-			adrs := lf.ByMatchingTags(tags)
-			if len(adrs) == 0 {
-				fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", tags)
-				return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", tags)
-			}
-			lf = &FancyAddressList{Name: lf.Name, addresses: adrs}
+
+	value := info.Ctx.Value("routingtags")
+	if value != nil {
+		// convert tags to map[string]string, returning empty if invalid type assertion
+		tags, ok := value.(map[string]string)
+		if !ok {
+			return balancer.PickResult{}, fmt.Errorf("Invalid tags object supplied (%v)", value)
 		}
+		adrs := lf.ByMatchingTags(tags)
+		if len(adrs) == 0 {
+			fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", tags)
+			return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", tags)
+		}
+		lf = &FancyAddressList{Name: lf.Name, addresses: adrs}
 	}
 
 	// build up a list of valid (e.g. state Ready, match user/context/routing) connections
