@@ -68,6 +68,11 @@ type UserCache struct {
 
 type Register func(server *grpc.Server) error
 
+//serverdef interface
+type Server interface {
+	AddTag(key, value string)
+}
+
 // no longer exported - please use NewServerDef instead
 type serverDef struct {
 	Port        int
