@@ -634,8 +634,10 @@ func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
 
 }
 
-// we have a good service token, lookup our serviceid for future calls to rpcinterceptor
-// this will PANIC if the token is invalid
+/*
+ we have a good service token, lookup our serviceid for future calls to rpcinterceptor
+ this will PANIC if the token is invalid
+*/
 func (sd *serverDef) lookupServiceID(token string) {
 	if token == "" {
 		return
