@@ -55,3 +55,13 @@ func (ac *ArrayComparer) EqualElements() bool {
 	}
 	return false
 }
+
+// returns indices of elements that are in array 1 but not array 2
+func (ac *ArrayComparer) ElememtsIn1ButNot2() []int {
+	return ac.elements_in_array_1_but_not_2
+}
+
+// returns indices of elements that are in array 2 but not array 1
+func (ac *ArrayComparer) ElememtsIn2ButNot1() []int {
+	return ac.elements_in_array_2_but_not_1
+}
