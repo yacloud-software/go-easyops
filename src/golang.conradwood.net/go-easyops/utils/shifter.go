@@ -25,6 +25,17 @@ func NewShifter(buf []byte) *Shifter {
 	}
 	return res
 }
+
+// next byte is length, followed by uint8s
+func (sh *Shifter) Array8() []byte {
+	l := int(sh.Unshift_uint8())
+	res := make([]byte, l)
+	for i := 0; i < l; i++ {
+		res[i] = sh.Unshift_uint8()
+	}
+	return res
+}
+
 func (sh *Shifter) Unshift_uint32() uint32 {
 	res := uint32(0)
 	for i := 0; i < 4; i++ {
