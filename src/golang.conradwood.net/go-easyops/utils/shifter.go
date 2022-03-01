@@ -10,6 +10,9 @@ type Value struct {
 	Integer int
 }
 
+/*
+A "Shifter" shifts bytes from a larger number into an array and unshifts it again
+*/
 func NewShifter(buf []byte) *Shifter {
 	res := &Shifter{
 		buf:            buf,
