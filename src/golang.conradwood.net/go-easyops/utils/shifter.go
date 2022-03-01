@@ -46,7 +46,7 @@ func (sh *Shifter) Unshift_uint64() uint64 {
 func (sh *Shifter) Unshift_uint8() uint8 {
 	if len(sh.buf) <= sh.consumed_bytes {
 		sh.consumed_bytes++
-		sh.err = fmt.Errorf("Read beyond length (length=%i, read=%i)", len(sh.buf), sh.consumed_bytes)
+		sh.err = fmt.Errorf("Read beyond length (length=%d, read=%d)", len(sh.buf), sh.consumed_bytes)
 		return 0
 	}
 	res := sh.buf[sh.consumed_bytes]
