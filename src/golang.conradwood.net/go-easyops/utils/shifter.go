@@ -1,10 +1,15 @@
 package utils
 
+import (
+	"fmt"
+)
+
 // serialise/deserialise a bunch of variables
 type Shifter struct {
 	values         map[int]*Value
 	buf            []byte
 	consumed_bytes int
+	err            error
 }
 type Value struct {
 	Integer int
@@ -39,10 +44,15 @@ func (sh *Shifter) Unshift_uint64() uint64 {
 	return res
 }
 func (sh *Shifter) Unshift_uint8() uint8 {
-	if len(sh.buf) < sh.consumed_bytes {
+	if len(sh.buf) <= sh.consumed_bytes {
+		sh.consumed_bytes++
+		sh.err = fmt.Errorf("Read beyond length (length=%i, read=%i)", len(sh.buf), sh.consumed_bytes)
 		return 0
 	}
 	res := sh.buf[sh.consumed_bytes]
 	sh.consumed_bytes++
 	return res
+}
+func (sh *Shifter) Error() error {
+	return sh.err
 }
