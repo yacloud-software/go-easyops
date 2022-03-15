@@ -25,9 +25,9 @@ type tribool_t struct {
 
 func (t *tribool_t) Set(s string) error {
 	x := strings.ToLower(s)
-	if x == "true" {
+	if x == "true" || x == "on" {
 		t.value = true
-	} else if x == "false" {
+	} else if x == "false" || x == "off" {
 		t.value = false
 	} else {
 		return fmt.Errorf("value \"%s\" not valid for a boolean value", s)
