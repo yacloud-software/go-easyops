@@ -20,7 +20,7 @@ require (
 	golang.conradwood.net/apis/rpcinterceptor v1.1.1654
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86
-	google.golang.org/grpc v1.45.0
+	google.golang.org/grpc v1.42.0
 )
 
 require (
