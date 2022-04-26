@@ -5,15 +5,15 @@ go 1.17
 replace golang.conradwood.net/go-easyops => ../go-easyops
 
 require (
-	golang.conradwood.net/apis/auth v1.1.1588
-	golang.conradwood.net/apis/common v1.1.1588
-	golang.conradwood.net/apis/echoservice v1.1.1588
+	golang.conradwood.net/apis/auth v1.1.1654
+	golang.conradwood.net/apis/common v1.1.1654
+	golang.conradwood.net/apis/echoservice v1.1.1654
 	golang.conradwood.net/apis/gitserver v1.1.1588
 	golang.conradwood.net/apis/goeasyops v1.1.1588
-	golang.conradwood.net/apis/registry v1.1.1588
-	golang.conradwood.net/apis/rpcinterceptor v1.1.1588
+	golang.conradwood.net/apis/registry v1.1.1654
+	golang.conradwood.net/apis/rpcinterceptor v1.1.1654
 	golang.conradwood.net/go-easyops v1.0.0
-	google.golang.org/grpc v1.44.0
+	google.golang.org/grpc v1.45.0
 )
 
 require (
@@ -27,14 +27,14 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.1588 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.1588 // indirect
-	golang.conradwood.net/apis/errorlogger v1.1.1588 // indirect
-	golang.conradwood.net/apis/framework v1.1.1588 // indirect
-	golang.conradwood.net/apis/objectstore v1.1.1588 // indirect
-	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.1654 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.1654 // indirect
+	golang.conradwood.net/apis/errorlogger v1.1.1654 // indirect
+	golang.conradwood.net/apis/framework v1.1.1654 // indirect
+	golang.conradwood.net/apis/objectstore v1.1.1654 // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
+	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20220208230804-65c12eb4c068 // indirect
+	google.golang.org/genproto v0.0.0-20220314164441-57ef72a4c106 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
