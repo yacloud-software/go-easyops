@@ -189,6 +189,10 @@ func (d *DB) reconnect_if_required() {
 		// recently reconnected, ignore..
 		return
 	}
+	if *sqldebug {
+		sa := d.GetFailureCounter()
+		fmt.Printf("[go-easyops] sql counters: 0=%d, 1=%d\n", sa.GetCounter(0), sa.GetCounter(1))
+	}
 	fmt.Printf("[go-easyops] sql reconnect required.\n")
 	d.reconnectLock.Lock()
 	defer d.reconnectLock.Unlock()
