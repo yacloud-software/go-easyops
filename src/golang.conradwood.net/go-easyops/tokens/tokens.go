@@ -124,12 +124,12 @@ func GetUserTokenParameter() string {
 	if *disusertoken {
 		return ""
 	}
-	if cmdline.OptEnvString(*token, "GE_TOKEN") != "" {
-		return ""
-	}
-	ut := cmdline.OptEnvString(*token, "GE_USERTOKEN")
+	ut := cmdline.OptEnvString("", "GE_USERTOKEN")
 	if ut != "" {
 		return ut
+	}
+	if cmdline.OptEnvString(*token, "GE_TOKEN") != "" {
+		return ""
 	}
 	if tokenwasread {
 		return usertoken
