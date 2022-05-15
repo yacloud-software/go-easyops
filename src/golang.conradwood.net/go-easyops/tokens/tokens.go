@@ -127,6 +127,10 @@ func GetUserTokenParameter() string {
 	if cmdline.OptEnvString(*token, "GE_TOKEN") != "" {
 		return ""
 	}
+	ut := cmdline.OptEnvString(*token, "GE_USERTOKEN")
+	if ut != "" {
+		return ut
+	}
 	if tokenwasread {
 		return usertoken
 	}

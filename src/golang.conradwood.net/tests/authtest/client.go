@@ -28,7 +28,7 @@ func initClient() {
 	conn, err := grpc.Dial(
 		"go-easyops://"+serviceName+"/"+serviceName,
 		grpc.WithBlock(),
-		//		grpc.WithBalancerName("fancybalancer"),
+		grpc.WithBalancerName("fancybalancer"),
 		grpc.WithTransportCredentials(client.GetClientCreds()),
 	)
 	utils.Bail("Failed to dial", err)
