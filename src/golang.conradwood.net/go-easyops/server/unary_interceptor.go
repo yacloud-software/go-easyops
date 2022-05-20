@@ -78,7 +78,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if *debug_rpc_serve {
 		user := auth.GetUser(cs.Context)
 		svc := auth.GetService(cs.Context)
-		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.Description(user), auth.Description(svc))
+		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s\" from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.Description(user), auth.Description(svc))
 	}
 
 	/*************** now call the rpc implementation *****************/
