@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/appinfo"
-	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"strings"
 	"sync"
@@ -136,7 +135,7 @@ func GetInstanceID() string {
 		if *instance_id != "" {
 			return *instance_id
 		}
-		s = "L-" + utils.RandomString(32)
+		s = "L-" + RandomString(32)
 		*instance_id = s
 	}
 	return s

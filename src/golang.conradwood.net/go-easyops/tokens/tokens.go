@@ -119,7 +119,17 @@ func readToken(token string) string {
 	return tok
 }
 
-// get the user token as was passed in through the commandline
+/*
+get a usertoken parameter from:
+
+1. GE_USERTOKEN
+
+2. ~/.go-easyops/user_token
+
+if ge_disable_user_token is true, return "" (empty string)
+
+if GE_TOKEN is set, does not read file (but honour GE_USERTOKEN)
+*/
 func GetUserTokenParameter() string {
 	if *disusertoken {
 		return ""

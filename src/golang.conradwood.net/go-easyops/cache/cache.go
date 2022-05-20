@@ -9,12 +9,13 @@ package cache
 import (
 	"fmt"
 	"golang.conradwood.net/go-easyops/prometheus"
-	"golang.conradwood.net/go-easyops/utils"
+	"math/rand"
 	"sync"
 	"time"
 )
 
 var (
+	randsrc     = rand.New(rand.NewSource(time.Now().UnixNano()))
 	cacheLock   sync.Mutex
 	performance = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
@@ -200,7 +201,8 @@ func (c *Cache) setCacheGaugeLoop() {
 		}
 		c.mlock.Unlock()
 		c.setCacheGauge(i)
-		utils.RandomStall(1)
+		t := randsrc.Int63n(int64(1 * 60))
+		time.Sleep(time.Duration(t) * time.Second)
 	}
 }
 func (c *Cache) setCacheGauge(used int) {
