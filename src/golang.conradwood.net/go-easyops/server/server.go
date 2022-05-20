@@ -429,9 +429,6 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 			}
 			otherHandler.ServeHTTP(w, r)
 		} else {
-			if *debug_rpc_serve {
-				fancyPrintf("Debug-rpc Request: \"%s\" invoked\n", strings.TrimPrefix(path, "/"))
-			}
 			grpcServer.ServeHTTP(w, r)
 		}
 	})
