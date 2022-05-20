@@ -63,6 +63,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if !def.NoAuth {
 		err := Authenticate(cs)
 		if err != nil {
+			fancyPrintf("Debug-rpc Request: \"%s/%s\" rejected: %s\n", err)
 			return nil, err
 		}
 		if cs.RPCIResponse.Reject {
