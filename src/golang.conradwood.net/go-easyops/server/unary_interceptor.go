@@ -1,14 +1,14 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	fw "golang.conradwood.net/apis/framework"
+	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/rpc"
-	//	"golang.org/x/net/context"
-	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	//	"google.golang.org/grpc/metadata"
@@ -75,6 +75,11 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 
 	cs.UpdateContextFromResponse()
 	cs.DebugPrintContext()
+	if *debug_rpc_serve {
+		user := auth.GetUser(cs.Context)
+		svc := auth.GetService(cs.Context)
+		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.Description(user), auth.Description(svc))
+	}
 
 	/*************** now call the rpc implementation *****************/
 	i, err := handler(cs.Context, req)
