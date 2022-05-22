@@ -40,16 +40,19 @@ func Context() context.Context {
 
 /*
 create a new context with routing tags (routing criteria to route to specific instances of a service)
+if fallback is true, fallback to any service without tags if none is found (default was false)
 */
-func NewContextWithRouting(kv map[string]string) context.Context {
-	return DerivedContextWithRouting(Context(), kv)
+func NewContextWithRouting(kv map[string]string, fallback bool) context.Context {
+	return DerivedContextWithRouting(Context(), kv, fallback)
 }
 
 /*
 derive  a context with routing tags (routing criteria to route to specific instances of a service)
+if fallback is true, fallback to any service without tags if none is found (default was false)
 */
-func DerivedContextWithRouting(cv context.Context, kv map[string]string) context.Context {
-	cv = context.WithValue(cv, "routingtags", kv)
+func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallback bool) context.Context {
+	cri := &common.CTXRoutingInfo{Tags: kv, FallbackToPlain: fallback}
+	cv = context.WithValue(cv, "routingtags", cri)
 	return cv
 }
 

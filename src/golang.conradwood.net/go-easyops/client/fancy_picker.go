@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
@@ -62,16 +63,19 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 	value := info.Ctx.Value("routingtags")
 	if value != nil {
 		// convert tags to map[string]string, returning empty if invalid type assertion
-		tags, ok := value.(map[string]string)
+		cri, ok := value.(*common.CTXRoutingInfo)
 		if !ok {
 			return balancer.PickResult{}, fmt.Errorf("Invalid tags object supplied (%v)", value)
 		}
-		adrs := lf.ByMatchingTags(tags)
+		adrs := lf.ByMatchingTags(cri.Tags)
 		if len(adrs) == 0 {
-			fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", tags)
-			return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", tags)
+			fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", cri.Tags)
+			if !cri.FallbackToPlain {
+				return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", cri.Tags)
+			}
+		} else {
+			lf = &FancyAddressList{Name: lf.Name, addresses: adrs}
 		}
-		lf = &FancyAddressList{Name: lf.Name, addresses: adrs}
 	}
 
 	// build up a list of valid (e.g. state Ready, match user/context/routing) connections
