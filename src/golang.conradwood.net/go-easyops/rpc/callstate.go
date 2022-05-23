@@ -212,7 +212,7 @@ func metaToString(md metadata.MD) string {
 		return fmt.Sprintf("META: error %s\n", err)
 	}
 	sn := "UserID=" + res.UserID + ", Service=" + desc(res.Service) + ", User=" + desc(res.User)
-	sn = sn + fmt.Sprintf("Trace=%v, Debug=%v, RoutingTags=%#v", res.Trace, res.Debug, res.RoutingTags)
+	sn = sn + ", " + fmt.Sprintf("Trace=%v, Debug=%v, RoutingTags=%#v", res.Trace, res.Debug, res.RoutingTags)
 	return sn
 }
 func desc(u *auth.User) string {
