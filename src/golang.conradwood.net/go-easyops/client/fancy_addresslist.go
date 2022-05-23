@@ -104,6 +104,18 @@ func (fal *FancyAddressList) BySubCon(sc balancer.SubConn) *fancy_adr {
 	return fa
 }
 
+// return addresses with 0 tags
+func (fal *FancyAddressList) ByWithoutTags() []*fancy_adr {
+	var valids []*fancy_adr
+	// filter addresses to include only those which contain required all tags
+	for _, a := range fal.addresses {
+		if a.Target == nil || a.Target.RoutingInfo == nil || a.Target.RoutingInfo.Tags == nil || len(a.Target.RoutingInfo.Tags) == 0 {
+			valids = append(valids, a)
+		}
+	}
+	return valids
+}
+
 /*
 called for _every_ rpc call when ge_honour_tags flag is true, adjusts the
 list of matches by checking whether the addresses matches all the routing tags

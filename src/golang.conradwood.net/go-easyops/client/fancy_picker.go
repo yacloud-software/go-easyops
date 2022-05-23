@@ -72,6 +72,8 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 			fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", cri.Tags)
 			if !cri.FallbackToPlain {
 				return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", cri.Tags)
+			} else {
+				lf = &FancyAddressList{Name: lf.Name, addresses: lf.ByWithoutTags()}
 			}
 		} else {
 			lf = &FancyAddressList{Name: lf.Name, addresses: adrs}
