@@ -14,11 +14,8 @@ import (
 type FancyPicker struct {
 	addresslist *FancyAddressList
 	failAll     bool // if true all RPCs will fail
+	ctr         uint32
 }
-
-var (
-	ctr uint32
-)
 
 // Pick returns the connection to use for this RPC and related information.
 //
@@ -63,12 +60,13 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 
 	cri := cs.RoutingTags()
 	if cri != nil {
+		fancyPrintf(f, "Picking by tags (%v)\n", cri.Tags)
 		// convert tags to map[string]string, returning empty if invalid type assertion
 		adrs := lf.ByMatchingTags(cri.Tags)
 		if len(adrs) == 0 {
 			fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", cri.Tags)
 			if !cri.FallbackToPlain {
-				return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", cri.Tags)
+				return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v) for %s", cri.Tags, info.FullMethodName)
 			} else {
 				lf = f.addresslist
 				lf = &FancyAddressList{Name: lf.Name, addresses: lf.ByWithoutTags()}
@@ -97,17 +95,17 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 		return balancer.PickResult{}, balancer.ErrNoSubConnAvailable
 	}
 
-	ctr++ // overflows at 0xFFFFFFFF, that's ok
+	f.ctr++ // overflows at 0xFFFFFFFF, that's ok
 
-	indx := ctr % uint32(len(matching))
+	indx := f.ctr % uint32(len(matching))
 	fa := matching[indx]
 	if *debug_fancy {
 		u := auth.GetUser(info.Ctx)
-		fancyPrintf(f, "Picking: %s [%s] for user %s to serve %s from %d connections (%d matching))\n",
+		fancyPrintf(f, "Picking: %s [%s] for user %s to serve %s from %d connections (%d matching) (ctr=%d))\n",
 			fa.addr, fa.state.String(),
 			auth.Description(u),
 			info.FullMethodName,
-			lf.Count(), len(matching))
+			lf.Count(), len(matching), f.ctr)
 		fancyPrintf(f, "         RoutingInfo: %#v\n", fa.Target.RoutingInfo)
 	}
 

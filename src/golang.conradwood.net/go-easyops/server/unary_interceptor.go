@@ -63,7 +63,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if !def.NoAuth {
 		err := Authenticate(cs)
 		if err != nil {
-			fancyPrintf("Debug-rpc Request: \"%s/%s\" rejected: %s\n", err)
+			fancyPrintf("Debug-rpc Request: Authenticate() failed for \"%s/%s\" => rejected: %s\n", cs.MethodName, cs.ServiceName, err)
 			return nil, err
 		}
 		if cs.RPCIResponse.Reject {
@@ -72,8 +72,12 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	}
 	if cs.Metadata != nil {
 		cs.Metadata.FooBar = "go-easyops"
+		if cs.Metadata.RoutingTags != nil && cs.Metadata.RoutingTags.Propagate == false {
+			cs.Metadata.RoutingTags = nil
+		}
 	}
 
+	// this rebuilds the metadata string from cs.Metadata
 	cs.UpdateContextFromResponse()
 	cs.DebugPrintContext()
 	if *debug_rpc_serve {
