@@ -73,6 +73,7 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 			if !cri.FallbackToPlain {
 				return balancer.PickResult{}, fmt.Errorf("No addresses matched all supplied tags (%v)", cri.Tags)
 			} else {
+				lf = f.addresslist
 				lf = &FancyAddressList{Name: lf.Name, addresses: lf.ByWithoutTags()}
 			}
 		} else {
