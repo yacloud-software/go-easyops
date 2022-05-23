@@ -51,9 +51,17 @@ derive  a context with routing tags (routing criteria to route to specific insta
 if fallback is true, fallback to any service without tags if none is found (default was false)
 */
 func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallback bool) context.Context {
-	cri := &common.CTXRoutingInfo{Tags: kv, FallbackToPlain: fallback}
-	cv = context.WithValue(cv, "routingtags", cri)
+	panic("unsupported in this version")
+	cri := &rc.CTXRoutingTags{Tags: kv, FallbackToPlain: fallback}
+	cv = context.WithValue(cv, "routingtags", cri) // not supported any more
 	return cv
+}
+
+/*
+get a context with routing tags, specified by proto
+*/
+func NewContextWithRoutingTags(rt *rc.CTXRoutingTags) context.Context {
+	return ContextWithTimeoutAndTags(time.Duration(10)*time.Second, rt)
 }
 
 /* this context gives a context with a full userobject
@@ -63,6 +71,9 @@ else if environment variable with context, will use auth.Context() (with variabl
 else create context by asking auth service for a signed user object
 */
 func ContextWithTimeout(t time.Duration) context.Context {
+	return ContextWithTimeoutAndTags(t, nil)
+}
+func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.Context {
 	if cmdline.Datacenter() {
 		return tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
 	}
@@ -87,6 +98,7 @@ func ContextWithTimeout(t time.Duration) context.Context {
 			User:          common.VerifySignedUser(lastUser),
 			SignedService: lastService,
 			SignedUser:    lastUser,
+			RoutingTags:   rt,
 		},
 		RPCIResponse: &rc.InterceptRPCResponse{
 			CallerUser:          common.VerifySignedUser(lastUser),

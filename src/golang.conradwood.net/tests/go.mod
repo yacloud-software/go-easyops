@@ -5,13 +5,13 @@ go 1.17
 replace golang.conradwood.net/go-easyops => ../go-easyops
 
 require (
-	golang.conradwood.net/apis/auth v1.1.1724
-	golang.conradwood.net/apis/common v1.1.1724
-	golang.conradwood.net/apis/echoservice v1.1.1724
-	golang.conradwood.net/apis/gitserver v1.1.1724
-	golang.conradwood.net/apis/goeasyops v1.1.1724
-	golang.conradwood.net/apis/registry v1.1.1724
-	golang.conradwood.net/apis/rpcinterceptor v1.1.1724
+	golang.conradwood.net/apis/auth v1.1.1726
+	golang.conradwood.net/apis/common v1.1.1726
+	golang.conradwood.net/apis/echoservice v1.1.1726
+	golang.conradwood.net/apis/gitserver v1.1.1726
+	golang.conradwood.net/apis/goeasyops v1.1.1726
+	golang.conradwood.net/apis/registry v1.1.1726
+	golang.conradwood.net/apis/rpcinterceptor v1.1.1726
 	golang.conradwood.net/go-easyops v1.0.0
 	google.golang.org/grpc v1.46.2
 )
@@ -27,11 +27,11 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.1724 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.1724 // indirect
-	golang.conradwood.net/apis/errorlogger v1.1.1724 // indirect
-	golang.conradwood.net/apis/framework v1.1.1724 // indirect
-	golang.conradwood.net/apis/objectstore v1.1.1724 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.1726 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.1726 // indirect
+	golang.conradwood.net/apis/errorlogger v1.1.1726 // indirect
+	golang.conradwood.net/apis/framework v1.1.1726 // indirect
+	golang.conradwood.net/apis/objectstore v1.1.1726 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect

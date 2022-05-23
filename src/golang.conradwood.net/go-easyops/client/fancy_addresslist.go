@@ -122,9 +122,10 @@ func (fal *FancyAddressList) ByWithoutTags() []*fancy_adr {
 /*
 called for _every_ rpc call when ge_honour_tags flag is true, adjusts the
 list of matches by checking whether the addresses matches all the routing tags
-supplied
+supplied.
+if no tags are supplied, return _ALL_ targets (including those with tags)
 */
-//func filterByTags(sn serviceNamer, in []*fancy_adr, tags map[string]string) []*fancy_adr {
+
 func (fal *FancyAddressList) ByMatchingTags(tags map[string]string) []*fancy_adr {
 	fancyPrintf(fal, "Filtering (%d) addresses by tags\n", len(fal.addresses))
 	if len(tags) == 0 {

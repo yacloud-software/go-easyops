@@ -2,8 +2,9 @@ package client
 
 import (
 	"fmt"
+	//	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
-	"golang.conradwood.net/go-easyops/common"
+	//	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
@@ -40,12 +41,12 @@ var (
 //   provided.  If the error is not a status error, it will be converted by
 //   gRPC to a status error with code Unknown.
 func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
+	cs := rpc.CallStateFromContext(info.Ctx)
 	if f.failAll {
 		// the balancer created a special "failing" picker because it did not have any
 		// instances for this service for a long time (so it is not transient anymore, is it?)
 		// in this case we don't want to build up a queue of RPCs, we just want to fail-fast them
 		fancyPrintf(f, "Picker - failing connections for \"%s\" w/o instance\n", info.FullMethodName)
-		cs := rpc.CallStateFromContext(info.Ctx)
 		sn := "[unknown rpc]"
 		if cs != nil {
 			sn = fmt.Sprintf("%s.%s()", cs.ServiceName, cs.MethodName)
@@ -60,13 +61,9 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 
 	lf := f.addresslist
 
-	value := info.Ctx.Value("routingtags")
-	if value != nil {
+	cri := cs.RoutingTags()
+	if cri != nil {
 		// convert tags to map[string]string, returning empty if invalid type assertion
-		cri, ok := value.(*common.CTXRoutingInfo)
-		if !ok {
-			return balancer.PickResult{}, fmt.Errorf("Invalid tags object supplied (%v)", value)
-		}
 		adrs := lf.ByMatchingTags(cri.Tags)
 		if len(adrs) == 0 {
 			fancyPrintf(f, "Picker - No connection matched all required tags (%v)\n", cri.Tags)

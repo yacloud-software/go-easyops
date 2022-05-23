@@ -152,6 +152,16 @@ func (cs *CallState) DebugPrintContext() {
 	}
 	cs.PrintContext()
 }
+func (cs *CallState) RoutingTags() *rc.CTXRoutingTags {
+	if cs.Metadata == nil {
+		return nil
+	}
+	if cs.Metadata.RoutingTags == nil {
+		return nil
+	}
+
+	return cs.Metadata.RoutingTags
+}
 func (cs *CallState) PrintContext() {
 	if cs == nil {
 		fmt.Printf("[go-easyops] Context has no Callstate\n")
