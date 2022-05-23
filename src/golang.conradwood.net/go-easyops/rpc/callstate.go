@@ -211,7 +211,15 @@ func metaToString(md metadata.MD) string {
 	if err != nil {
 		return fmt.Sprintf("META: error %s\n", err)
 	}
-	return fmt.Sprintf("%#v", res)
+	sn := "UserID=" + res.UserID + ", Service=" + desc(res.Service) + ", User=" + desc(res.User)
+	sn = sn + fmt.Sprintf("Trace=%v, Debug=%v, RoutingTags=%#v", res.Trace, res.Debug, res.RoutingTags)
+	return sn
+}
+func desc(u *auth.User) string {
+	if u == nil {
+		return "NONE"
+	}
+	return fmt.Sprintf("%s[%s]", u.ID, u.Email)
 }
 func (cs *CallState) MetadataValue() string {
 	if cs.Metadata == nil {
