@@ -153,6 +153,9 @@ func (cs *CallState) DebugPrintContext() {
 	cs.PrintContext()
 }
 func (cs *CallState) RoutingTags() *rc.CTXRoutingTags {
+	if cs == nil {
+		return nil
+	}
 	if cs.Metadata == nil {
 		return nil
 	}

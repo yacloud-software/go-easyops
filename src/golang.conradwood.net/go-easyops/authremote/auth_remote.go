@@ -73,6 +73,10 @@ else create context by asking auth service for a signed user object
 func ContextWithTimeout(t time.Duration) context.Context {
 	return ContextWithTimeoutAndTags(t, nil)
 }
+
+/*
+create a new context with routing tags. This is an EXPERIMENTAL API and very likely to change in future
+*/
 func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.Context {
 	if cmdline.Datacenter() {
 		return tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
