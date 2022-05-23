@@ -109,7 +109,10 @@ func (fal *FancyAddressList) ByWithoutTags() []*fancy_adr {
 	var valids []*fancy_adr
 	// filter addresses to include only those which contain required all tags
 	for _, a := range fal.addresses {
-		if a.Target == nil || a.Target.RoutingInfo == nil || a.Target.RoutingInfo.Tags == nil || len(a.Target.RoutingInfo.Tags) == 0 {
+		if a.Target == nil {
+			continue
+		}
+		if a.Target.RoutingInfo == nil || a.Target.RoutingInfo.Tags == nil || len(a.Target.RoutingInfo.Tags) == 0 {
 			valids = append(valids, a)
 		}
 	}
