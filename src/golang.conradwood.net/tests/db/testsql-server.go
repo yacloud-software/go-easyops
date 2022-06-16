@@ -17,6 +17,17 @@ import (
 	"time"
 )
 
+/*
+tests:
+1) restart postgresql - should reconnect
+2) stop postgresql for >5 minutes - should reconnect
+3) "blackhole" traffic"
+ip addr add 172.29.1.235/24 dev br0
+ip addr del 172.29.1.235/24 dev br0
+
+
+*/
+
 const (
 	INTERVAL = time.Duration(300) * time.Millisecond
 )
