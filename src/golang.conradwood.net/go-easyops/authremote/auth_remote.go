@@ -51,10 +51,17 @@ derive  a context with routing tags (routing criteria to route to specific insta
 if fallback is true, fallback to any service without tags if none is found (default was false)
 */
 func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallback bool) context.Context {
-	panic("unsupported in this version")
 	cri := &rc.CTXRoutingTags{Tags: kv, FallbackToPlain: fallback}
-	cv = context.WithValue(cv, "routingtags", cri) // not supported any more
-	return cv
+	cs := rpc.CallStateFromContext(cv)
+	if cs == nil || cs.Metadata == nil {
+		return NewContextWithRoutingTags(cri)
+	}
+	cs.Metadata.RoutingTags = cri
+	err := cs.UpdateContextFromResponseWithTimeout(time.Duration(10) * time.Second)
+	if err != nil {
+		panic(fmt.Sprintf("bad context: %s", err))
+	}
+	return cs.Context
 }
 
 /*
