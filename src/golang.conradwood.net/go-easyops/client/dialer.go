@@ -53,6 +53,8 @@ func init() {
 func ConnectWithIPNoBlock(ip string) (*grpc.ClientConn, error) {
 	return connectWithIPOptions(ip, false)
 }
+
+// opens a tcp connection to an ip:port (ip syntax matches argument to net.Dial())
 func ConnectWithIP(ip string) (*grpc.ClientConn, error) {
 	return connectWithIPOptions(ip, true)
 }
