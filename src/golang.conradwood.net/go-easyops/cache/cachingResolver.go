@@ -26,6 +26,7 @@ type CachingResolver interface {
 	RetrieveContext(ctx context.Context, key string, fr func(context.Context, string) (interface{}, error)) (interface{}, error)
 	SetRefreshAfter(time.Duration)
 	SetAsyncRetriever(fr func(string) (interface{}, error))
+	Evict(key string)
 }
 
 type cachingResolver struct {
@@ -170,4 +171,8 @@ func (cr *cachingResolver) SetRefreshAfter(d time.Duration) {
 }
 func (cr *cachingResolver) SetAsyncRetriever(fr func(string) (interface{}, error)) {
 	cr.asyncRetriever = fr
+}
+
+func (cr *cachingResolver) Evict(key string) {
+	cr.gccache.Evict(key)
 }

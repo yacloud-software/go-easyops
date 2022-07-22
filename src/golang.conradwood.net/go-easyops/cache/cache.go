@@ -99,6 +99,15 @@ func New(name string, lifetime time.Duration, maxSizeInMB int) *Cache {
 	cacheLock.Unlock()
 	return res
 }
+func (c *Cache) Evict(key string) {
+	c.mlock.Lock()
+	for _, x := range c.mcache {
+		if x.key == key {
+			x.free = true
+		}
+	}
+	c.mlock.Unlock()
+}
 func (c *Cache) Clear() {
 	c.mlock.Lock()
 	c.mcache = make([]*cacheEntry, 0)
