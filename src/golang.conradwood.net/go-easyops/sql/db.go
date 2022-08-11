@@ -37,6 +37,7 @@ var (
 	f_dbuser     = flag.String("dbuser", "root", "username for the database to use")
 	f_dbpw       = flag.String("dbpw", "pw", "password for the database to use")
 	sqldebug     = flag.Bool("ge_debug_sql", false, "debug sql stuff")
+	print_errors = flag.Bool("ge_print_sql_errors", true, "print all sql errors (all failed queries)")
 	sqlTotalTime = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "sql_total_time",
@@ -250,7 +251,7 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 	}
 	if err != nil {
 		d.failurectr.Add(1, 1)
-		if *sqldebug {
+		if *sqldebug || *print_errors {
 			fmt.Printf("[sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
@@ -284,7 +285,7 @@ func (d *DB) ExecContext(ctx context.Context, name string, query string, args ..
 	}
 	if err != nil {
 		d.failurectr.Add(1, 1)
-		if *sqldebug {
+		if *sqldebug || *print_errors {
 			fmt.Printf("[sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
