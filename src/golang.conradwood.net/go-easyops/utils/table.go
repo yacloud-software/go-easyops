@@ -4,6 +4,7 @@ package utils
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Table struct {
@@ -119,4 +120,29 @@ func (r *Row) GetCell(idx int) *Cell {
 		return nil
 	}
 	return r.cells[idx]
+}
+
+func (t *Table) ToCSV() string {
+	rows := len(t.rows)
+	sb := strings.Builder{}
+	for i := 0; i < rows; i++ {
+		row := t.GetRowOrCreate(i)
+		if row.Cols() == 0 {
+			continue
+		}
+		line := ""
+		deli := ""
+		for cn := 0; cn < row.Cols(); cn++ {
+			cel := row.GetCell(cn)
+			s := escapeCell(cel.String())
+			line = line + deli + s
+			deli = ","
+		}
+		sb.WriteString(line + "\n")
+	}
+	return sb.String()
+}
+func escapeCell(s string) string {
+	s = strings.ReplaceAll(s, ",", "\\,")
+	return s
 }
