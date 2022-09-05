@@ -94,6 +94,9 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	}
 	if err == nil {
 		grpc_server_req_durations.WithLabelValues(cs.ServiceName, cs.MethodName).Observe(time.Since(cs.Started).Seconds())
+		if i == nil {
+			fmt.Printf("[go-easyops] BUG: \"%s.%s\" returned no proto and no error\n", cs.ServiceName, cs.MethodName)
+		}
 		return i, nil
 	}
 	// it failed!
