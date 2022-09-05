@@ -88,8 +88,8 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 
 	/*************** now call the rpc implementation *****************/
 	i, err := handler(cs.Context, req)
-
 	if *debug_rpc_serve {
+		fmt.Printf("[go-easyops: result: %v %v\n", i, err)
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" timing: %v\n", cs.ServiceName, cs.MethodName, time.Since(started))
 	}
 	if err == nil {
