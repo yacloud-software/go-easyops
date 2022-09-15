@@ -12,5 +12,6 @@ func main() {
 	t.NewRow()
 	t.AddStrings("foo", "bar", "foobar")
 	fmt.Printf(t.ToPrettyString())
+	fmt.Printf(t.ToCSV())
 
 }

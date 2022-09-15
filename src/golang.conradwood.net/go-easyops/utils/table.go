@@ -18,12 +18,13 @@ type Row struct {
 }
 
 type Cell struct {
-	typ int // 0=empty,1=string,2=uint64,3=timestamp,4=float64,5=bool
-	txt string
-	num uint64
-	ts  uint32
-	f   float64
-	b   bool
+	typ  int // 0=empty,1=string,2=uint64,3=timestamp,4=float64,5=bool,6=int64
+	txt  string
+	num  uint64
+	ts   uint32
+	f    float64
+	b    bool
+	snum int64
 }
 
 func (c *Cell) String() string {
@@ -39,6 +40,8 @@ func (c *Cell) String() string {
 		return fmt.Sprintf("%0.2f", c.f)
 	} else if c.typ == 5 {
 		return fmt.Sprintf("%v", c.b)
+	} else if c.typ == 6 {
+		return fmt.Sprintf("%d", c.snum)
 	}
 	return fmt.Sprintf("type %d", c.typ)
 }
@@ -101,6 +104,11 @@ func (t *Table) AddUint32(i uint32) *Table {
 }
 func (t *Table) AddInt(i int) *Table {
 	t.AddUint64(uint64(i))
+	return t
+}
+func (t *Table) AddInt64(i int64) *Table {
+	r := t.GetRowOrCreate(t.addingRow)
+	r.AddCell(&Cell{typ: 6, snum: i})
 	return t
 }
 func (t *Table) AddUint64(i uint64) *Table {
