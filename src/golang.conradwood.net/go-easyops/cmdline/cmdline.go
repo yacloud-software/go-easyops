@@ -21,6 +21,7 @@ var (
 	registry_resolver = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
 	instance_id       = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
 	ext_help          = flag.Bool("X", false, "extended help")
+	XXdoappinfo       = ImmediatePara("ge_info", "print application build number", doappinfo)
 	print_easyops     = false
 	manreg            = ""
 )
@@ -187,4 +188,8 @@ func OptEnvString(para, envname string) string {
 		return para
 	}
 	return os.Getenv(envname)
+}
+func doappinfo() {
+	fmt.Printf("%d\n", APP_BUILD_NUMBER)
+	os.Exit(0)
 }
