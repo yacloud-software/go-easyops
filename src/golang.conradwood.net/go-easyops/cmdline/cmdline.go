@@ -37,14 +37,6 @@ func init() {
 			go print_late_usage()
 		}
 	}
-	appinfo.OldAppInfo = &appinfo.AppVersionInfo{
-		Number:         APP_BUILD_NUMBER,
-		Description:    APP_BUILD_DESCRIPTION,
-		Timestamp:      APP_BUILD_TIMESTAMP,
-		RepositoryID:   APP_BUILD_REPOSITORY_ID,
-		RepositoryName: APP_BUILD_REPOSITORY,
-		CommitID:       APP_BUILD_COMMIT,
-	}
 }
 
 // if we have a -X argument we will print extended usage AFTER flags are parsed.
@@ -71,11 +63,11 @@ func PrintUsage() {
 
 	if appinfo.AppInfo == nil {
 		fmt.Fprintf(os.Stdout, "  [old style vendor repository] \n")
-		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", APP_BUILD_NUMBER)
-		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", APP_BUILD_TIMESTAMP)
-		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(APP_BUILD_TIMESTAMP, 0))
-		fmt.Fprintf(os.Stdout, "  App description             : %s\n", APP_BUILD_DESCRIPTION)
-		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", APP_BUILD_REPOSITORY)
+		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", 0)
+		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", 0)
+		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", "n/a")
+		fmt.Fprintf(os.Stdout, "  App description             : %s\n", "local")
+		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", "some")
 
 	} else {
 		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", appinfo.AppInfo().Number)
@@ -190,6 +182,6 @@ func OptEnvString(para, envname string) string {
 	return os.Getenv(envname)
 }
 func doappinfo() {
-	fmt.Printf("%d\n", APP_BUILD_NUMBER)
+	fmt.Printf("%d\n", appinfo.AppInfo().Number)
 	os.Exit(0)
 }
