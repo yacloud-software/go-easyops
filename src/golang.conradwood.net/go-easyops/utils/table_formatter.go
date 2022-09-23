@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"strings"
+)
+
 type TextFormatter struct {
 	table    *Table
 	colSizes []int
@@ -16,16 +20,16 @@ func (tf *TextFormatter) ToPrettyString() string {
 	}
 	tf.colSizes = getCharWidth(r)
 
-	s := ""
+	var sb strings.Builder
 	if tf.table.headerRow != nil {
-		s = s + tf.renderRow(tf.table.headerRow, true)
-		s = s + tf.seperatorRow()
+		sb.WriteString(tf.renderRow(tf.table.headerRow, true))
+		sb.WriteString(tf.seperatorRow())
 	}
 	for _, row := range tf.table.rows {
-		s = s + tf.renderRow(row, false)
+		sb.WriteString(tf.renderRow(row, false))
 	}
-	s = s + tf.seperatorRow()
-	return s
+	sb.WriteString(tf.seperatorRow())
+	return sb.String()
 }
 func (tf *TextFormatter) seperatorRow() string {
 	s := ""
