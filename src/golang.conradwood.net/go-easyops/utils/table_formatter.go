@@ -42,7 +42,7 @@ func (tf *TextFormatter) seperatorRow() string {
 func (tf *TextFormatter) renderRow(row *Row, center bool) string {
 	res := "| "
 	l := false
-	for i, c := range row.cells {
+	for i, c := range row.Cells() {
 		s := c.String()
 		for len(s) < tf.colSizes[i] {
 			if center {

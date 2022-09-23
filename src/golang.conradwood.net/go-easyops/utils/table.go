@@ -11,9 +11,11 @@ type Table struct {
 	addingRow int // row we're currently "writing" to (0...n)
 	rows      []*Row
 	headerRow *Row
+	hidden    map[int]bool
 }
 
 type Row struct {
+	t     *Table
 	cells []*Cell
 }
 
@@ -52,7 +54,7 @@ func (t *Table) NewRow() {
 }
 func (t *Table) getHeaderRow() *Row {
 	if t.headerRow == nil {
-		t.headerRow = &Row{}
+		t.headerRow = &Row{t: t}
 	}
 	return t.headerRow
 }
@@ -67,7 +69,7 @@ func (t *Table) AddHeaders(s ...string) {
 
 func (t *Table) GetRowOrCreate(num int) *Row {
 	for len(t.rows) <= num {
-		t.rows = append(t.rows, &Row{})
+		t.rows = append(t.rows, &Row{t: t})
 	}
 	return t.rows[num]
 }
@@ -120,14 +122,35 @@ func (t *Table) AddUint64(i uint64) *Table {
 func (r *Row) AddCell(cell *Cell) {
 	r.cells = append(r.cells, cell)
 }
+
+// return # of cells (considering the col<->idx mapping)
 func (r *Row) Cols() int {
-	return len(r.cells)
+	return len(r.Cells())
 }
+
+// return all cells (considering the col<->idx mapping)
+func (r *Row) Cells() []*Cell {
+	if r.t.hidden == nil {
+		r.t.hidden = make(map[int]bool)
+	}
+	var res []*Cell
+	for i := 0; i < len(r.cells); i++ {
+		if r.t.hidden[i] {
+			continue
+		}
+		res = append(res, r.cells[i])
+	}
+	return res
+}
+
+// return a cell (considering the col<->idx mapping)
 func (r *Row) GetCell(idx int) *Cell {
-	if len(r.cells) <= idx {
+	col := r.t.idx2col(idx)
+	//	fmt.Printf("Want cell %d, using %d\n", idx, col)
+	if len(r.cells) <= col {
 		return nil
 	}
-	return r.cells[idx]
+	return r.cells[col]
 }
 
 func (t *Table) ToCSV() string {
@@ -153,4 +176,39 @@ func (t *Table) ToCSV() string {
 func escapeCell(s string) string {
 	s = strings.ReplaceAll(s, ",", "\\,")
 	return s
+}
+
+// column 0..n
+func (t *Table) DisableColumn(col int) {
+	if t.hidden == nil {
+		t.hidden = make(map[int]bool)
+	}
+	t.hidden[col] = true
+}
+
+// column 0..n
+func (t *Table) EnableColumn(col int) {
+	if t.hidden == nil {
+		return
+	}
+	t.hidden[col] = false
+}
+
+// column 0..n
+func (t *Table) EnableAllColumns() {
+	t.hidden = nil
+}
+
+// calculates the column offset (considering hidden columns)
+func (t *Table) idx2col(idx int) int {
+	if t.hidden == nil {
+		return idx
+	}
+	off := 0
+	for i := 0; i < idx; i++ {
+		if t.hidden[idx] {
+			off++
+		}
+	}
+	return idx + off
 }
