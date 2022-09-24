@@ -12,10 +12,22 @@ import (
 )
 
 func main() {
+	dir := "/lib"
+	fmt.Printf("md5sum across %s, twice...\n", dir)
+	hash1, err := utils.DirHash(dir)
+	utils.Bail("failed to create dirhash #1", err)
+	fmt.Printf("Hash #1: %s\n", hash1)
+	hash2, err := utils.DirHash(dir)
+	utils.Bail("failed to create dirhash #2", err)
+	fmt.Printf("Hash #2: %s\n", hash2)
+	if hash1 != hash2 {
+		fmt.Printf("Hashes inconsistent\n")
+		os.Exit(10)
+	}
 	check_store()
 	t := time.Now()
 	fmt.Printf("Time now: %s\n", utils.TimeString(t))
-	t, err := utils.LocalTime(context.Background())
+	t, err = utils.LocalTime(context.Background())
 	utils.Bail("failed to get timezone", err)
 	fmt.Printf("Time local: %s\n", utils.TimeString(t))
 	print(14)
