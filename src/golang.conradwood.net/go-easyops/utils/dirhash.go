@@ -47,7 +47,7 @@ func (dh *DirHasher) WalkDir(path string) error {
 	// hash all filenames
 	for _, e := range entries {
 		relname := path + "/" + e.Name()
-		fmt.Printf("file: \"%s\"\n", relname)
+		//		fmt.Printf("file: \"%s\"\n", relname)
 		_, err = dh.hasher.Write([]byte(relname))
 		if err != nil {
 			return err
