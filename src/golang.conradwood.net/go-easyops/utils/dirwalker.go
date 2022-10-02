@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -30,7 +31,8 @@ func (dw *dirwalker) Walk(relative_path string) error {
 
 	// do files first
 	for _, e := range entries {
-		if !e.Mode().IsRegular() {
+		m := e.Mode()
+		if !m.IsRegular() && m.Type() != fs.ModeSymlink {
 			continue
 		}
 		err := dw.fn(dw.root, path+"/"+e.Name())
@@ -41,6 +43,7 @@ func (dw *dirwalker) Walk(relative_path string) error {
 	// do dirs now
 	for _, e := range entries {
 		if !e.IsDir() {
+			//			fmt.Printf("not a dir: %s\n", e.Name())
 			continue
 		}
 		fname := e.Name()

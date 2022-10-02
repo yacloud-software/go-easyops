@@ -12,6 +12,12 @@ import (
 )
 
 func main() {
+	err := utils.DirWalk("/etc/systemd", func(root, rel string) error {
+		fmt.Printf("rel: %s\n", rel)
+		return nil
+	})
+	utils.Bail("dirwalk failed", err)
+
 	dir := "/lib"
 	fmt.Printf("md5sum across %s, twice...\n", dir)
 	hash1, err := utils.DirHash(dir)
@@ -24,6 +30,9 @@ func main() {
 		fmt.Printf("Hashes inconsistent\n")
 		os.Exit(10)
 	}
+
+	//
+
 	check_store()
 	t := time.Now()
 	fmt.Printf("Time now: %s\n", utils.TimeString(t))
