@@ -18,7 +18,10 @@ func getostore() {
 	}
 	ostore = os.NewObjectStoreClient(Connect("objectstore.ObjectStore"))
 }
-
+func GetObjectStoreClient() os.ObjectStoreClient {
+	getostore()
+	return ostore
+}
 func PutWithID(ctx context.Context, key string, buf []byte) error {
 	if key == "" {
 		return errors.InvalidArgs(ctx, "missing key to store in objectstore", "missing key to store in objectstore")
