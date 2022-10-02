@@ -47,6 +47,7 @@ func SHAAll(root string) ([]string, error) {
 		if err != nil {
 			return err
 		}
+		data = append(data, ([]byte(path))...) // append the filename to data, so that change of filename also changes dirhash
 		x := sha256.Sum256(data)
 		m = append(m, fmt.Sprintf("%x", x))
 		return nil
