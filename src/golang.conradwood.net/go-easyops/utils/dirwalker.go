@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"io/fs"
+	//	"io/fs"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -10,7 +10,11 @@ import (
 
 type dirwalker struct {
 	root string
-	fn   func(root string, relative_filename string) error
+	/*
+		this function is called with "root" being whatever DirWalk has been invoked with and relative_filename is the filename
+		within that directory. The full path thus can be constructed by root+"/"+relative_filename
+	*/
+	fn func(root string, relative_filename string) error
 }
 
 // walk a directory tree and call function for each file
@@ -32,10 +36,14 @@ func (dw *dirwalker) Walk(relative_path string) error {
 	// do files first
 	for _, e := range entries {
 		m := e.Mode()
-		if !m.IsRegular() && m.Type() != fs.ModeSymlink {
+		if !m.IsRegular() {
 			continue
 		}
-		err := dw.fn(dw.root, path+"/"+e.Name())
+		s := path + "/" + e.Name()
+		if path == "" {
+			s = e.Name()
+		}
+		err := dw.fn(dw.root, s)
 		if err != nil {
 			return err
 		}
