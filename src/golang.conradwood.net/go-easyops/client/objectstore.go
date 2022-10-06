@@ -75,14 +75,14 @@ func Evict(ctx context.Context, key string) ([]byte, error) {
 }
 
 // evict (remove) an object from the objectstore by key
-func EvictNoResult(ctx context.Context, key string) ([]byte, error) {
+func EvictNoResult(ctx context.Context, key string) error {
 	if key == "" {
-		return nil, errors.InvalidArgs(ctx, "missing key to evict from objectstore", "missing key to evict from objectstore")
+		return errors.InvalidArgs(ctx, "missing key to evict from objectstore", "missing key to evict from objectstore")
 	}
 	getostore()
 	gr := &os.EvictRequest{ID: key, ReturnObject: false}
 	_, err := ostore.Evict(ctx, gr)
-	return nil, err
+	return err
 }
 
 // get an object from the objectstore by key
