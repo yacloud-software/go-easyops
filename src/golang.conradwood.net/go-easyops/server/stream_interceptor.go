@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"golang.conradwood.net/go-easyops/prometheus"
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
+	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,9 +22,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	defer pp.ServerRpcDone()
 
 	name := ServiceNameFromStreamInfo(info)
-	if *debug_rpc_serve {
-		fmt.Printf("[go-easyops] debug: called streaming service %s\n", name)
-	}
+
 	method := MethodNameFromStreamInfo(info)
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{
 		"method":      method,
@@ -35,6 +33,9 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		"servicename": name,
 	}).Dec()
 
+	if *debug_rpc_serve {
+		fmt.Printf("[go-easyops] debug: called streaming service %s/%s\n", name, method)
+	}
 	//fmt.Printf("Method: \"%s\"\n", method)
 	if isInternalService(name) {
 		if *debug_rpc_serve {
