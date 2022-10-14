@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	l "golang.conradwood.net/go-easyops/linux"
 	"golang.conradwood.net/go-easyops/utils"
 )
 
 func main() {
-	TestExecuteContainer()
+	lin := l.New()
+	fmt.Printf("My IP: %s\n", lin.MyIP())
+	//	TestExecuteContainer()
 }
 
 func TestExecuteContainer() {
