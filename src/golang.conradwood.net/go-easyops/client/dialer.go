@@ -129,9 +129,7 @@ func dialService(registry string, serviceName string) (*grpc.ClientConn, error) 
 	if *dialer_debug {
 		fmt.Println("[go-easyops] DialService: Dialling with dialService() " + serviceName + " and blocking until successful connection...")
 	}
-	if serviceName == "rpcinterceptor.RPCInterceptorService" {
-		panic("TESTING")
-	}
+
 	var err error
 	var conn *grpc.ClientConn
 	conn, err = grpc.Dial(
