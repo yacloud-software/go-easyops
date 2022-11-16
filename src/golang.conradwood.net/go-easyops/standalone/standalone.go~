@@ -1,0 +1,4 @@
+package standalone
+
+// a standalone "registry replacement"
+

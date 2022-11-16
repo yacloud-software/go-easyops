@@ -58,15 +58,16 @@ func ConnectWithIPNoBlock(ip string) (*grpc.ClientConn, error) {
 func ConnectWithIP(ip string) (*grpc.ClientConn, error) {
 	return connectWithIPOptions(ip, true)
 }
-func connectWithIPOptions(ip string, block bool) (*grpc.ClientConn, error) {
+func connectWithIPOptions(servicename string, block bool) (*grpc.ClientConn, error) {
 	if *dialer_debug {
-		fmt.Println("DialService: Dialling " + ip + " and blocking until successful connection...")
+		fmt.Println("[go-easyops] DialService (connectWithIPOptions): Dialling " + servicename + " and blocking until successful connection...")
 	}
+
 	var err error
 	var conn *grpc.ClientConn
 	if block {
 		conn, err = grpc.Dial(
-			ip,
+			servicename,
 			grpc.WithBlock(),
 			grpc.WithTransportCredentials(GetClientCreds()),
 			grpc.WithUnaryInterceptor(ClientMetricsUnaryInterceptor),
@@ -74,7 +75,7 @@ func connectWithIPOptions(ip string, block bool) (*grpc.ClientConn, error) {
 		)
 	} else {
 		conn, err = grpc.Dial(
-			ip,
+			servicename,
 			grpc.WithTransportCredentials(GetClientCreds()),
 			grpc.WithUnaryInterceptor(ClientMetricsUnaryInterceptor),
 			grpc.WithStreamInterceptor(unaryStreamInterceptor),
@@ -85,7 +86,7 @@ func connectWithIPOptions(ip string, block bool) (*grpc.ClientConn, error) {
 	}
 
 	if *dialer_debug {
-		fmt.Printf("Connected to %s\n", ip)
+		fmt.Printf("Connected to %s\n", servicename)
 	}
 
 	return conn, nil
@@ -124,9 +125,12 @@ func ConnectAt(registryadr string, serviceNameOrPath string) *grpc.ClientConn {
 
 // opens a tcp connection to a path.
 func dialService(registry string, serviceName string) (*grpc.ClientConn, error) {
-	GetSignatureFromAuth() // this is triggered here, because we _must_ have a valid signature later. if it has been called earlire it is a noop
+	GetSignatureFromAuth() // this is triggered here, because we _must_ have a valid signature later. if it has been called earlier it is a noop
 	if *dialer_debug {
-		fmt.Println("DialService: Dialling " + serviceName + " and blocking until successful connection...")
+		fmt.Println("[go-easyops] DialService: Dialling with dialService() " + serviceName + " and blocking until successful connection...")
+	}
+	if serviceName == "rpcinterceptor.RPCInterceptorService" {
+		panic("TESTING")
 	}
 	var err error
 	var conn *grpc.ClientConn

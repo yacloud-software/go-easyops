@@ -7,6 +7,7 @@ import (
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/client"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
@@ -29,6 +30,9 @@ type le struct {
 }
 
 func (sd *serverDef) logError(cs *rpc.CallState, err error) {
+	if cmdline.IsStandalone() {
+		fmt.Printf("[go-easyops] ERROR: %s\n", err)
+	}
 	if len(logChan) > 100 {
 		fmt.Printf("[go-easyops] Dropping errorlog\n")
 		return
@@ -37,6 +41,9 @@ func (sd *serverDef) logError(cs *rpc.CallState, err error) {
 	logChan <- l
 }
 func error_handler_startup() {
+	if cmdline.IsStandalone() {
+		return
+	}
 	if error_looping {
 		return
 	}

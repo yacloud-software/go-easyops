@@ -6,6 +6,7 @@ import (
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
 	"golang.conradwood.net/apis/common"
+	"golang.conradwood.net/go-easyops/cmdline"
 	cm "golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/tokens"
 	"sync"
@@ -31,6 +32,12 @@ func GotSig() bool {
 	return retrieved_sig
 }
 func GetSignatureFromAuth() {
+	if cmdline.IsStandalone() {
+		//TODO: set a "fake" signature
+		retrieved_sig = true
+		retrieving = false
+		return
+	}
 	if retrieved_sig {
 		return
 	}

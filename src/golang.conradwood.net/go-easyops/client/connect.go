@@ -3,6 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
+	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/standalone"
 	"net"
 	"strings"
 )
@@ -14,6 +16,13 @@ const (
 
 // this is called by grpc to get a connection
 func CustomDialer(ctx context.Context, name string) (net.Conn, error) {
+	if cmdline.IsStandalone() {
+		return standalone.DialService(ctx, name)
+	}
+
+	if *dialer_debug {
+		fmt.Printf("[go-easyops] custom dialling \"%s\"\n", name)
+	}
 	t := name
 	if strings.HasPrefix(name, PROXY_PREFIX) {
 		sid := t[len(PROXY_PREFIX):]

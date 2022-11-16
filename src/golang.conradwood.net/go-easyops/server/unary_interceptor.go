@@ -5,6 +5,7 @@ import (
 	"fmt"
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -60,7 +61,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	}).Inc()
 
 	// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
-	if !def.NoAuth {
+	if !def.NoAuth && !cmdline.IsStandalone() {
 		err := Authenticate(cs)
 		if err != nil {
 			fancyPrintf("Debug-rpc Request: Authenticate() failed for \"%s/%s\" => rejected: %s\n", cs.MethodName, cs.ServiceName, err)

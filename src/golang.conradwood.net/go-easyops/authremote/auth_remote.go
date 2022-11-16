@@ -85,6 +85,9 @@ func ContextWithTimeout(t time.Duration) context.Context {
 create a new context with routing tags. This is an EXPERIMENTAL API and very likely to change in future
 */
 func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.Context {
+	if cmdline.IsStandalone() {
+		return standalone_ContextWithTimeoutAndTags(t, rt)
+	}
 	if cmdline.Datacenter() {
 		return tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
 	}

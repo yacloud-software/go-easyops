@@ -29,6 +29,8 @@ func main() {
 			return nil
 		},
 	)
+	fmt.Printf("Sleeping...\n")
+	//	time.Sleep(time.Duration(4) * time.Second)
 	err := server.ServerStartup(sd)
 	utils.Bail("Unable to start server", err)
 	os.Exit(0)

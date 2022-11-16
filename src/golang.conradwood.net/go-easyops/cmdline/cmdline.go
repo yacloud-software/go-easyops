@@ -24,6 +24,7 @@ var (
 	XXdoappinfo       = ImmediatePara("ge_info", "print application build number", doappinfo)
 	print_easyops     = false
 	manreg            = ""
+	stdalone          = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
 )
 
 // in the init function we have not yet defined all the flags
@@ -184,4 +185,10 @@ func OptEnvString(para, envname string) string {
 func doappinfo() {
 	fmt.Printf("%d\n", appinfo.AppInfo().Number)
 	os.Exit(0)
+}
+func IsStandalone() bool {
+	return *stdalone
+}
+func LocalRegistrationDir() string {
+	return "/tmp/local_registry"
 }

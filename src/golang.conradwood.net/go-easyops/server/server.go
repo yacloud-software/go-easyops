@@ -22,6 +22,7 @@ import (
 	"golang.conradwood.net/go-easyops/common"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
+	"golang.conradwood.net/go-easyops/standalone"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"golang.org/x/net/context"
@@ -96,6 +97,9 @@ type serverDef struct {
 }
 
 func init() {
+	if cmdline.IsStandalone() {
+		return
+	}
 	// start period re-registration
 	ticker = time.NewTicker(time.Duration(*register_refresh) * time.Second)
 	go func() {
@@ -225,38 +229,39 @@ func ServerStartup(def *serverDef) error {
 	tokname := ""
 	tokname = "service"
 	tkservice := tokens.GetServiceTokenParameter()
-	tk = tkservice
-	if !cmdline.Datacenter() {
-		tks := tokens.GetUserTokenParameter()
-		if tks != "" {
-			tokname = "user"
-			tk = tks
-		}
-	}
 	var u *au.User
-	var su *au.SignedUser
-	if !def.NoAuth {
-		if tk == "" {
-			fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
-			fancyPrintf("Cannot connect to a server without %s token.\n", tokname)
-			//os.Exit(10)
+	if !cmdline.IsStandalone() {
+		tk = tkservice
+		if !cmdline.Datacenter() {
+			tks := tokens.GetUserTokenParameter()
+			if tks != "" {
+				tokname = "user"
+				tk = tks
+			}
 		}
-		su = ar.SignedGetByToken(context.Background(), tk)
-		if su == nil {
-			fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
-			fancyPrintf("The authentication %s token is not valid.\n", tokname)
-			fancyPrintf("Token: \"%s\"\n", tk)
-			//os.Exit(10)
+		var su *au.SignedUser
+		if !def.NoAuth {
+			if tk == "" {
+				fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
+				fancyPrintf("Cannot connect to a server without %s token.\n", tokname)
+				//os.Exit(10)
+			}
+			su = ar.SignedGetByToken(context.Background(), tk)
+			if su == nil {
+				fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
+				fancyPrintf("The authentication %s token is not valid.\n", tokname)
+				fancyPrintf("Token: \"%s\"\n", tk)
+				//os.Exit(10)
+			}
+			u = common.VerifySignedUser(su)
+
 		}
-		u = common.VerifySignedUser(su)
-
+		if u != nil && !u.ServiceAccount {
+			fancyPrintf("Registering as a user-specific service, because it is running as:\n")
+			auth.PrintUser(u)
+			def.asUser = su
+		}
 	}
-	if u != nil && !u.ServiceAccount {
-		fancyPrintf("Registering as a user-specific service, because it is running as:\n")
-		auth.PrintUser(u)
-		def.asUser = su
-	}
-
 	startOnce()
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -465,9 +470,7 @@ func AddRegistry(sd *serverDef) (string, error) {
 	if find(sd.Port, sd.name) == nil {
 		knownServices = append(knownServices, sd)
 	}
-	if rgclient == nil {
-		rgclient = pb.NewRegistryClient(client.ConnectAt(cmdline.GetRegistryAddress(), "registry.Registry"))
-	}
+
 	req := pb.ServiceLocation{}
 	req.Service = &pb.ServiceDescription{}
 	req.Service.Name = sd.name
@@ -489,7 +492,12 @@ func AddRegistry(sd *serverDef) (string, error) {
 	if sd.tags != nil {
 		rsr.RoutingInfo.Tags = sd.tags
 	}
-
+	if cmdline.IsStandalone() {
+		return standalone.RegisterService(rsr)
+	}
+	if rgclient == nil {
+		rgclient = pb.NewRegistryClient(client.ConnectAt(cmdline.GetRegistryAddress(), "registry.Registry"))
+	}
 	resp, err := rgclient.V2RegisterService(context.Background(), rsr)
 	if err != nil {
 		fancyPrintf("RegisterService(%s) failed: %s\n", req.Service.Name, err)
