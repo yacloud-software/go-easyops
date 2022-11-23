@@ -222,9 +222,9 @@ func (f *FancyResolver) queryForInstances() ([]*pb.Target, error) {
 	if cmdline.IsStandalone() {
 		list, err = standalone.Registry_V2GetTarget(ctx, request)
 	} else {
-		regClient, err := getRegistryClient(f.registry)
-		if err != nil {
-			return nil, err
+		regClient, xerr := getRegistryClient(f.registry)
+		if xerr != nil {
+			return nil, xerr
 		}
 		list, err = regClient.V2GetTarget(ctx, request)
 	}

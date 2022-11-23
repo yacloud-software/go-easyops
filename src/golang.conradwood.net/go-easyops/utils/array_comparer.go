@@ -10,7 +10,11 @@ type ArrayComparer struct {
 	elements_in_array_2_but_not_1 []int
 }
 
-// TODO: check if we can use reflect.ValueOf(array1).Index(i) to remove the need for external comp function
+/*
+Compare an array. It uses a custom "compare" function which must return true if two elements are equal.
+i refers to array1[i] and j refers to array2[j]
+TODO: check if we can use reflect.ValueOf(array1).Index(i) to remove the need for external comp function
+*/
 func CompareArray(array1, array2 interface{}, comp func(i, j int) bool) *ArrayComparer {
 	res := &ArrayComparer{}
 	l1 := reflect.ValueOf(array1).Len()
