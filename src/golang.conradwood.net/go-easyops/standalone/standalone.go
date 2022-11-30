@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	debug = flag.Bool("debug_standalone", false, "if true debug the standalone dialler")
+	debug = flag.Bool("ge_debug_standalone", false, "if true debug the standalone dialler")
 	// if we receive requests to resolve any of those (and they don't happen to be available), we panic
 	UNSUPPORTED_SERVICES = []string{"rpcinterceptor.RPCInterceptorService"}
 )
