@@ -75,14 +75,11 @@ func (p *ProgressReporter) PrintSingleLine() bool {
 	return true
 }
 func (p *ProgressReporter) Print() bool {
-	return p.PrintWithPrefix("")
-}
-func (p *ProgressReporter) PrintWithPrefix(prefix string) bool {
 	s := p.String()
 	if s == "" {
 		return false
 	}
-	fmt.Printf("%s\n", s)
+	fmt.Println(s)
 	return true
 }
 
