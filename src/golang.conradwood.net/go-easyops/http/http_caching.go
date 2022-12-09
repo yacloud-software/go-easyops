@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"golang.yacloud.eu/apis/urlcacher"
 	"io"
 	"net/http"
@@ -10,7 +11,8 @@ import (
 
 // caching http
 type cHTTP struct {
-	ctx context.Context
+	timeout time.Duration
+	ctx     context.Context
 }
 
 func (h cHTTP) Cookie(name string) *http.Cookie {
@@ -32,7 +34,15 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		return hr
 	}
 	l := uint64(0)
+	started := time.Now()
 	for {
+		if h.timeout != 0 {
+			dur := time.Since(started)
+			if dur > h.timeout {
+				hr.err = fmt.Errorf("timeout after %0.2fs seconds", dur.Seconds())
+			}
+		}
+
 		data, err := srv.Recv()
 		if err == io.EOF {
 			break
@@ -63,5 +73,5 @@ func (h cHTTP) SetHeader(key string, value string) {
 	panic("setheader not supported")
 }
 func (h cHTTP) SetTimeout(dur time.Duration) {
-	panic("settimeout not supported")
+	h.timeout = dur
 }
