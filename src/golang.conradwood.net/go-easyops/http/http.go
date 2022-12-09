@@ -58,6 +58,19 @@ func init() {
 	prometheus.MustRegister(durationSummary, callcounter, failcounter)
 }
 
+type HTTPIF interface {
+	Cookie(name string) *http.Cookie
+	Cookies() []*http.Cookie
+	Delete(url string, body []byte) *HTTPResponse
+	Get(url string) *HTTPResponse
+	GetStream(url string) *HTTPResponse
+	Head(url string) *HTTPResponse
+	Post(url string, body []byte) *HTTPResponse
+	Put(url string, body string) *HTTPResponse
+	SetHeader(key string, value string)
+	SetTimeout(dur time.Duration)
+}
+
 type HTTP struct {
 	MetricName string // if not "", will export metrics for this call
 	username   string
