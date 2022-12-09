@@ -68,7 +68,7 @@ type HTTP struct {
 	transport  *transport // nil for default
 }
 
-func (h *HTTP) SetTimeout(dur time.Duration) {
+func (h HTTP) SetTimeout(dur time.Duration) {
 	if h.transport == nil {
 		h.transport = &transport{t: &http.Transport{
 			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
@@ -95,10 +95,10 @@ func (h *HTTP) SetTimeout(dur time.Duration) {
 		}).DialContext
 	}
 }
-func (h *HTTP) promLabels() prometheus.Labels {
+func (h HTTP) promLabels() prometheus.Labels {
 	return prometheus.Labels{"name": h.MetricName}
 }
-func (h *HTTP) doMetric() bool {
+func (h HTTP) doMetric() bool {
 	return h.MetricName != ""
 }
 func WithAuth(username string, password string) *HTTP {
@@ -115,7 +115,7 @@ type header struct {
 }
 type HTTPResponse struct {
 	httpCode         int
-	ht               *HTTP
+	ht               HTTP
 	body             []byte
 	err              error
 	finalurl         string
@@ -140,14 +140,14 @@ func (h *HTTPResponse) Body() []byte {
 func (h *HTTPResponse) Error() error {
 	return h.err
 }
-func (h *HTTP) SetHeader(key string, value string) {
+func (h HTTP) SetHeader(key string, value string) {
 	if h.headers == nil {
 		h.headers = make(map[string]string)
 	}
 	h.headers[key] = value
 }
 
-func (h *HTTP) Head(url string) *HTTPResponse {
+func (h HTTP) Head(url string) *HTTPResponse {
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -161,7 +161,7 @@ func (h *HTTP) Head(url string) *HTTPResponse {
 	hr.do(req, true)
 	return hr
 }
-func (h *HTTP) GetStream(url string) *HTTPResponse {
+func (h HTTP) GetStream(url string) *HTTPResponse {
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -174,7 +174,7 @@ func (h *HTTP) GetStream(url string) *HTTPResponse {
 	}
 	return hr.do(req, false)
 }
-func (h *HTTP) Get(url string) *HTTPResponse {
+func (h HTTP) Get(url string) *HTTPResponse {
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -188,7 +188,7 @@ func (h *HTTP) Get(url string) *HTTPResponse {
 	hr.do(req, true)
 	return hr
 }
-func (h *HTTP) Delete(url string, body []byte) *HTTPResponse {
+func (h HTTP) Delete(url string, body []byte) *HTTPResponse {
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -203,7 +203,7 @@ func (h *HTTP) Delete(url string, body []byte) *HTTPResponse {
 	hr.do(req, true)
 	return hr
 }
-func (h *HTTP) Post(url string, body []byte) *HTTPResponse {
+func (h HTTP) Post(url string, body []byte) *HTTPResponse {
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -221,7 +221,7 @@ func (h *HTTP) Post(url string, body []byte) *HTTPResponse {
 	hr.do(req, true)
 	return hr
 }
-func (h *HTTP) Put(url string, body string) *HTTPResponse {
+func (h HTTP) Put(url string, body string) *HTTPResponse {
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -263,13 +263,13 @@ func (h *HTTPResponse) FinalURL() string {
 	return h.finalurl
 }
 
-func (h *HTTP) Cookies() []*http.Cookie {
+func (h HTTP) Cookies() []*http.Cookie {
 	if h.jar == nil {
 		return nil
 	}
 	return h.jar.cookies
 }
-func (h *HTTP) Cookie(name string) *http.Cookie {
+func (h HTTP) Cookie(name string) *http.Cookie {
 	if h.jar == nil {
 		return nil
 	}
