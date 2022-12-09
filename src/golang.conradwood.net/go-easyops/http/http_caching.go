@@ -35,6 +35,7 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 	}
 	l := uint64(0)
 	started := time.Now()
+	var buf []byte
 	for {
 		if h.timeout != 0 {
 			dur := time.Since(started)
@@ -44,6 +45,9 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		}
 
 		data, err := srv.Recv()
+		if (data != nil) && (len(data.Data)) > 0 {
+			buf = append(buf, data.Data...)
+		}
 		if err == io.EOF {
 			break
 		}
@@ -53,8 +57,8 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		}
 		r := uint64(len(data.Data))
 		l = l + r
-
 	}
+	hr.body = buf
 	return hr
 }
 func (h cHTTP) GetStream(url string) *HTTPResponse {
