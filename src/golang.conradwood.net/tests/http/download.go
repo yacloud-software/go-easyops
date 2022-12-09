@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/http"
 	"golang.conradwood.net/go-easyops/utils"
@@ -22,8 +23,10 @@ func main() {
 		ctx := authremote.ContextWithTimeout(time.Duration(180) * time.Second)
 		h = http.NewCachingClient(ctx)
 	}
+	started := time.Now()
 	hr := h.Get(url)
 	err := hr.Error()
 	utils.Bail("failed to get url", err)
-
+	dur := time.Since(started)
+	fmt.Printf("Duration: %0.2fs\n", dur.Seconds())
 }
