@@ -30,7 +30,9 @@ func NewCachingClient(ctx context.Context) HTTPIF {
 	if *debug {
 		fmt.Printf("New caching client..\n")
 	}
-	return cHTTP{ctx: ctx}
+	res := &cHTTP{}
+	res.ctx, res.ctx_cancel = context.WithCancel(ctx)
+	return res
 }
 
 // retrieve directly from source

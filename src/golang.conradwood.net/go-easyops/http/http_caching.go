@@ -12,8 +12,10 @@ import (
 
 // caching http
 type cHTTP struct {
-	timeout time.Duration
-	ctx     context.Context
+	timeout    time.Duration
+	ctx        context.Context
+	ctx_cancel context.CancelFunc
+	tich       chan bool
 }
 
 func (h cHTTP) Cookie(name string) *http.Cookie {
@@ -26,6 +28,7 @@ func (h cHTTP) Delete(url string, body []byte) *HTTPResponse {
 	panic("delete not supported")
 }
 func (h cHTTP) Get(url string) *HTTPResponse {
+	defer h.stop_timeouter()
 	ctx := h.ctx
 	hr := &HTTPResponse{}
 	empty := &urlcacher.GetRequest{URL: url}
@@ -93,4 +96,25 @@ func (h cHTTP) SetHeader(key string, value string) {
 }
 func (h cHTTP) SetTimeout(dur time.Duration) {
 	h.timeout = dur
+	h.stop_timeouter()
+	h.tich = make(chan bool)
+	go h.timeouter()
+}
+func (h cHTTP) stop_timeouter() {
+	if h.tich == nil {
+		return
+	}
+	h.tich <- false
+}
+func (h cHTTP) timeouter() {
+	var b bool
+	select {
+	case b = <-h.tich:
+	case <-time.After(h.timeout):
+		b = false
+	}
+	if b {
+		h.ctx_cancel()
+	}
+
 }
