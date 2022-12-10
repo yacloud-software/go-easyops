@@ -7,7 +7,7 @@ replace golang.conradwood.net/go-easyops => ../go-easyops
 require (
 	golang.conradwood.net/apis/auth v1.1.2027
 	golang.conradwood.net/apis/common v1.1.2027
-	golang.conradwood.net/apis/echoservice v1.1.2006
+	golang.conradwood.net/apis/echoservice v1.1.2027
 	golang.conradwood.net/apis/getestservice v1.1.2006
 	golang.conradwood.net/apis/gitserver v1.1.2006
 	golang.conradwood.net/apis/goeasyops v1.1.2006
@@ -30,7 +30,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	golang.conradwood.net/apis/autodeployer v1.1.2027 // indirect
 	golang.conradwood.net/apis/deploymonkey v1.1.2027 // indirect
-	golang.conradwood.net/apis/errorlogger v1.1.2006 // indirect
+	golang.conradwood.net/apis/errorlogger v1.1.2027 // indirect
 	golang.conradwood.net/apis/framework v1.1.2027 // indirect
 	golang.conradwood.net/apis/objectstore v1.1.2027 // indirect
 	golang.org/x/net v0.4.0 // indirect

@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"golang.conradwood.net/go-easyops/errors"
 	"golang.yacloud.eu/apis/urlcacher"
 	"io"
 	"net/http"
@@ -53,7 +54,11 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 			r := data.Result
 			hr.httpCode = int(r.HTTPCode)
 			if !r.Success {
-				hr.err = fmt.Errorf("failed to retrieve url (code %d): %s", hr.httpCode, r.Message)
+				if hr.httpCode == 404 {
+					hr.err = errors.NotFound(ctx, "failed to retrieve url (code %d): %s", hr.httpCode, r.Message)
+				} else {
+					hr.err = fmt.Errorf("failed to retrieve url (code %d): %s", hr.httpCode, r.Message)
+				}
 				break
 			}
 		}
