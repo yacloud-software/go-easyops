@@ -10,13 +10,22 @@ import (
 	"time"
 )
 
+var (
+	foo_ctr int
+)
+
 // caching http
 type cHTTP struct {
 	timeout               time.Duration
 	ctx                   context.Context
 	ctx_cancel            context.CancelFunc
-	tich                  chan bool
+	tio                   *timeouter
 	last_message_received time.Time
+	cancelled             bool
+}
+type timeouter struct {
+	ch  chan bool
+	idx int
 }
 
 func (h cHTTP) Cookie(name string) *http.Cookie {
@@ -51,6 +60,14 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		}
 
 		data, err := srv.Recv()
+		if h.ctx.Err() != nil {
+			hr.err = fmt.Errorf("ctx error after %0.2fs: %s", time.Since(started).Seconds(), h.ctx.Err())
+			break
+		}
+		if h.cancelled {
+			hr.err = fmt.Errorf("Cancelled (timeout)")
+			break
+		}
 		h.last_message_received = time.Now()
 		if (data != nil) && (len(data.Data)) > 0 {
 			buf = append(buf, data.Data...)
@@ -96,27 +113,54 @@ func (h cHTTP) Put(url string, body string) *HTTPResponse {
 func (h cHTTP) SetHeader(key string, value string) {
 	panic("setheader not supported")
 }
-func (h cHTTP) SetTimeout(dur time.Duration) {
+func (h *cHTTP) SetTimeout(dur time.Duration) {
+	h.debugf("setting timeout to %0.2fs\n", dur.Seconds())
 	h.timeout = dur
 	h.stop_timeouter()
-	h.tich = make(chan bool)
-	go h.timeouter()
+	foo_ctr++
+	h.tio = &timeouter{ch: make(chan bool), idx: foo_ctr}
+	if h.tio == nil {
+		panic("no timeouter")
+	}
+	//	h.debugf("h=%v\n", h.tio)
+	go h.timeouter(h.tio)
 }
-func (h cHTTP) stop_timeouter() {
-	if h.tich == nil {
+func (h *cHTTP) stop_timeouter() {
+	if h.tio == nil {
+		h.debugf("no timeouter to stop\n")
 		return
 	}
-	h.tich <- false
-}
-func (h cHTTP) timeouter() {
-	var b bool
+	h.debugf("stopping timeouter %d\n", h.tio.idx)
 	select {
-	case b = <-h.tich:
+	case h.tio.ch <- false:
+	case <-time.After(time.Duration(10) * time.Millisecond):
+	}
+}
+func (h *cHTTP) timeouter(t *timeouter) {
+	h.debugf("timeouter %d started\n", t.idx)
+	var b bool
+	ch := t.ch
+	select {
+	case b = <-ch:
+		h.debugf("timeouter %d received %v\n", t.idx, b)
 	case <-time.After(h.timeout):
-		b = false
+		h.debugf("timeouter %d timer-outed\n", t.idx)
+		b = true
 	}
 	if b {
 		h.ctx_cancel()
+		h.cancelled = true
+		h.debugf("timeouter %d cancelled context\n", t.idx)
 	}
+	h.debugf("timeouter %d done\n", t.idx)
 
+}
+
+func (h cHTTP) debugf(format string, args ...interface{}) {
+	if !*debug {
+		return
+	}
+	sn := "[cHTTP] "
+	sx := fmt.Sprintf(format, args...)
+	fmt.Print(sn + sx)
 }

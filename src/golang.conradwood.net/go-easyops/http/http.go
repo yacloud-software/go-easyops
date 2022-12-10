@@ -32,6 +32,7 @@ func NewCachingClient(ctx context.Context) HTTPIF {
 	}
 	res := &cHTTP{}
 	res.ctx, res.ctx_cancel = context.WithCancel(ctx)
+	//	res.ctx = ctx
 	return res
 }
 

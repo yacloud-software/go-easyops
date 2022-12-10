@@ -14,6 +14,8 @@ import (
 
 var (
 	direct   = flag.Bool("direct", false, "if true use direct access mode instead of urlcacher")
+	dur      = flag.Duration("duration", time.Duration(10)*time.Second, "max duration of http request context")
+	timeout  = flag.Duration("timeout", time.Duration(5)*time.Second, "timeout of http request")
 	testfile = flag.String("testfile", "", "if set, use this file as a list of urls to download from cache and directly and compare")
 )
 
@@ -28,7 +30,7 @@ func main() {
 	if *direct {
 		h = http.NewDirectClient()
 	} else {
-		ctx := authremote.ContextWithTimeout(time.Duration(180) * time.Second)
+		ctx := authremote.ContextWithTimeout(*dur)
 		h = http.NewCachingClient(ctx)
 	}
 	started := time.Now()
@@ -67,7 +69,7 @@ func compare(url string) error {
 	fmt.Printf("fetching direct...")
 	h := http.NewDirectClient()
 	h.SetHeader("accept-encoding", "*")
-	h.SetTimeout(time.Duration(120) * time.Second)
+	h.SetTimeout(*timeout)
 	hr := h.Get(url)
 	err := hr.Error()
 	if err != nil {
@@ -77,8 +79,10 @@ func compare(url string) error {
 	b1 := hr.Body()
 
 	fmt.Printf("fetching cached #1...")
-	ctx := authremote.ContextWithTimeout(time.Duration(120) * time.Second)
+	ctx := authremote.ContextWithTimeout(*dur)
 	h = http.NewCachingClient(ctx)
+	h.SetTimeout(*timeout)
+	h.SetTimeout(*timeout)
 	hr = h.Get(url)
 	err = hr.Error()
 	if err != nil {
@@ -92,8 +96,9 @@ func compare(url string) error {
 	}
 
 	fmt.Printf("fetching cached #2...")
-	ctx = authremote.ContextWithTimeout(time.Duration(120) * time.Second)
+	ctx = authremote.ContextWithTimeout(*dur)
 	h = http.NewCachingClient(ctx)
+	h.SetTimeout(*timeout)
 	hr = h.Get(url)
 	err = hr.Error()
 	if err != nil {
