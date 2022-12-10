@@ -33,6 +33,7 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		hr.err = err
 		return hr
 	}
+
 	l := uint64(0)
 	started := time.Now()
 	var buf []byte
@@ -48,6 +49,15 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		if (data != nil) && (len(data.Data)) > 0 {
 			buf = append(buf, data.Data...)
 		}
+		if (data != nil) && (data.Result != nil) {
+			r := data.Result
+			hr.httpCode = int(r.HTTPCode)
+			if !r.Success {
+				hr.err = fmt.Errorf("failed to retrieve url (code %d): %s", hr.httpCode, r.Message)
+				break
+			}
+		}
+
 		if err == io.EOF {
 			break
 		}

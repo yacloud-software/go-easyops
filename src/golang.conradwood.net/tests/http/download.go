@@ -71,6 +71,7 @@ func compare(url string) error {
 	hr := h.Get(url)
 	err := hr.Error()
 	if err != nil {
+		fmt.Printf("Body: %s\n", hr.Body())
 		return fmt.Errorf("Unable to retrieve %s direct: %s", url, err)
 	}
 	b1 := hr.Body()
