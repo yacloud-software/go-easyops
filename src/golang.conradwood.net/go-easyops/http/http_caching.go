@@ -12,10 +12,11 @@ import (
 
 // caching http
 type cHTTP struct {
-	timeout    time.Duration
-	ctx        context.Context
-	ctx_cancel context.CancelFunc
-	tich       chan bool
+	timeout               time.Duration
+	ctx                   context.Context
+	ctx_cancel            context.CancelFunc
+	tich                  chan bool
+	last_message_received time.Time
 }
 
 func (h cHTTP) Cookie(name string) *http.Cookie {
@@ -50,6 +51,7 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 		}
 
 		data, err := srv.Recv()
+		h.last_message_received = time.Now()
 		if (data != nil) && (len(data.Data)) > 0 {
 			buf = append(buf, data.Data...)
 		}
