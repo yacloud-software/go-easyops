@@ -12,7 +12,7 @@ type header struct {
 }
 type HTTPResponse struct {
 	httpCode         int
-	ht               HTTP
+	ht               *HTTP
 	body             []byte
 	err              error
 	finalurl         string

@@ -113,7 +113,7 @@ func (h HTTP) SetHeader(key string, value string) {
 }
 
 func (h HTTP) Head(url string) *HTTPResponse {
-	hr := &HTTPResponse{ht: h}
+	hr := &HTTPResponse{ht: &h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -127,7 +127,7 @@ func (h HTTP) Head(url string) *HTTPResponse {
 	return hr
 }
 func (h HTTP) GetStream(url string) *HTTPResponse {
-	hr := &HTTPResponse{ht: h}
+	hr := &HTTPResponse{ht: &h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -140,7 +140,7 @@ func (h HTTP) GetStream(url string) *HTTPResponse {
 	return hr.do(req, false)
 }
 func (h HTTP) Get(url string) *HTTPResponse {
-	hr := &HTTPResponse{ht: h}
+	hr := &HTTPResponse{ht: &h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -154,7 +154,7 @@ func (h HTTP) Get(url string) *HTTPResponse {
 	return hr
 }
 func (h HTTP) Delete(url string, body []byte) *HTTPResponse {
-	hr := &HTTPResponse{ht: h}
+	hr := &HTTPResponse{ht: &h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -169,7 +169,7 @@ func (h HTTP) Delete(url string, body []byte) *HTTPResponse {
 	return hr
 }
 func (h HTTP) Post(url string, body []byte) *HTTPResponse {
-	hr := &HTTPResponse{ht: h}
+	hr := &HTTPResponse{ht: &h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -187,7 +187,7 @@ func (h HTTP) Post(url string, body []byte) *HTTPResponse {
 	return hr
 }
 func (h HTTP) Put(url string, body string) *HTTPResponse {
-	hr := &HTTPResponse{ht: h}
+	hr := &HTTPResponse{ht: &h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
