@@ -266,6 +266,9 @@ func (h *HTTPResponse) do(req *http.Request, readbody bool) *HTTPResponse {
 
 		}
 	}
+	if *debug {
+		fmt.Printf("Sending %d cookies\n", len(h.ht.jar.cookies))
+	}
 
 	for _, c := range h.ht.jar.cookies {
 		if *debug {
@@ -307,6 +310,10 @@ func (h *HTTPResponse) do(req *http.Request, readbody bool) *HTTPResponse {
 	}
 	h.resp = resp
 	h.received_cookies = resp.Cookies()
+	if *debug {
+		fmt.Printf("Received %d cookies\n", len(h.received_cookies))
+	}
+
 	if readbody {
 		defer resp.Body.Close()
 		pbody, err := ioutil.ReadAll(resp.Body)
