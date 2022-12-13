@@ -13,14 +13,19 @@ import (
 )
 
 var (
-	direct   = flag.Bool("direct", false, "if true use direct access mode instead of urlcacher")
-	dur      = flag.Duration("duration", time.Duration(10)*time.Second, "max duration of http request context")
-	timeout  = flag.Duration("timeout", time.Duration(5)*time.Second, "timeout of http request")
-	testfile = flag.String("testfile", "", "if set, use this file as a list of urls to download from cache and directly and compare")
+	test_cookie = flag.Bool("test_cookies", false, "if true test cookies")
+	direct      = flag.Bool("direct", false, "if true use direct access mode instead of urlcacher")
+	dur         = flag.Duration("duration", time.Duration(10)*time.Second, "max duration of http request context")
+	timeout     = flag.Duration("timeout", time.Duration(5)*time.Second, "timeout of http request")
+	testfile    = flag.String("testfile", "", "if set, use this file as a list of urls to download from cache and directly and compare")
 )
 
 func main() {
 	flag.Parse()
+	if *test_cookie {
+		utils.Bail("failed cookie", TestCookie())
+		os.Exit(0)
+	}
 	if *testfile != "" {
 		utils.Bail("failed test", TestFile())
 		os.Exit(0)
@@ -67,7 +72,8 @@ func TestFile() error {
 func compare(url string) error {
 	fmt.Printf("Comparing %s..", url)
 	fmt.Printf("fetching direct...")
-	h := http.NewDirectClient()
+	var h http.HTTPIF
+	h = http.NewDirectClient()
 	h.SetHeader("accept-encoding", "*")
 	h.SetTimeout(*timeout)
 	hr := h.Get(url)

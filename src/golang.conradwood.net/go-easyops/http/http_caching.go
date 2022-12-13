@@ -22,12 +22,16 @@ type cHTTP struct {
 	tio                   *timeouter
 	last_message_received time.Time
 	cancelled             bool
+	debug                 bool
 }
 type timeouter struct {
 	ch  chan bool
 	idx int
 }
 
+func (h cHTTP) SetDebug(b bool) {
+	h.debug = b
+}
 func (h cHTTP) Cookie(name string) *http.Cookie {
 	panic("cookie not supported")
 }

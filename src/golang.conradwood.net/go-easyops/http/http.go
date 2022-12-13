@@ -23,6 +23,7 @@ type HTTPIF interface {
 	Put(url string, body string) *HTTPResponse
 	SetHeader(key string, value string)
 	SetTimeout(dur time.Duration)
+	SetDebug(b bool)
 }
 
 // use urlcacher for the url (needs ctx to authenticate)
@@ -37,9 +38,9 @@ func NewCachingClient(ctx context.Context) HTTPIF {
 }
 
 // retrieve directly from source
-func NewDirectClient() HTTPIF {
+func NewDirectClient() *HTTP {
 	if *debug {
 		fmt.Printf("New direct client..\n")
 	}
-	return HTTP{}
+	return &HTTP{}
 }

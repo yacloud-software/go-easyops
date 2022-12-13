@@ -63,9 +63,20 @@ type HTTP struct {
 	headers    map[string]string
 	jar        *Cookies
 	transport  *transport // nil for default
+	debug      bool
 }
 
-func (h HTTP) SetTimeout(dur time.Duration) {
+func (h *HTTP) Debugf(format string, args ...interface{}) {
+	if !*debug && !h.debug {
+		return
+	}
+	s := fmt.Sprintf(format, args...)
+	fmt.Printf("[go-easyops/http] %s", s)
+}
+func (h *HTTP) SetDebug(b bool) {
+	h.debug = b
+}
+func (h *HTTP) SetTimeout(dur time.Duration) {
 	if h.transport == nil {
 		h.transport = &transport{t: &http.Transport{
 			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
@@ -92,10 +103,10 @@ func (h HTTP) SetTimeout(dur time.Duration) {
 		}).DialContext
 	}
 }
-func (h HTTP) promLabels() prometheus.Labels {
+func (h *HTTP) promLabels() prometheus.Labels {
 	return prometheus.Labels{"name": h.MetricName}
 }
-func (h HTTP) doMetric() bool {
+func (h *HTTP) doMetric() bool {
 	return h.MetricName != ""
 }
 func WithAuth(username string, password string) *HTTP {
@@ -105,15 +116,15 @@ func WithAuth(username string, password string) *HTTP {
 	}
 	return res
 }
-func (h HTTP) SetHeader(key string, value string) {
+func (h *HTTP) SetHeader(key string, value string) {
 	if h.headers == nil {
 		h.headers = make(map[string]string)
 	}
 	h.headers[key] = value
 }
 
-func (h HTTP) Head(url string) *HTTPResponse {
-	hr := &HTTPResponse{ht: &h}
+func (h *HTTP) Head(url string) *HTTPResponse {
+	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -123,11 +134,11 @@ func (h HTTP) Head(url string) *HTTPResponse {
 		hr.err = err
 		return hr
 	}
-	hr.do(req, true)
+	h.do(hr, req, true)
 	return hr
 }
-func (h HTTP) GetStream(url string) *HTTPResponse {
-	hr := &HTTPResponse{ht: &h}
+func (h *HTTP) GetStream(url string) *HTTPResponse {
+	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -137,10 +148,11 @@ func (h HTTP) GetStream(url string) *HTTPResponse {
 		hr.err = err
 		return hr
 	}
-	return hr.do(req, false)
+	return h.do(hr, req, false)
 }
-func (h HTTP) Get(url string) *HTTPResponse {
-	hr := &HTTPResponse{ht: &h}
+func (h *HTTP) Get(url string) *HTTPResponse {
+	h.Debugf("Get request to \"%s\"\n", url)
+	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -150,11 +162,11 @@ func (h HTTP) Get(url string) *HTTPResponse {
 		hr.err = err
 		return hr
 	}
-	hr.do(req, true)
+	h.do(hr, req, true)
 	return hr
 }
-func (h HTTP) Delete(url string, body []byte) *HTTPResponse {
-	hr := &HTTPResponse{ht: &h}
+func (h *HTTP) Delete(url string, body []byte) *HTTPResponse {
+	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -165,29 +177,27 @@ func (h HTTP) Delete(url string, body []byte) *HTTPResponse {
 		hr.err = err
 		return hr
 	}
-	hr.do(req, true)
+	h.do(hr, req, true)
 	return hr
 }
-func (h HTTP) Post(url string, body []byte) *HTTPResponse {
-	hr := &HTTPResponse{ht: &h}
+func (h *HTTP) Post(url string, body []byte) *HTTPResponse {
+	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
 	}
-	if *debug {
-		fmt.Printf("Body: \"%s\"\n", string(body))
-	}
+	h.Debugf("Body: \"%s\"\n", string(body))
 	b := strings.NewReader(string(body))
 	req, err := http.NewRequest("POST", url, b)
 	if err != nil {
 		hr.err = err
 		return hr
 	}
-	hr.do(req, true)
+	h.do(hr, req, true)
 	return hr
 }
-func (h HTTP) Put(url string, body string) *HTTPResponse {
-	hr := &HTTPResponse{ht: &h}
+func (h *HTTP) Put(url string, body string) *HTTPResponse {
+	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
 		return hr
@@ -198,7 +208,7 @@ func (h HTTP) Put(url string, body string) *HTTPResponse {
 		hr.err = err
 		return hr
 	}
-	hr.do(req, true)
+	h.do(hr, req, true)
 	return hr
 }
 
@@ -219,13 +229,13 @@ func Put(url string, body string) ([]byte, error) {
 	return res.Body(), res.Error()
 }
 
-func (h HTTP) Cookies() []*http.Cookie {
+func (h *HTTP) Cookies() []*http.Cookie {
 	if h.jar == nil {
 		return nil
 	}
 	return h.jar.cookies
 }
-func (h HTTP) Cookie(name string) *http.Cookie {
+func (h *HTTP) Cookie(name string) *http.Cookie {
 	if h.jar == nil {
 		return nil
 	}
@@ -236,28 +246,25 @@ func (h HTTP) Cookie(name string) *http.Cookie {
 	}
 	return nil
 }
-func (h *HTTPResponse) do(req *http.Request, readbody bool) *HTTPResponse {
-	if h.ht.jar == nil {
-		h.ht.jar = &Cookies{}
+func (h *HTTP) do(hr *HTTPResponse, req *http.Request, readbody bool) *HTTPResponse {
+	h.Debugf("request started\n")
+	if h.jar == nil {
+		h.jar = &Cookies{}
 	}
 
 	ctx := context.Background()
-	if h.ht.username != "" {
-		req.SetBasicAuth(h.ht.username, h.ht.password)
+	if h.username != "" {
+		req.SetBasicAuth(hr.ht.username, hr.ht.password)
 	}
 	tr := mytr
-	if h.ht.transport != nil {
-		tr = h.ht.transport
+	if hr.ht.transport != nil {
+		tr = hr.ht.transport
 	}
-	hclient := &http.Client{Transport: tr, Jar: h.ht.jar}
-	if *debug {
-		h.ht.jar.Print()
-	}
-	if h.ht.headers != nil {
-		for k, v := range h.ht.headers {
-			if *debug {
-				fmt.Printf("Header \"%s\" = \"%s\"\n", k, v)
-			}
+	hclient := &http.Client{Transport: tr, Jar: h.jar}
+	h.jar.Print()
+	if h.headers != nil {
+		for k, v := range h.headers {
+			h.Debugf("Header \"%s\" = \"%s\"\n", k, v)
 			req.Header.Set(k, v)
 
 			if strings.ToLower(k) == "host" {
@@ -266,78 +273,72 @@ func (h *HTTPResponse) do(req *http.Request, readbody bool) *HTTPResponse {
 
 		}
 	}
-	if *debug {
-		fmt.Printf("Sending %d cookies\n", len(h.ht.jar.cookies))
-	}
+	h.Debugf("Sending %d cookies\n", len(h.jar.cookies))
 
-	for _, c := range h.ht.jar.cookies {
-		if *debug {
-			fmt.Printf("Adding cookie %s\n", c.Name)
-		}
+	for _, c := range h.jar.cookies {
+		h.Debugf("Adding cookie %s\n", c.Name)
+
 		req.Header.Add("Cookie", fmt.Sprintf("%s=%s", c.Name, c.Value))
 	}
 	started := time.Now()
-	if h.ht.doMetric() {
-		callcounter.With(h.ht.promLabels()).Inc()
+	if h.doMetric() {
+		callcounter.With(h.promLabels()).Inc()
 	}
 	resp, err := hclient.Do(req)
 	if resp != nil {
-		h.httpCode = resp.StatusCode
-		h.finalurl = resp.Request.URL.String()
+		hr.httpCode = resp.StatusCode
+		hr.finalurl = resp.Request.URL.String()
 
 	}
 	if err != nil {
-		if h.ht.doMetric() {
-			failcounter.With(h.ht.promLabels()).Inc()
+		if h.doMetric() {
+			failcounter.With(h.promLabels()).Inc()
 		}
-		h.err = err
-		return h
+		hr.err = err
+		return hr
 	}
 
-	if *debug {
-		fmt.Printf("Request to %s complete (code=%d)\n", h.FinalURL(), h.HTTPCode())
-	}
-	h.header = make(map[string]string)
+	h.Debugf("Request to %s complete (code=%d)\n", hr.FinalURL(), hr.HTTPCode())
+
+	hr.header = make(map[string]string)
 	for k, va := range resp.Header {
 		if len(va) == 0 {
 			continue
 		}
 		k = strings.ToLower(k)
 		for _, v := range va {
-			h.allheaders = append(h.allheaders, &header{Name: k, Value: v})
+			hr.allheaders = append(hr.allheaders, &header{Name: k, Value: v})
 		}
-		h.header[k] = va[0]
+		hr.header[k] = va[0]
 	}
-	h.resp = resp
-	h.received_cookies = resp.Cookies()
-	if *debug {
-		fmt.Printf("Received %d cookies\n", len(h.received_cookies))
-	}
+	hr.resp = resp
+	hr.received_cookies = resp.Cookies()
+	h.Debugf("Received %d cookies\n", len(hr.received_cookies))
 
 	if readbody {
 		defer resp.Body.Close()
 		pbody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			h.err = err
-			return h
+			hr.err = err
+			return hr
 		}
-		h.body = pbody
+		hr.body = pbody
 	}
 	if resp.StatusCode == 404 {
-		if h.ht.doMetric() {
-			failcounter.With(h.ht.promLabels()).Inc()
+		if h.doMetric() {
+			failcounter.With(h.promLabels()).Inc()
 		}
 		h.err = errors.Error(ctx, codes.NotFound, "not found", "%s not found", req.URL)
 	} else if resp.StatusCode > 299 || resp.StatusCode < 200 {
-		if h.ht.doMetric() {
-			failcounter.With(h.ht.promLabels()).Inc()
+		if h.doMetric() {
+			failcounter.With(h.promLabels()).Inc()
 		}
 		h.err = fmt.Errorf("Http to \"%s\" failed with code %d", req.URL, resp.StatusCode)
 	}
 	if h.err == nil {
-		durationSummary.With(h.ht.promLabels()).Observe(time.Since(started).Seconds())
+		durationSummary.With(h.promLabels()).Observe(time.Since(started).Seconds())
 	}
-	return h
+	return hr
 }
 
 type transport struct {
