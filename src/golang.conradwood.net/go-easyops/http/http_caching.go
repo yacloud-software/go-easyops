@@ -29,19 +29,19 @@ type timeouter struct {
 	idx int
 }
 
-func (h cHTTP) SetDebug(b bool) {
+func (h *cHTTP) SetDebug(b bool) {
 	h.debug = b
 }
-func (h cHTTP) Cookie(name string) *http.Cookie {
+func (h *cHTTP) Cookie(name string) *http.Cookie {
 	panic("cookie not supported")
 }
-func (h cHTTP) Cookies() []*http.Cookie {
+func (h *cHTTP) Cookies() []*http.Cookie {
 	panic("cookies not supported")
 }
-func (h cHTTP) Delete(url string, body []byte) *HTTPResponse {
+func (h *cHTTP) Delete(url string, body []byte) *HTTPResponse {
 	panic("delete not supported")
 }
-func (h cHTTP) Get(url string) *HTTPResponse {
+func (h *cHTTP) Get(url string) *HTTPResponse {
 	defer h.stop_timeouter()
 	ctx := h.ctx
 	hr := &HTTPResponse{}
@@ -102,19 +102,19 @@ func (h cHTTP) Get(url string) *HTTPResponse {
 	hr.body = buf
 	return hr
 }
-func (h cHTTP) GetStream(url string) *HTTPResponse {
+func (h *cHTTP) GetStream(url string) *HTTPResponse {
 	return nil
 }
-func (h cHTTP) Head(url string) *HTTPResponse {
+func (h *cHTTP) Head(url string) *HTTPResponse {
 	panic("head not supported")
 }
-func (h cHTTP) Post(url string, body []byte) *HTTPResponse {
+func (h *cHTTP) Post(url string, body []byte) *HTTPResponse {
 	panic("post not supported")
 }
-func (h cHTTP) Put(url string, body string) *HTTPResponse {
+func (h *cHTTP) Put(url string, body string) *HTTPResponse {
 	panic("put not supported")
 }
-func (h cHTTP) SetHeader(key string, value string) {
+func (h *cHTTP) SetHeader(key string, value string) {
 	panic("setheader not supported")
 }
 func (h *cHTTP) SetTimeout(dur time.Duration) {
@@ -160,7 +160,7 @@ func (h *cHTTP) timeouter(t *timeouter) {
 
 }
 
-func (h cHTTP) debugf(format string, args ...interface{}) {
+func (h *cHTTP) debugf(format string, args ...interface{}) {
 	if !*debug {
 		return
 	}

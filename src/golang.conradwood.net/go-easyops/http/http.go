@@ -38,7 +38,7 @@ func NewCachingClient(ctx context.Context) HTTPIF {
 }
 
 // retrieve directly from source
-func NewDirectClient() *HTTP {
+func NewDirectClient() HTTPIF {
 	if *debug {
 		fmt.Printf("New direct client..\n")
 	}
