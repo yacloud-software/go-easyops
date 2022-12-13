@@ -81,9 +81,9 @@ func (h *cHTTP) Get(url string) *HTTPResponse {
 			hr.httpCode = int(r.HTTPCode)
 			if !r.Success {
 				if hr.httpCode == 404 {
-					hr.err = errors.NotFound(ctx, "failed to retrieve url (code %d): %s", hr.httpCode, r.Message)
+					hr.err = errors.NotFound(ctx, "url \"%s\" not found (code %d): %s", url, hr.httpCode, r.Message)
 				} else {
-					hr.err = fmt.Errorf("failed to retrieve url (code %d): %s", hr.httpCode, r.Message)
+					hr.err = fmt.Errorf("failed to retrieve url \"%s\" (code %d): %s", url, hr.httpCode, r.Message)
 				}
 				break
 			}
