@@ -373,7 +373,7 @@ golang.conradwood.net/apis/framework v1.1.2043 h1:OLkfTW7AKbFbFl+mry9xklusXUjmve
 golang.conradwood.net/apis/framework v1.1.2043/go.mod h1:aakclkFxoK6Rwfb6wWbfyCPRiWsAZM94xYz69Y9fid4=
 golang.conradwood.net/apis/getestservice v1.1.2006 h1:5oqDCovJ9WN2YB1sSSV3aTSycf2vEQU1EwzO6JSFoGE=
 golang.conradwood.net/apis/getestservice v1.1.2006/go.mod h1:4pu+kX/LtVe5CpPJxIlhbByoO780AtvJWJw2XEvgQ1o=
-golang.conradwood.net/apis/gitserver v1.1.2006 h1:cgy2dvhKkvQg6ZoQhg3eM5XFsng/8Ucc3R5uLae5DLE=
+golang.conradwood.net/apis/gitserver v1.1.2006 h1:API3ezurNjrZDFKEuvCfitGJemYbU7BXXPq9Rw819AE=
 golang.conradwood.net/apis/gitserver v1.1.2006/go.mod h1:NaET2knVJg3IU9bgx50nO4FWNpKHh1O3Rd3IDZwJnQY=
 golang.conradwood.net/apis/goeasyops v1.1.2006 h1:lTHi5HRUO85/6c+3v3qVHFmXRBgC5e6ZPY+xuaW5HMg=
 golang.conradwood.net/apis/goeasyops v1.1.2006/go.mod h1:tecmKoGj8rpD4Kri6kj0WHaY+U5ici0n3tb0hR3Nnfw=

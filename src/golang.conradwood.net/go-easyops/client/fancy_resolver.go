@@ -33,7 +33,7 @@ var (
 	proxyTargetLock   sync.Mutex
 	proxiedTargets    = make(map[string]*ProxyTarget)      // serviceid -> proxytarget
 	registryclients   = make(map[string]pb.RegistryClient) // map of "ip:port" -> registry
-	resolv_chan       = make(chan int)
+	resolv_chan       = make(chan int, 50)                 // buffered channel
 	resolvers         []*FancyResolver
 	totalQueryCtr     = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
