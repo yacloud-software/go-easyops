@@ -175,7 +175,7 @@ func Datacenter() bool {
 	return *running_in_datacenter
 }
 
-// return para if non empty or retrieve value from environment and return that instead
+// if (para != "") { return para }, else return os.GetEnv(envname)
 func OptEnvString(para, envname string) string {
 	if para != "" {
 		return para

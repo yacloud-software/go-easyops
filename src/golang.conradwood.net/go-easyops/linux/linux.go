@@ -17,11 +17,11 @@ var (
 	cmdLock    sync.Mutex
 	curCmd     string
 	LogExe     = flag.Bool("ge_debug_exe", false, "debug execution of third party binaries")
-	maxRuntime = flag.Int("ge_default_max_runtime_exe", 5, "m̀ax_runtime in seconds for external binaries")
+	maxRuntime = flag.Duration("ge_default_max_runtime_exe", time.Duration(5)*time.Second, "m̀ax_runtime for external binaries")
 )
 
 type linux struct {
-	Runtime          int
+	Runtime          time.Duration
 	AllowConcurrency bool
 	ctx              context.Context
 	envs             []string
@@ -31,7 +31,7 @@ type Linux interface {
 	SafelyExecute(cmd []string, stdin io.Reader) (string, error)
 	SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) (string, error)
 	MyIP() string
-	SetRuntime(int)
+	SetRuntime(time.Duration)
 	SetAllowConcurrency(bool)
 	SetEnvironment([]string)
 }
@@ -107,10 +107,10 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 
 // execute with timeout.
 // sends SIGKILL to process on timeout and returns error
-func (l *linux) syncExecute(c *exec.Cmd, timeout int) (string, error) {
+func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) {
 	running := false
 	killed := false
-	timer1 := time.NewTimer(time.Second * time.Duration(timeout))
+	timer1 := time.NewTimer(timeout)
 	go func() {
 		<-timer1.C
 		if running {
@@ -138,8 +138,8 @@ func printOutput(cmd string, output string) {
 func (l *linux) SetEnvironment(sx []string) {
 	l.envs = sx
 }
-func (l *linux) SetRuntime(r int) {
-	l.Runtime = r
+func (l *linux) SetRuntime(d time.Duration) {
+	l.Runtime = d
 }
 func (l *linux) SetAllowConcurrency(b bool) {
 	l.AllowConcurrency = b
