@@ -69,6 +69,13 @@ func ContextWithTokenAndTimeout(seconds uint64) context.Context {
 	}(cnc, seconds)
 	return metadata.NewOutgoingContext(ctx, md)
 }
+func Context2WithTokenAndTimeout(seconds uint64) (context.Context, context.CancelFunc) {
+	md := buildMeta()
+	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	return ctx, cnc
+}
+
 func SetServiceTokenParameter(tok string) {
 	*token = tok
 }
