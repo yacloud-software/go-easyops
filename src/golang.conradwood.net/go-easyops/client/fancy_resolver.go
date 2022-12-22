@@ -8,10 +8,8 @@ import (
 	"flag"
 	"fmt"
 	pb "golang.conradwood.net/apis/registry"
-	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/prometheus"
-	"golang.conradwood.net/go-easyops/standalone"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/attributes"
@@ -206,36 +204,7 @@ func defaultInterval() time.Duration {
 
 // get the ip:port listings from the registry for this service
 func (f *FancyResolver) queryForInstances() ([]*pb.Target, error) {
-	serviceName := f.target
-	totalQueryCtr.With(prometheus.Labels{"servicename": serviceName}).Inc()
-	if *dialer_debug {
-		fmt.Printf("[go-easyops] Resolving service address \"%s\" via registry %s...\n", serviceName, f.registry)
-	}
-	request := &pb.V2GetTargetRequest{
-		ApiType:     pb.Apitype_grpc,
-		ServiceName: []string{serviceName},
-		Partition:   "",
-	}
-	var err error
-	var list *pb.V2GetTargetResponse
-	ctx := context.Background()
-	if cmdline.IsStandalone() {
-		list, err = standalone.Registry_V2GetTarget(ctx, request)
-	} else {
-		regClient, xerr := getRegistryClient(f.registry)
-		if xerr != nil {
-			return nil, xerr
-		}
-		list, err = regClient.V2GetTarget(ctx, request)
-	}
-	// error getting stuff from registry
-	if err != nil {
-		if *dialer_debug {
-			fmt.Printf("[go-easyops] error retrieving hosts for %s: %s\n", serviceName, err)
-		}
-		return nil, err
-	}
-	return list.Targets, nil
+	return queryServiceInstances(f.registry, f.target)
 }
 
 /*
