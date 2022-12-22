@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package framework;
+import "golang.conradwood.net/apis/auth/auth.proto";
 
 option java_package = "golang.conradwood.net.framework";
 
@@ -14,4 +15,24 @@ message FrameworkMessageDetail {
   repeated CallTrace CallTraces = 1;
   string Message = 2;
   string RequestID = 3;
+}
+
+// this is transported within the Context of a call
+message InContext {
+  ImmutableContext ImCtx=1;
+  MutableContext MCtx=2;
+}
+// this must not be changed throughout its lifetime. furthermore, go-easyops _must_ transport this as-is (preserving unknown fields)
+message ImmutableContext {
+  string RequestID=1; // a request id for a call
+  auth.SignedUser CreatorService=2; // which service created this context (nil if not created by a service)
+  auth.SignedUser User=3; // the user making this RPC call
+  auth.SignedUser SudoUser=4; // the permissions to use for this RPC call
+  auth.SignedSession Session=5; // this logins session
+}
+// this may change. fields are not guaranteed to be preserved
+message MutableContext {
+  auth.SignedUser CallingService=1; // the most recent service (the service making the call)
+  bool Debug=2; // if debug is enabled for this call
+  bool Trace=3; // if trace is enabled for this call
 }
