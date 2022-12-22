@@ -31,7 +31,7 @@ type Linux interface {
 	SafelyExecute(cmd []string, stdin io.Reader) (string, error)
 	SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) (string, error)
 	MyIP() string
-	SetRuntime(time.Duration)
+	SetMaxRuntime(time.Duration)
 	SetAllowConcurrency(bool)
 	SetEnvironment([]string)
 }
@@ -138,7 +138,7 @@ func printOutput(cmd string, output string) {
 func (l *linux) SetEnvironment(sx []string) {
 	l.envs = sx
 }
-func (l *linux) SetRuntime(d time.Duration) {
+func (l *linux) SetMaxRuntime(d time.Duration) {
 	l.Runtime = d
 }
 func (l *linux) SetAllowConcurrency(b bool) {
