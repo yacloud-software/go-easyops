@@ -60,7 +60,7 @@ golang.conradwood.net/apis/errorlogger v1.1.2043 h1:lP3ewNbkvLxsKo20SK9dS3iV+n7/
 golang.conradwood.net/apis/errorlogger v1.1.2043/go.mod h1:+eKYK50e04sTKr9qD9U44eztaeMSafHkzfjejBdMaqw=
 golang.conradwood.net/apis/framework v1.1.2043 h1:OLkfTW7AKbFbFl+mry9xklusXUjmveOKxo7eAO0W3A0=
 golang.conradwood.net/apis/framework v1.1.2043/go.mod h1:aakclkFxoK6Rwfb6wWbfyCPRiWsAZM94xYz69Y9fid4=
-golang.conradwood.net/apis/goeasyops v1.1.2060 h1:FUiOAZXGu0WAE3U6+CSXokzuHBfmbApAz5NyEI5e8hU=
+golang.conradwood.net/apis/goeasyops v1.1.2060 h1:LpWGLWDxEmTN/Exp1N+gnVoPqZoJTtFtBSsGXPqGTzE=
 golang.conradwood.net/apis/goeasyops v1.1.2060/go.mod h1:tecmKoGj8rpD4Kri6kj0WHaY+U5ici0n3tb0hR3Nnfw=
 golang.conradwood.net/apis/logservice v1.1.2043 h1:F8DSVcRnDNOHI9ysElzwP8tU22aXaRJkKyNrkmU86Kc=
 golang.conradwood.net/apis/logservice v1.1.2043/go.mod h1:lHKq9Oj6vUE77MOwAsk/zqTvfuJw3i0FEkhAz4w7I4c=
