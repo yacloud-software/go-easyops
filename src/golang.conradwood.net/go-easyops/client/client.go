@@ -19,6 +19,9 @@ import (
 )
 
 var (
+	got_client_creds = false
+	client_creds     credentials.TransportCredentials
+
 	cert      = []byte{1, 2, 3}
 	errorList []*errorCache
 	errorLock sync.Mutex
@@ -79,6 +82,9 @@ func hasApi(ar []pb.Apitype, lf pb.Apitype) bool {
 
 // get the Client Credentials we use to connect to other RPCs
 func GetClientCreds() credentials.TransportCredentials {
+	if got_client_creds {
+		return client_creds
+	}
 	roots := x509.NewCertPool()
 
 	frontendCert := certificates.Certificate()
@@ -103,7 +109,8 @@ func GetClientCreds() credentials.TransportCredentials {
 		RootCAs:            roots,
 		InsecureSkipVerify: true,
 	})
-
+	client_creds = creds
+	got_client_creds = true
 	return creds
 }
 

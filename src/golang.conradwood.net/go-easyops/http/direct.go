@@ -247,14 +247,20 @@ func (h *HTTP) Cookie(name string) *http.Cookie {
 	return nil
 }
 func (h *HTTP) do(hr *HTTPResponse, req *http.Request, readbody bool) *HTTPResponse {
+	cr := &cred_producer{host: req.Host}
+	if h.username != "" {
+		cr.AddUsernamePassword(h.username, h.password)
+	}
+retry:
 	h.Debugf("request started\n")
 	if h.jar == nil {
 		h.jar = &Cookies{}
 	}
 
 	ctx := context.Background()
-	if h.username != "" {
-		req.SetBasicAuth(hr.ht.username, hr.ht.password)
+	creds := cr.GetCredentials()
+	if creds != nil {
+		req.SetBasicAuth(creds.username, creds.password)
 	}
 	tr := mytr
 	if hr.ht.transport != nil {
@@ -277,7 +283,6 @@ func (h *HTTP) do(hr *HTTPResponse, req *http.Request, readbody bool) *HTTPRespo
 
 	for _, c := range h.jar.cookies {
 		h.Debugf("Adding cookie %s\n", c.Name)
-
 		req.Header.Add("Cookie", fmt.Sprintf("%s=%s", c.Name, c.Value))
 	}
 	started := time.Now()
@@ -286,9 +291,18 @@ func (h *HTTP) do(hr *HTTPResponse, req *http.Request, readbody bool) *HTTPRespo
 	}
 	resp, err := hclient.Do(req)
 	if resp != nil {
+		if resp.StatusCode == 401 {
+			if creds != nil {
+				if *debug {
+					fmt.Printf("url failed for user %s\n", creds.username)
+				}
+				goto retry
+			}
+		}
+	}
+	if resp != nil {
 		hr.httpCode = resp.StatusCode
 		hr.finalurl = resp.Request.URL.String()
-
 	}
 	if err != nil {
 		if h.doMetric() {
