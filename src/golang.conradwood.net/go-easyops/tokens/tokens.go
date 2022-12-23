@@ -25,7 +25,8 @@ var (
 )
 
 const (
-	METANAME = "goeasyops_meta" // marshaled proto
+	METANAME  = "goeasyops_meta"   // marshaled proto
+	METANAME2 = "goeasyopsv2_meta" // marshaled proto
 )
 
 func DisableUserToken() {
@@ -51,6 +52,9 @@ func buildMeta() metadata.MD {
 // if there is neither a -token parameter nor a user token it will
 // look at Environment variable GE_CTX and deserialise it
 func ContextWithToken() context.Context {
+	if cmdline.ContextV2() {
+		panic("contextv2 incomplete")
+	}
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(*Deadline)*time.Second)
 	go func(cf context.CancelFunc) {
@@ -61,6 +65,9 @@ func ContextWithToken() context.Context {
 
 }
 func ContextWithTokenAndTimeout(seconds uint64) context.Context {
+	if cmdline.ContextV2() {
+		panic("contextv2 incomplete")
+	}
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
 	go func(cf context.CancelFunc, s uint64) {
@@ -70,6 +77,9 @@ func ContextWithTokenAndTimeout(seconds uint64) context.Context {
 	return metadata.NewOutgoingContext(ctx, md)
 }
 func Context2WithTokenAndTimeout(seconds uint64) (context.Context, context.CancelFunc) {
+	if cmdline.ContextV2() {
+		panic("contextv2 incomplete")
+	}
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
 	ctx = metadata.NewOutgoingContext(ctx, md)

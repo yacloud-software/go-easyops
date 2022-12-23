@@ -25,6 +25,7 @@ var (
 	print_easyops     = false
 	manreg            = ""
 	stdalone          = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
+	context_v2        = flag.Bool("ge_context_v2", false, "a new (experimental) context messaging method")
 )
 
 // in the init function we have not yet defined all the flags
@@ -191,4 +192,7 @@ func IsStandalone() bool {
 }
 func LocalRegistrationDir() string {
 	return "/tmp/local_registry"
+}
+func ContextV2() bool {
+	return *context_v2
 }

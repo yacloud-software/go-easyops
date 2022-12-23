@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
+	//ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	LOCALCONTEXTNAME = "GOEASYOPS_LOCALCTX"
+	LOCALCONTEXTNAME   = "GOEASYOPS_LOCALCTX"
+	LOCALCONTEXTNAMEV2 = "GOEASYOPS_LOCALCTX_V2"
 	// timeout for newly created context in this package
 	DEFAULT_TIMEOUT_SECS = 10
 )
@@ -35,8 +37,10 @@ func init() {
 	prometheus.MustRegister(userSourceMetric)
 }
 
-// information about our local call stack
+// information about our local call stack.
+// this should always have been an interface, really..
 type CallState struct {
+	// v1
 	Debug           bool
 	Started         time.Time
 	ServiceName     string // this is our servicename (the one this module exports)
@@ -47,8 +51,19 @@ type CallState struct {
 	Context         context.Context // guaranteed to be the most "up-to-date" context.
 	MyServiceID     uint64          // that is us (our local serviceid)
 	userCounted     bool
+	// v2
+	v2   LocalCallState // might be nil for old stuff
+	isV2 bool
 }
 
+// this now is a "V2" style callstate
+func (c *CallState) SetV2(lcs LocalCallState) {
+	c.v2 = lcs
+	c.isV2 = true
+}
+func (c *CallState) IsV2() bool {
+	return c.isV2
+}
 func EnableDebug(ctx context.Context) {
 	cs := CallStateFromContext(ctx)
 	if cs == nil {
@@ -58,6 +73,10 @@ func EnableDebug(ctx context.Context) {
 }
 
 func (cs *CallState) RequestID() string {
+	if cs.IsV2() {
+		return cs.v2.RequestID()
+	}
+
 	im := cs.Metadata
 	if im == nil {
 		return ""
@@ -69,6 +88,9 @@ func (cs *CallState) RequestID() string {
 func (cs *CallState) User() *auth.User {
 	if cs == nil {
 		return nil
+	}
+	if cs.IsV2() {
+		return cs.v2.User()
 	}
 	// signedv2 user available? if so return
 	if cs.Metadata != nil && cs.Metadata.SignedUser != nil {
@@ -117,6 +139,9 @@ func (cs *CallState) CallerService() *auth.User {
 	if cs == nil {
 		return nil
 	}
+	if cs.IsV2() {
+		return cs.v2.CallingService()
+	}
 	if cs.RPCIResponse == nil {
 		return nil
 	}
@@ -155,6 +180,9 @@ func (cs *CallState) DebugPrintContext() {
 func (cs *CallState) RoutingTags() *rc.CTXRoutingTags {
 	if cs == nil {
 		return nil
+	}
+	if cs.IsV2() {
+		return Tags_ge_to_rpc(cs.v2.RoutingTags())
 	}
 	if cs.Metadata == nil {
 		return nil
@@ -283,6 +311,9 @@ func ContextWithCallState(ctx context.Context) (context.Context, *CallState) {
 	return nc, cs
 }
 func (cs *CallState) SignedSession() *auth.SignedSession {
+	if cs.IsV2() {
+		return cs.v2.SignedSession()
+	}
 	if cs.Metadata == nil {
 		return nil
 	}

@@ -25,26 +25,19 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	pp.ServerRpcEntered()
 	defer pp.ServerRpcDone()
 	started := time.Now()
-	cs := &rpc.CallState{
-		Started:     time.Now(),
-		ServiceName: ServiceNameFromUnaryInfo(info),
-		MethodName:  MethodNameFromUnaryInfo(info),
-		Context:     in_ctx,
-		MyServiceID: sd.serviceID,
+	cs, err := sd.buildCallStateV2(in_ctx, req, info, handler)
+	if err != nil {
+		fmt.Printf("[go-easyops] V2 context parser returned error: %s\n", err)
+		return nil, err
 	}
-	ctx := context.WithValue(in_ctx, rpc.LOCALCONTEXTNAME, cs)
-	cs.Context = ctx
-	def := getServerDefByName(cs.ServiceName)
-
-	// this can happen if we're looking for a different service than who we are.
-	// it's really bad actually (probably a bug);)
-
-	if def == nil {
-		s := fmt.Sprintf("[go-easyops] Service not registered! %s", cs.ServiceName)
-		fmt.Println(s)
-		return nil, errors.Error(cs.Context, codes.Unimplemented, "service unavailable", "service %s is not known here", cs.ServiceName)
+	if cs == nil {
+		fmt.Printf("[go-easyops] received context/metadata contained no v2 informatinon\n")
+		// no v2, try V1
+		cs, err = sd.buildCallStateV1(in_ctx, req, info, handler)
+		if err != nil {
+			return nil, err
+		}
 	}
-
 	//fmt.Printf("Method: \"%s\"\n", method)
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{
 		"method":      cs.MethodName,
@@ -59,33 +52,6 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		"method":      cs.MethodName,
 		"servicename": cs.ServiceName,
 	}).Inc()
-
-	// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
-	if !def.NoAuth && !cmdline.IsStandalone() {
-		err := Authenticate(cs)
-		if err != nil {
-			fancyPrintf("Debug-rpc Request: Authenticate() failed for \"%s/%s\" => rejected: %s\n", cs.MethodName, cs.ServiceName, err)
-			return nil, err
-		}
-		if cs.RPCIResponse.Reject {
-			return nil, errors.Error(cs.Context, codes.PermissionDenied, "access denied", "Access denied to %s for user %s", cs.TargetString(), cs.CallerString())
-		}
-	}
-	if cs.Metadata != nil {
-		cs.Metadata.FooBar = "go-easyops"
-		if cs.Metadata.RoutingTags != nil && cs.Metadata.RoutingTags.Propagate == false {
-			cs.Metadata.RoutingTags = nil
-		}
-	}
-
-	// this rebuilds the metadata string from cs.Metadata
-	cs.UpdateContextFromResponse()
-	cs.DebugPrintContext()
-	if *debug_rpc_serve {
-		user := auth.GetUser(cs.Context)
-		svc := auth.GetService(cs.Context)
-		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s\" from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.UserIDString(user), auth.UserIDString(svc))
-	}
 
 	/*************** now call the rpc implementation *****************/
 	i, err := handler(cs.Context, req)
@@ -126,4 +92,72 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		eh(cs.Context, cs.MethodName, err)
 	}
 	return i, st.Err()
+}
+
+func (sd *serverDef) buildCallStateV2(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (*rpc.CallState, error) {
+	cs := &rpc.CallState{
+		Started:     time.Now(),
+		ServiceName: ServiceNameFromUnaryInfo(info),
+		MethodName:  MethodNameFromUnaryInfo(info),
+		Context:     in_ctx,
+		MyServiceID: sd.serviceID,
+	}
+	t, err := parse_inbound_context_v2(in_ctx, cs)
+	if err != nil {
+		return nil, err
+	}
+	if !t {
+		return nil, nil
+	}
+	return cs, nil
+}
+
+func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (*rpc.CallState, error) {
+	cs := &rpc.CallState{
+		Started:     time.Now(),
+		ServiceName: ServiceNameFromUnaryInfo(info),
+		MethodName:  MethodNameFromUnaryInfo(info),
+		Context:     in_ctx,
+		MyServiceID: sd.serviceID,
+	}
+	ctx := context.WithValue(in_ctx, rpc.LOCALCONTEXTNAME, cs)
+	cs.Context = ctx
+	def := getServerDefByName(cs.ServiceName)
+
+	// this can happen if we're looking for a different service than who we are.
+	// it's really bad actually (probably a bug);)
+
+	if def == nil {
+		s := fmt.Sprintf("[go-easyops] Service not registered! %s", cs.ServiceName)
+		fmt.Println(s)
+		return nil, errors.Error(cs.Context, codes.Unimplemented, "service unavailable", "service %s is not known here", cs.ServiceName)
+	}
+
+	// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
+	if !def.NoAuth && !cmdline.IsStandalone() {
+		err := Authenticate(cs)
+		if err != nil {
+			fancyPrintf("Debug-rpc Request: Authenticate() failed for \"%s/%s\" => rejected: %s\n", cs.MethodName, cs.ServiceName, err)
+			return nil, err
+		}
+		if cs.RPCIResponse.Reject {
+			return nil, errors.Error(cs.Context, codes.PermissionDenied, "access denied", "Access denied to %s for user %s", cs.TargetString(), cs.CallerString())
+		}
+	}
+	if cs.Metadata != nil {
+		cs.Metadata.FooBar = "go-easyops"
+		if cs.Metadata.RoutingTags != nil && cs.Metadata.RoutingTags.Propagate == false {
+			cs.Metadata.RoutingTags = nil
+		}
+	}
+
+	// this rebuilds the metadata string from cs.Metadata
+	cs.UpdateContextFromResponse()
+	cs.DebugPrintContext()
+	if *debug_rpc_serve {
+		user := auth.GetUser(cs.Context)
+		svc := auth.GetService(cs.Context)
+		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s\" from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.UserIDString(user), auth.UserIDString(svc))
+	}
+	return cs, nil
 }

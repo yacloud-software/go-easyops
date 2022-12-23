@@ -14,6 +14,7 @@ require (
 	golang.conradwood.net/apis/echoservice v1.1.2043
 	golang.conradwood.net/apis/errorlogger v1.1.2043
 	golang.conradwood.net/apis/framework v1.1.2043
+	golang.conradwood.net/apis/goeasyops v1.1.2060
 	golang.conradwood.net/apis/logservice v1.1.2043
 	golang.conradwood.net/apis/objectstore v1.1.2043
 	golang.conradwood.net/apis/registry v1.1.2043
@@ -33,5 +34,6 @@ require (
 	golang.conradwood.net/apis/autodeployer v1.1.2043 // indirect
 	golang.conradwood.net/apis/deploymonkey v1.1.2043 // indirect
 	golang.org/x/text v0.5.0 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

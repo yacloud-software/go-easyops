@@ -1,8 +1,9 @@
 module golang.conradwood.net/tests
 
-go 1.17
+go 1.18
 
 replace golang.conradwood.net/go-easyops => ../go-easyops
+replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
 
 require (
 	golang.conradwood.net/apis/auth v1.1.2058

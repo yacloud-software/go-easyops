@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
+	ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cache"
@@ -95,7 +96,10 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 	if sctx != "" {
 		return auth.Context(t)
 	}
-
+	if cmdline.ContextV2() {
+		gert := &ge.CTXRoutingTags{}
+		return ContextV2WithTimeoutAndTags(t, gert)
+	}
 	if !contextRetrieved {
 		lastUser = SignedGetByToken(context.Background(), tokens.GetUserTokenParameter())
 		lastService = SignedGetByToken(context.Background(), tokens.GetServiceTokenParameter())

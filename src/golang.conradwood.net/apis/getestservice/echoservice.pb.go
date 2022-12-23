@@ -9,14 +9,25 @@ It is generated from these files:
 	protos/golang.conradwood.net/apis/getestservice/echoservice.proto
 
 It has these top-level messages:
+	Call
 	PingRequest
 	PingResponse
+	FindServiceRequest
+	FindServiceResponse
+	UserByLoginRequest
+	UserByTokenRequest
+	AuthResponse
+	Target
+	Chain
+	Count
 */
 package getestservice
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
+import auth "golang.conradwood.net/apis/auth"
+import common "golang.conradwood.net/apis/common"
 
 import (
 	context "golang.org/x/net/context"
@@ -34,6 +45,46 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+type Call struct {
+	Position  int32  `protobuf:"varint,1,opt,name=Position" json:"Position,omitempty"`
+	UserID    string `protobuf:"bytes,2,opt,name=UserID" json:"UserID,omitempty"`
+	ServiceID string `protobuf:"bytes,3,opt,name=ServiceID" json:"ServiceID,omitempty"`
+	RequestID string `protobuf:"bytes,4,opt,name=RequestID" json:"RequestID,omitempty"`
+}
+
+func (m *Call) Reset()                    { *m = Call{} }
+func (m *Call) String() string            { return proto.CompactTextString(m) }
+func (*Call) ProtoMessage()               {}
+func (*Call) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+func (m *Call) GetPosition() int32 {
+	if m != nil {
+		return m.Position
+	}
+	return 0
+}
+
+func (m *Call) GetUserID() string {
+	if m != nil {
+		return m.UserID
+	}
+	return ""
+}
+
+func (m *Call) GetServiceID() string {
+	if m != nil {
+		return m.ServiceID
+	}
+	return ""
+}
+
+func (m *Call) GetRequestID() string {
+	if m != nil {
+		return m.RequestID
+	}
+	return ""
+}
+
 type PingRequest struct {
 	SequenceNumber uint32 `protobuf:"varint,1,opt,name=SequenceNumber" json:"SequenceNumber,omitempty"`
 	Payload        string `protobuf:"bytes,2,opt,name=Payload" json:"Payload,omitempty"`
@@ -43,7 +94,7 @@ type PingRequest struct {
 func (m *PingRequest) Reset()                    { *m = PingRequest{} }
 func (m *PingRequest) String() string            { return proto.CompactTextString(m) }
 func (*PingRequest) ProtoMessage()               {}
-func (*PingRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*PingRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
 func (m *PingRequest) GetSequenceNumber() uint32 {
 	if m != nil {
@@ -73,7 +124,7 @@ type PingResponse struct {
 func (m *PingResponse) Reset()                    { *m = PingResponse{} }
 func (m *PingResponse) String() string            { return proto.CompactTextString(m) }
 func (*PingResponse) ProtoMessage()               {}
-func (*PingResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*PingResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 func (m *PingResponse) GetResponse() *PingRequest {
 	if m != nil {
@@ -82,9 +133,184 @@ func (m *PingResponse) GetResponse() *PingRequest {
 	return nil
 }
 
+// for internal testing only
+type FindServiceRequest struct {
+	Name string `protobuf:"bytes,1,opt,name=Name" json:"Name,omitempty"`
+}
+
+func (m *FindServiceRequest) Reset()                    { *m = FindServiceRequest{} }
+func (m *FindServiceRequest) String() string            { return proto.CompactTextString(m) }
+func (*FindServiceRequest) ProtoMessage()               {}
+func (*FindServiceRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *FindServiceRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+// for internal testing only
+type FindServiceResponse struct {
+	Targets []*Target `protobuf:"bytes,1,rep,name=Targets" json:"Targets,omitempty"`
+}
+
+func (m *FindServiceResponse) Reset()                    { *m = FindServiceResponse{} }
+func (m *FindServiceResponse) String() string            { return proto.CompactTextString(m) }
+func (*FindServiceResponse) ProtoMessage()               {}
+func (*FindServiceResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+func (m *FindServiceResponse) GetTargets() []*Target {
+	if m != nil {
+		return m.Targets
+	}
+	return nil
+}
+
+// for internal testing only
+type UserByLoginRequest struct {
+	Username string `protobuf:"bytes,1,opt,name=Username" json:"Username,omitempty"`
+	Password string `protobuf:"bytes,2,opt,name=Password" json:"Password,omitempty"`
+}
+
+func (m *UserByLoginRequest) Reset()                    { *m = UserByLoginRequest{} }
+func (m *UserByLoginRequest) String() string            { return proto.CompactTextString(m) }
+func (*UserByLoginRequest) ProtoMessage()               {}
+func (*UserByLoginRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *UserByLoginRequest) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *UserByLoginRequest) GetPassword() string {
+	if m != nil {
+		return m.Password
+	}
+	return ""
+}
+
+// for internal testing only
+type UserByTokenRequest struct {
+	Token string `protobuf:"bytes,1,opt,name=Token" json:"Token,omitempty"`
+}
+
+func (m *UserByTokenRequest) Reset()                    { *m = UserByTokenRequest{} }
+func (m *UserByTokenRequest) String() string            { return proto.CompactTextString(m) }
+func (*UserByTokenRequest) ProtoMessage()               {}
+func (*UserByTokenRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+func (m *UserByTokenRequest) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
+
+// for internal testing only
+type AuthResponse struct {
+	Valid bool       `protobuf:"varint,1,opt,name=Valid" json:"Valid,omitempty"`
+	User  *auth.User `protobuf:"bytes,2,opt,name=User" json:"User,omitempty"`
+}
+
+func (m *AuthResponse) Reset()                    { *m = AuthResponse{} }
+func (m *AuthResponse) String() string            { return proto.CompactTextString(m) }
+func (*AuthResponse) ProtoMessage()               {}
+func (*AuthResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *AuthResponse) GetValid() bool {
+	if m != nil {
+		return m.Valid
+	}
+	return false
+}
+
+func (m *AuthResponse) GetUser() *auth.User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
+
+// for internal testing only
+type Target struct {
+	IP   string `protobuf:"bytes,1,opt,name=IP" json:"IP,omitempty"`
+	Port uint32 `protobuf:"varint,2,opt,name=Port" json:"Port,omitempty"`
+}
+
+func (m *Target) Reset()                    { *m = Target{} }
+func (m *Target) String() string            { return proto.CompactTextString(m) }
+func (*Target) ProtoMessage()               {}
+func (*Target) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+
+func (m *Target) GetIP() string {
+	if m != nil {
+		return m.IP
+	}
+	return ""
+}
+
+func (m *Target) GetPort() uint32 {
+	if m != nil {
+		return m.Port
+	}
+	return 0
+}
+
+type Chain struct {
+	Position int32   `protobuf:"varint,1,opt,name=Position" json:"Position,omitempty"`
+	Calls    []*Call `protobuf:"bytes,2,rep,name=Calls" json:"Calls,omitempty"`
+}
+
+func (m *Chain) Reset()                    { *m = Chain{} }
+func (m *Chain) String() string            { return proto.CompactTextString(m) }
+func (*Chain) ProtoMessage()               {}
+func (*Chain) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+
+func (m *Chain) GetPosition() int32 {
+	if m != nil {
+		return m.Position
+	}
+	return 0
+}
+
+func (m *Chain) GetCalls() []*Call {
+	if m != nil {
+		return m.Calls
+	}
+	return nil
+}
+
+type Count struct {
+	Count uint32 `protobuf:"varint,1,opt,name=Count" json:"Count,omitempty"`
+}
+
+func (m *Count) Reset()                    { *m = Count{} }
+func (m *Count) String() string            { return proto.CompactTextString(m) }
+func (*Count) ProtoMessage()               {}
+func (*Count) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+
+func (m *Count) GetCount() uint32 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
 func init() {
+	proto.RegisterType((*Call)(nil), "getestservice.Call")
 	proto.RegisterType((*PingRequest)(nil), "getestservice.PingRequest")
 	proto.RegisterType((*PingResponse)(nil), "getestservice.PingResponse")
+	proto.RegisterType((*FindServiceRequest)(nil), "getestservice.FindServiceRequest")
+	proto.RegisterType((*FindServiceResponse)(nil), "getestservice.FindServiceResponse")
+	proto.RegisterType((*UserByLoginRequest)(nil), "getestservice.UserByLoginRequest")
+	proto.RegisterType((*UserByTokenRequest)(nil), "getestservice.UserByTokenRequest")
+	proto.RegisterType((*AuthResponse)(nil), "getestservice.AuthResponse")
+	proto.RegisterType((*Target)(nil), "getestservice.Target")
+	proto.RegisterType((*Chain)(nil), "getestservice.Chain")
+	proto.RegisterType((*Count)(nil), "getestservice.Count")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -257,27 +483,314 @@ var _EchoStreamService_serviceDesc = grpc.ServiceDesc{
 	Metadata: "protos/golang.conradwood.net/apis/getestservice/echoservice.proto",
 }
 
+// Client API for EasyOps service
+
+type EasyOpsClient interface {
+	FindService(ctx context.Context, in *FindServiceRequest, opts ...grpc.CallOption) (*FindServiceResponse, error)
+	UserByLogin(ctx context.Context, in *UserByLoginRequest, opts ...grpc.CallOption) (*AuthResponse, error)
+	UserByToken(ctx context.Context, in *UserByTokenRequest, opts ...grpc.CallOption) (*AuthResponse, error)
+}
+
+type easyOpsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewEasyOpsClient(cc *grpc.ClientConn) EasyOpsClient {
+	return &easyOpsClient{cc}
+}
+
+func (c *easyOpsClient) FindService(ctx context.Context, in *FindServiceRequest, opts ...grpc.CallOption) (*FindServiceResponse, error) {
+	out := new(FindServiceResponse)
+	err := grpc.Invoke(ctx, "/getestservice.EasyOps/FindService", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *easyOpsClient) UserByLogin(ctx context.Context, in *UserByLoginRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
+	out := new(AuthResponse)
+	err := grpc.Invoke(ctx, "/getestservice.EasyOps/UserByLogin", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *easyOpsClient) UserByToken(ctx context.Context, in *UserByTokenRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
+	out := new(AuthResponse)
+	err := grpc.Invoke(ctx, "/getestservice.EasyOps/UserByToken", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for EasyOps service
+
+type EasyOpsServer interface {
+	FindService(context.Context, *FindServiceRequest) (*FindServiceResponse, error)
+	UserByLogin(context.Context, *UserByLoginRequest) (*AuthResponse, error)
+	UserByToken(context.Context, *UserByTokenRequest) (*AuthResponse, error)
+}
+
+func RegisterEasyOpsServer(s *grpc.Server, srv EasyOpsServer) {
+	s.RegisterService(&_EasyOps_serviceDesc, srv)
+}
+
+func _EasyOps_FindService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindServiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EasyOpsServer).FindService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/getestservice.EasyOps/FindService",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EasyOpsServer).FindService(ctx, req.(*FindServiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EasyOps_UserByLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserByLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EasyOpsServer).UserByLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/getestservice.EasyOps/UserByLogin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EasyOpsServer).UserByLogin(ctx, req.(*UserByLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EasyOps_UserByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserByTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EasyOpsServer).UserByToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/getestservice.EasyOps/UserByToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EasyOpsServer).UserByToken(ctx, req.(*UserByTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _EasyOps_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "getestservice.EasyOps",
+	HandlerType: (*EasyOpsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "FindService",
+			Handler:    _EasyOps_FindService_Handler,
+		},
+		{
+			MethodName: "UserByLogin",
+			Handler:    _EasyOps_UserByLogin_Handler,
+		},
+		{
+			MethodName: "UserByToken",
+			Handler:    _EasyOps_UserByToken_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protos/golang.conradwood.net/apis/getestservice/echoservice.proto",
+}
+
+// Client API for EasyOpsTest service
+
+type EasyOpsTestClient interface {
+	CheckSerialisation(ctx context.Context, in *Count, opts ...grpc.CallOption) (*common.Void, error)
+	Ping(ctx context.Context, in *Chain, opts ...grpc.CallOption) (*Chain, error)
+	// does exactly nothing
+	SimplePing(ctx context.Context, in *common.Void, opts ...grpc.CallOption) (*common.Void, error)
+}
+
+type easyOpsTestClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewEasyOpsTestClient(cc *grpc.ClientConn) EasyOpsTestClient {
+	return &easyOpsTestClient{cc}
+}
+
+func (c *easyOpsTestClient) CheckSerialisation(ctx context.Context, in *Count, opts ...grpc.CallOption) (*common.Void, error) {
+	out := new(common.Void)
+	err := grpc.Invoke(ctx, "/getestservice.EasyOpsTest/CheckSerialisation", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *easyOpsTestClient) Ping(ctx context.Context, in *Chain, opts ...grpc.CallOption) (*Chain, error) {
+	out := new(Chain)
+	err := grpc.Invoke(ctx, "/getestservice.EasyOpsTest/Ping", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *easyOpsTestClient) SimplePing(ctx context.Context, in *common.Void, opts ...grpc.CallOption) (*common.Void, error) {
+	out := new(common.Void)
+	err := grpc.Invoke(ctx, "/getestservice.EasyOpsTest/SimplePing", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for EasyOpsTest service
+
+type EasyOpsTestServer interface {
+	CheckSerialisation(context.Context, *Count) (*common.Void, error)
+	Ping(context.Context, *Chain) (*Chain, error)
+	// does exactly nothing
+	SimplePing(context.Context, *common.Void) (*common.Void, error)
+}
+
+func RegisterEasyOpsTestServer(s *grpc.Server, srv EasyOpsTestServer) {
+	s.RegisterService(&_EasyOpsTest_serviceDesc, srv)
+}
+
+func _EasyOpsTest_CheckSerialisation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Count)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EasyOpsTestServer).CheckSerialisation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/getestservice.EasyOpsTest/CheckSerialisation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EasyOpsTestServer).CheckSerialisation(ctx, req.(*Count))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EasyOpsTest_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Chain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EasyOpsTestServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/getestservice.EasyOpsTest/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EasyOpsTestServer).Ping(ctx, req.(*Chain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EasyOpsTest_SimplePing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.Void)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EasyOpsTestServer).SimplePing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/getestservice.EasyOpsTest/SimplePing",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EasyOpsTestServer).SimplePing(ctx, req.(*common.Void))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _EasyOpsTest_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "getestservice.EasyOpsTest",
+	HandlerType: (*EasyOpsTestServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CheckSerialisation",
+			Handler:    _EasyOpsTest_CheckSerialisation_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _EasyOpsTest_Ping_Handler,
+		},
+		{
+			MethodName: "SimplePing",
+			Handler:    _EasyOpsTest_SimplePing_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protos/golang.conradwood.net/apis/getestservice/echoservice.proto",
+}
+
 func init() {
 	proto.RegisterFile("protos/golang.conradwood.net/apis/getestservice/echoservice.proto", fileDescriptor0)
 }
 
 var fileDescriptor0 = []byte{
-	// 266 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x9c, 0x91, 0x4f, 0x4b, 0xc3, 0x40,
-	0x10, 0xc5, 0x89, 0x15, 0xff, 0x4c, 0x5a, 0xd1, 0x3d, 0x85, 0x7a, 0x29, 0x3d, 0x48, 0x44, 0xd8,
-	0x40, 0x05, 0xaf, 0xa2, 0xa0, 0x20, 0x48, 0x29, 0x49, 0xce, 0xc2, 0x76, 0x33, 0xa4, 0x81, 0x76,
-	0x27, 0xee, 0x6e, 0x15, 0xbf, 0xbd, 0xec, 0x36, 0x91, 0x44, 0xc4, 0x43, 0x6f, 0x6f, 0x77, 0xde,
-	0xfb, 0xcd, 0xc0, 0x83, 0x87, 0x5a, 0x93, 0x25, 0x93, 0x94, 0xb4, 0x16, 0xaa, 0xe4, 0x92, 0x94,
-	0x16, 0xc5, 0x27, 0x51, 0xc1, 0x15, 0xda, 0x44, 0xd4, 0x95, 0x49, 0x4a, 0xb4, 0x68, 0xac, 0x41,
-	0xfd, 0x51, 0x49, 0x4c, 0x50, 0xae, 0xa8, 0xd1, 0xdc, 0x67, 0xd9, 0xa8, 0x67, 0x98, 0x0a, 0x08,
-	0x17, 0x95, 0x2a, 0x53, 0x7c, 0xdf, 0xa2, 0xb1, 0xec, 0x0a, 0xce, 0x32, 0x27, 0x95, 0xc4, 0xf9,
-	0x76, 0xb3, 0x44, 0x1d, 0x05, 0x93, 0x20, 0x1e, 0xa5, 0xbf, 0x7e, 0x59, 0x04, 0xc7, 0x0b, 0xf1,
-	0xb5, 0x26, 0x51, 0x44, 0x07, 0x93, 0x20, 0x3e, 0x4d, 0xdb, 0x27, 0x3b, 0x87, 0x41, 0x9e, 0xbf,
-	0x46, 0x03, 0x1f, 0x73, 0x72, 0xfa, 0x0c, 0xc3, 0xdd, 0x0a, 0x53, 0x93, 0x32, 0xc8, 0xee, 0xe0,
-	0xa4, 0xd5, 0x9e, 0x1e, 0xce, 0xc6, 0xbc, 0x77, 0x14, 0xef, 0x5c, 0x94, 0xfe, 0x78, 0x67, 0x73,
-	0x08, 0x9f, 0xe4, 0x8a, 0xb2, 0x9d, 0x89, 0xdd, 0xc3, 0xa1, 0xf3, 0xb1, 0x7f, 0xc2, 0xe3, 0xcb,
-	0x3f, 0x67, 0x0d, 0xef, 0x0d, 0x2e, 0x3c, 0xcf, 0x6a, 0x14, 0x9b, 0x96, 0xfa, 0x02, 0xc3, 0x0c,
-	0x55, 0x91, 0xfb, 0x35, 0xa8, 0xf7, 0xa6, 0xc7, 0xc1, 0xe3, 0x0d, 0x5c, 0x2b, 0xb4, 0xdd, 0x92,
-	0x9a, 0xda, 0x5c, 0x4f, 0x2e, 0xda, 0xc9, 0x2e, 0x8f, 0x7c, 0x3b, 0xb7, 0xdf, 0x01, 0x00, 0x00,
-	0xff, 0xff, 0xe5, 0xb1, 0xdc, 0x60, 0xe2, 0x01, 0x00, 0x00,
+	// 660 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x9c, 0x54, 0x5b, 0x6b, 0xdb, 0x30,
+	0x14, 0xc6, 0x69, 0xd2, 0xa6, 0xc7, 0x49, 0xd9, 0xd4, 0x6e, 0x18, 0xef, 0x42, 0xe7, 0x87, 0x91,
+	0x76, 0xc3, 0x01, 0x0f, 0xc6, 0xde, 0x46, 0x9b, 0xb4, 0x10, 0xe8, 0xb2, 0xe0, 0x78, 0x7d, 0x1c,
+	0xa8, 0xb6, 0x48, 0x44, 0x1d, 0x29, 0xb3, 0x94, 0x96, 0xfe, 0xa0, 0xfd, 0xcc, 0xc1, 0xd0, 0xc5,
+	0x6e, 0x2e, 0x5d, 0x1e, 0xf6, 0x62, 0x9f, 0xcb, 0xa7, 0xef, 0x1c, 0x9d, 0xf3, 0x21, 0x38, 0x9b,
+	0x17, 0x5c, 0x72, 0xd1, 0x9d, 0xf0, 0x1c, 0xb3, 0x49, 0x98, 0x72, 0x56, 0xe0, 0xec, 0x9e, 0xf3,
+	0x2c, 0x64, 0x44, 0x76, 0xf1, 0x9c, 0x8a, 0xee, 0x84, 0x48, 0x22, 0xa4, 0x20, 0xc5, 0x1d, 0x4d,
+	0x49, 0x97, 0xa4, 0x53, 0x6e, 0xed, 0x50, 0x9f, 0x45, 0xed, 0x15, 0x80, 0x7f, 0xba, 0x85, 0x0a,
+	0x2f, 0xe4, 0x54, 0x7f, 0xcc, 0x51, 0x3f, 0xdc, 0x82, 0x4d, 0xf9, 0x6c, 0xc6, 0x99, 0xfd, 0x19,
+	0x7c, 0x70, 0x07, 0xf5, 0x1e, 0xce, 0x73, 0xe4, 0x43, 0x73, 0xc4, 0x05, 0x95, 0x94, 0x33, 0xcf,
+	0x39, 0x76, 0x3a, 0x8d, 0xb8, 0xf2, 0xd1, 0x4b, 0xd8, 0xfd, 0x21, 0x48, 0x31, 0xe8, 0x7b, 0xb5,
+	0x63, 0xa7, 0xb3, 0x1f, 0x5b, 0x0f, 0xbd, 0x86, 0xfd, 0xb1, 0x69, 0x71, 0xd0, 0xf7, 0x76, 0x74,
+	0xea, 0x31, 0xa0, 0xb2, 0x31, 0xf9, 0xb5, 0x20, 0x42, 0x0e, 0xfa, 0x5e, 0xdd, 0x64, 0xab, 0x40,
+	0x80, 0xc1, 0x1d, 0x51, 0x36, 0xb1, 0x01, 0xf4, 0x1e, 0x0e, 0xc6, 0xca, 0x64, 0x29, 0x19, 0x2e,
+	0x66, 0x37, 0xa4, 0xd0, 0x4d, 0xb4, 0xe3, 0xb5, 0x28, 0xf2, 0x60, 0x6f, 0x84, 0x1f, 0x72, 0x8e,
+	0x33, 0xdb, 0x4b, 0xe9, 0xa2, 0x67, 0xb0, 0x93, 0x24, 0x57, 0xba, 0x8d, 0x76, 0xac, 0xcc, 0xe0,
+	0x12, 0x5a, 0xa6, 0x84, 0x98, 0x73, 0x26, 0x08, 0xfa, 0x0c, 0xcd, 0xd2, 0xd6, 0xec, 0x6e, 0xe4,
+	0x87, 0x2b, 0x83, 0x0e, 0x97, 0x3a, 0x8a, 0x2b, 0x6c, 0xd0, 0x01, 0x74, 0x49, 0x59, 0x66, 0x6f,
+	0x56, 0x76, 0x8c, 0xa0, 0x3e, 0xc4, 0x33, 0xc3, 0xb4, 0x1f, 0x6b, 0x3b, 0xb8, 0x84, 0xc3, 0x15,
+	0xa4, 0x2d, 0xdc, 0x85, 0xbd, 0x04, 0x17, 0x13, 0x22, 0x85, 0xe7, 0x1c, 0xef, 0x74, 0xdc, 0xe8,
+	0xc5, 0x5a, 0x5d, 0x93, 0x8d, 0x4b, 0x54, 0x70, 0x05, 0x48, 0x8d, 0xf8, 0xfc, 0xe1, 0x8a, 0x4f,
+	0x28, 0x2b, 0x2b, 0xfa, 0xd0, 0x54, 0x51, 0xf6, 0x58, 0xb5, 0xf2, 0xf5, 0xfa, 0xb0, 0x10, 0xf7,
+	0xbc, 0x28, 0x07, 0x53, 0xf9, 0xc1, 0x69, 0xc9, 0x96, 0xf0, 0x5b, 0x52, 0xb1, 0x1d, 0x41, 0x43,
+	0xfb, 0x96, 0xca, 0x38, 0x41, 0x1f, 0x5a, 0x67, 0x0b, 0x39, 0xad, 0x5a, 0x3f, 0x82, 0xc6, 0x35,
+	0xce, 0x69, 0xa6, 0x51, 0xcd, 0xd8, 0x38, 0xe8, 0x2d, 0xd4, 0x15, 0xa3, 0xae, 0xe4, 0x46, 0x10,
+	0x6a, 0xfd, 0xa9, 0x48, 0xac, 0xe3, 0xc1, 0x47, 0xd8, 0x35, 0x57, 0x41, 0x07, 0x50, 0x1b, 0x8c,
+	0x6c, 0x89, 0xda, 0x60, 0xa4, 0xa6, 0x36, 0xe2, 0x85, 0xd4, 0x27, 0xdb, 0xb1, 0xb6, 0x83, 0x21,
+	0x34, 0x7a, 0x53, 0x4c, 0xd9, 0x56, 0x0d, 0x9e, 0x40, 0x43, 0xe9, 0x54, 0x78, 0x35, 0x3d, 0xc1,
+	0xc3, 0xb5, 0x09, 0xaa, 0x5c, 0x6c, 0x10, 0xc1, 0x1b, 0x68, 0xf4, 0xf8, 0x82, 0xe9, 0x2b, 0x6a,
+	0xc3, 0x6a, 0xc9, 0x38, 0xd1, 0x10, 0xdc, 0x8b, 0x74, 0xca, 0xed, 0x92, 0xd0, 0x57, 0xa8, 0xab,
+	0xb5, 0xa3, 0x2d, 0x5a, 0xf0, 0x5f, 0x3d, 0x99, 0x33, 0x23, 0x8a, 0x7e, 0xc2, 0x73, 0xcd, 0x27,
+	0x0b, 0x82, 0x67, 0x25, 0xeb, 0x00, 0x5a, 0x63, 0xc2, 0xb2, 0x44, 0x97, 0x21, 0xc5, 0x7f, 0xb3,
+	0x77, 0x9c, 0xe8, 0x8f, 0x03, 0x7b, 0x17, 0x58, 0x3c, 0x7c, 0x9f, 0x0b, 0x94, 0x80, 0xbb, 0x24,
+	0x30, 0xf4, 0x6e, 0xed, 0xe4, 0xa6, 0x4c, 0xfd, 0x60, 0x1b, 0xc4, 0x2e, 0xf9, 0x1b, 0xb8, 0x4b,
+	0x72, 0xdb, 0x60, 0xdd, 0x94, 0xe2, 0x46, 0xcb, 0x2b, 0x9a, 0xa9, 0xe8, 0xb4, 0xa4, 0xfe, 0x41,
+	0xb7, 0xac, 0xc5, 0xad, 0x74, 0xd1, 0x6f, 0x07, 0x5c, 0x7b, 0xff, 0x44, 0x09, 0xf7, 0x0b, 0xa0,
+	0xde, 0x94, 0xa4, 0xb7, 0x63, 0x52, 0x50, 0x9c, 0x53, 0x81, 0xb5, 0x3e, 0x8e, 0xd6, 0x05, 0xa1,
+	0x76, 0xed, 0xb7, 0x42, 0xfb, 0xd8, 0x5d, 0x73, 0x9a, 0xa1, 0xc8, 0xae, 0x7a, 0x03, 0xab, 0xd4,
+	0xe7, 0x3f, 0x19, 0x45, 0x1d, 0x80, 0x31, 0x9d, 0xcd, 0x73, 0xa2, 0x4f, 0xae, 0xf0, 0xad, 0xb2,
+	0x9f, 0x7f, 0x80, 0x13, 0x46, 0xe4, 0xf2, 0xc3, 0x6b, 0x9f, 0x62, 0xf5, 0xf6, 0x2a, 0xee, 0x25,
+	0xf2, 0x9b, 0x5d, 0xfd, 0xfa, 0x7e, 0xfa, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x10, 0xf3, 0x64, 0x50,
+	0x2d, 0x06, 0x00, 0x00,
 }

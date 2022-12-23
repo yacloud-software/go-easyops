@@ -28,9 +28,15 @@ func queryServiceInstances(f_registry, serviceName string) ([]*pb.Target, error)
 	key := f_registry + "_" + serviceName
 	ic, _ := keylock.LoadOrStore(key, &instance_cache_entry{})
 	ice := ic.(*instance_cache_entry)
+	if *dialer_debug {
+		fmt.Printf("[go-easyops] Request to resolve service address \"%s\" via registry %s...\n", serviceName, f_registry)
+	}
 	ice.lock.Lock()
 	defer ice.lock.Unlock()
 	if (ice.res != nil || ice.err != nil) && time.Since(ice.refreshed) < *query_max_age {
+		if *dialer_debug {
+			fmt.Printf("[go-easyops] Answering request to Resolve service address \"%s\" via registry %s from cache\n", serviceName, f_registry)
+		}
 		return ice.res, ice.err
 	}
 	//	serviceName := f.target
