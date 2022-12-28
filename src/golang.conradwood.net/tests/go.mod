@@ -3,7 +3,6 @@ module golang.conradwood.net/tests
 go 1.18
 
 replace golang.conradwood.net/go-easyops => ../go-easyops
-
 replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
 
 require (
@@ -12,8 +11,7 @@ require (
 	golang.conradwood.net/apis/echoservice v1.1.2043
 	golang.conradwood.net/apis/getestservice v1.1.2006
 	golang.conradwood.net/apis/gitserver v1.1.2006
-	golang.conradwood.net/apis/goeasyops v1.1.2060
-	golang.conradwood.net/apis/helloworld v1.1.2058
+	golang.conradwood.net/apis/goeasyops v1.1.2006
 	golang.conradwood.net/apis/registry v1.1.2058
 	golang.conradwood.net/apis/rpcinterceptor v1.1.2058
 	golang.conradwood.net/go-easyops v1.0.0
@@ -35,6 +33,7 @@ require (
 	golang.conradwood.net/apis/deploymonkey v1.1.2058 // indirect
 	golang.conradwood.net/apis/errorlogger v1.1.2043 // indirect
 	golang.conradwood.net/apis/framework v1.1.2058 // indirect
+	golang.conradwood.net/apis/helloworld v1.1.2058 // indirect
 	golang.conradwood.net/apis/objectstore v1.1.2058 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect

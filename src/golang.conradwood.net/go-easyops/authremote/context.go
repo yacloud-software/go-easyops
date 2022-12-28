@@ -19,7 +19,7 @@ type CallStateV2 struct {
 
 func ContextV2WithTimeoutAndTags(t time.Duration, rt *ge.CTXRoutingTags) context.Context {
 	user := getLocalUserAccount()
-	ctx, cnc := ContextV2WithTimeoutAndTagsForUser(t, user, rt)
+	ctx, cnc := ContextV2WithTimeoutAndTagsForUser(t, "no_req_id", user, rt)
 	go auto_cancel(cnc, t)
 	return ctx
 }
@@ -34,13 +34,14 @@ func auto_cancel(cf context.CancelFunc, t time.Duration) {
 creates a new context for a user, with a timeout and routing tags and a cancel function
 userid may be "" (empty).
 */
-func ContextV2WithTimeoutAndTagsForUser(t time.Duration, user *apb.SignedUser, rt *ge.CTXRoutingTags) (context.Context, context.CancelFunc) {
+func ContextV2WithTimeoutAndTagsForUser(t time.Duration, reqid string, user *apb.SignedUser, rt *ge.CTXRoutingTags) (context.Context, context.CancelFunc) {
 	if cmdline.IsStandalone() {
 		f := func() {}
 		return standalone_ContextWithTimeoutAndTags(t, rpc.Tags_ge_to_rpc(rt)), f
 	}
 	ctx, cnc := context.WithTimeout(context.Background(), t)
-	inctx := build_new_ctx_meta_struct("ctxv2_has_no_request_id_yet", user, nil)
+	inctx := build_new_ctx_meta_struct(reqid, user, nil)
+	inctx.MCtx.Tags = rt
 	lm := &CallStateV2{inctx: inctx}
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAMEV2, lm)
 	ctx = contextFromStruct(ctx, inctx)
