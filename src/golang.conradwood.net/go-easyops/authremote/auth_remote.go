@@ -86,6 +86,11 @@ func ContextWithTimeout(t time.Duration) context.Context {
 create a new context with routing tags. This is an EXPERIMENTAL API and very likely to change in future
 */
 func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.Context {
+	if cmdline.ContextV2() {
+		gert := &ge.CTXRoutingTags{}
+		return ContextV2WithTimeoutAndTags(t, gert)
+	}
+
 	if cmdline.IsStandalone() {
 		return standalone_ContextWithTimeoutAndTags(t, rt)
 	}
@@ -95,10 +100,6 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 	sctx := os.Getenv("GE_CTX")
 	if sctx != "" {
 		return auth.Context(t)
-	}
-	if cmdline.ContextV2() {
-		gert := &ge.CTXRoutingTags{}
-		return ContextV2WithTimeoutAndTags(t, gert)
 	}
 	if !contextRetrieved {
 		lastUser = SignedGetByToken(context.Background(), tokens.GetUserTokenParameter())

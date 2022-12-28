@@ -665,13 +665,18 @@ func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
  this will PANIC if the token is invalid
 */
 func (sd *serverDef) lookupServiceID(token string) {
+	if cmdline.ContextV2() {
+		return
+	}
 	if token == "" {
 		return
 	}
 	if rpcclient == nil {
 		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
 	}
-	resp, err := rpcclient.GetMyServiceID(tokens.ContextWithToken(), &rc.ServiceIDRequest{Token: token, MyName: sd.name})
+	//ctx := ar.Context()
+	ctx := tokens.ContextWithToken()
+	resp, err := rpcclient.GetMyServiceID(ctx, &rc.ServiceIDRequest{Token: token, MyName: sd.name})
 	if err != nil {
 		fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
 		fancyPrintf("Unable to get our serviceID from our servicetoken (%s)\n", err)

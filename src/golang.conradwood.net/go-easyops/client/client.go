@@ -51,7 +51,9 @@ func DialTCPWrapper(serviceName string) (net.Conn, error) {
 	if reg == nil {
 		reg = pb.NewRegistryClient(Connect("registry.Registry"))
 	}
-	targets, err := reg.GetTarget(tokens.ContextWithToken(), &pb.GetTargetRequest{Name: serviceName, ApiType: pb.Apitype_tcp})
+	ctx := tokens.ContextWithToken()
+	//ctx := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
+	targets, err := reg.GetTarget(ctx, &pb.GetTargetRequest{Name: serviceName, ApiType: pb.Apitype_tcp})
 	if err != nil {
 		return nil, err
 	}
