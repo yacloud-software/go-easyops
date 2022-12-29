@@ -1,3 +1,6 @@
+/*
+Package utils provides a lot of utilities for files, strings, numbers, printing data
+*/
 package utils
 
 import (

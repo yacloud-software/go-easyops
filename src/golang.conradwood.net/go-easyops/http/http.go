@@ -1,3 +1,6 @@
+/*
+make http requests in a safe manner. optionally cache results
+*/
 package http
 
 import (

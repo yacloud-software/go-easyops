@@ -1,3 +1,6 @@
+/*
+wrappers around errors to include more information than standard fmt.Errorf through use of context information
+*/
 package errors
 
 // package errors

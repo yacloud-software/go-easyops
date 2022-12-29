@@ -10,6 +10,7 @@ import (
 	//"google.golang.org/protobuf/proto"
 	//	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/common"
+	_ "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"

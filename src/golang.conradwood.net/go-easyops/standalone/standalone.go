@@ -1,3 +1,6 @@
+/*
+Package standalone handles applications running in "standalone" mode (that is without failover/datacenter etc)
+*/
 package standalone
 
 // a standalone "registry replacement"

@@ -1,3 +1,6 @@
+/*
+Package linux provides methods to execute commands on linux
+*/
 package linux
 
 import (

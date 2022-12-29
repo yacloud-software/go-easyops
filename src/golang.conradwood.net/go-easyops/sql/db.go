@@ -1,3 +1,6 @@
+/*
+Package sql provides safe and managed access to (postgres) databases
+*/
 package sql
 
 // this package opens and maintains database connections

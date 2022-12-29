@@ -1,3 +1,6 @@
+/*
+package cache provides a basic, safe in-memory cache
+*/
 package cache
 
 // a basic local key->value cache with expiry
