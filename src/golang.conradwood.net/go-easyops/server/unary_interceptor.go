@@ -31,7 +31,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		return nil, err
 	}
 	if cs == nil {
-		if cmdline.V2Context() {
+		if cmdline.ContextV2() {
 			fmt.Printf("[go-easyops] received context/metadata contained no v2 informatinon\n")
 		}
 		// no v2, try V1
