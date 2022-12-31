@@ -118,7 +118,7 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 			cb.WithCallingService(s)
 			cb.WithRoutingTags(rpc.Tags_rpc_to_ge(rt))
 			cb.WithTimeout(t)
-			return cb.ContextWithAuthCancel()
+			return cb.ContextWithAutoCancel()
 		}
 		return tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
 	}
@@ -137,7 +137,7 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 		cb.WithCallingService(s)
 		cb.WithRoutingTags(rpc.Tags_rpc_to_ge(rt))
 		cb.WithTimeout(t)
-		return cb.ContextWithAuthCancel()
+		return cb.ContextWithAutoCancel()
 	}
 	luid := ""
 	if lastUser != nil {
@@ -198,7 +198,7 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 	}
 
 	if cmdline.ContextWithBuilder() {
-		NotImpl("Cannot build context for userwithtimeout (user is not signed)- use contextbuilder instead")
+		utils.NotImpl("Cannot build context for userwithtimeout (user is not signed)- use contextbuilder instead")
 	}
 
 	if rpci == nil {
@@ -282,7 +282,7 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 	}
 	if cmdline.ContextWithBuilder() {
 		//TODO: retrieve user and call contextbuilder
-		NotImpl("Cannot build context for UserIDWithTimeout")
+		utils.NotImpl("Cannot build context for UserIDWithTimeout")
 	}
 
 	if rpci == nil {
@@ -441,8 +441,4 @@ func managerClient() {
 		}
 		authManager = apb.NewAuthManagerServiceClient(client.Connect("auth.AuthManagerService"))
 	}
-}
-
-func NotImpl(format string, args ...interface{}) {
-	fmt.Printf("[go-easyops] contextv2: "+format+"\n", args...)
 }

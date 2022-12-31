@@ -34,7 +34,7 @@ type ContextBuilder interface {
 	Context() (context.Context, context.CancelFunc)
 
 	// like Context(), but automatically call the CancelFunc after timeout
-	ContextWithAuthCancel() context.Context
+	ContextWithAutoCancel() context.Context
 
 	/*
 	   add a user to context

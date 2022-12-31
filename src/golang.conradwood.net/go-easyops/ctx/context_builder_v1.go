@@ -2,7 +2,7 @@ package ctx
 
 import (
 	"context"
-	"fmt"
+	//	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
@@ -50,7 +50,7 @@ func (c *V1ContextBuilder) Context() (context.Context, context.CancelFunc) {
 			RoutingTags:   rpc.Tags_ge_to_rpc(c.routing_tags),
 		},
 	}
-	fmt.Printf("Build with service: %s\n", describeUser(cs.Metadata.SignedService))
+	//	fmt.Printf("Build with service: %s\n", describeUser(cs.Metadata.SignedService))
 	cs.UpdateContextFromResponseWithTimeout(c.timeout)
 	return cs.Context, cnc
 }
@@ -58,7 +58,7 @@ func cnc() {
 }
 
 // automatically cancels context after timeout
-func (c *V1ContextBuilder) ContextWithAuthCancel() context.Context {
+func (c *V1ContextBuilder) ContextWithAutoCancel() context.Context {
 	res, _ := c.Context()
 	return res
 }

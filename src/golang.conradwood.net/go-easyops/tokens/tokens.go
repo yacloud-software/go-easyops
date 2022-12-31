@@ -53,7 +53,7 @@ func buildMeta() metadata.MD {
 // look at Environment variable GE_CTX and deserialise it
 func ContextWithToken() context.Context {
 	if cmdline.ContextWithBuilder() {
-		fmt.Printf("[go-easyops] tokens.ContextWithToken - V1 context only\n")
+		utils.NotImpl("tokens.ContextWithToken - V1 context only\n")
 	}
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(*Deadline)*time.Second)
@@ -66,7 +66,7 @@ func ContextWithToken() context.Context {
 }
 func ContextWithTokenAndTimeout(seconds uint64) context.Context {
 	if cmdline.ContextWithBuilder() {
-		panic("contextv2 incomplete")
+		utils.NotImpl("contextv2 incomplete")
 	}
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
