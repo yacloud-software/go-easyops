@@ -1,0 +1,95 @@
+
+syntax = "proto3";
+
+package getestservice;
+import "golang.conradwood.net/apis/auth/auth.proto";
+import "golang.conradwood.net/apis/common/common.proto";
+
+option java_package = "net.conradwood.golang.apis.gettestservice";
+
+//******************************************************************
+// what follows are test cases
+//******************************************************************
+
+message Call {
+  int32 Position = 1;
+  string UserID = 2;
+  string ServiceID = 3;
+  string RequestID = 4;
+}
+
+
+message PingRequest {
+  uint32 SequenceNumber = 1;
+  string Payload = 2;
+  uint32 TTL=3; // if non-zero, server will ping other server until 0
+}
+
+message PingResponse {
+  PingRequest Response = 1;
+}
+
+service EchoService {
+  rpc Ping(PingRequest) returns (PingResponse);
+}
+
+service EchoStreamService {
+  rpc SendToServer(stream PingRequest) returns (PingResponse);
+
+}
+// for internal testing only
+message FindServiceRequest {
+  string Name = 1; // e.g. registry.Registry
+}
+
+// for internal testing only
+message FindServiceResponse {
+  repeated Target Targets = 1;
+}
+
+// for internal testing only
+message UserByLoginRequest {
+  string Username = 1;
+  string Password = 2;
+}
+// for internal testing only
+message UserByTokenRequest {
+  string Token = 1;
+}
+// for internal testing only
+message AuthResponse {
+  bool Valid = 1; // if true, user has an object, otherwise the token/password combo was not valid
+  auth.User User = 2;
+}
+
+// for internal testing only
+message Target {
+  string IP = 1;
+  uint32 Port = 2;
+}
+
+/*
+ for testing only:
+ this service accepts "unauthenticated" requests.
+ Backend services, for certain operations may still require
+ authentication though, or may provide limited results unless
+ authenticated
+*/
+service EasyOps {
+  rpc FindService(FindServiceRequest) returns (FindServiceResponse);
+  rpc UserByLogin(UserByLoginRequest) returns (AuthResponse);
+  rpc UserByToken(UserByTokenRequest) returns (AuthResponse);
+}
+service EasyOpsTest {
+  rpc CheckSerialisation(Count) returns (common.Void);
+  rpc Ping(Chain) returns (Chain);
+  // does exactly nothing
+  rpc SimplePing(common.Void) returns (common.Void);
+}
+message Chain {
+  int32 Position = 1;
+  repeated Call Calls = 2;
+}
+message Count {
+  uint32 Count = 1;
+}
