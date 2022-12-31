@@ -51,7 +51,8 @@ func buildMeta() metadata.MD {
 // this builds a *NEW* token (detached from previous contexts)
 // if there is neither a -token parameter nor a user token it will
 // look at Environment variable GE_CTX and deserialise it
-func ContextWithToken() context.Context {
+// this function is deprecated, obsolete and broken. use authremote.Context() instead
+func DISContextWithToken() context.Context {
 	if cmdline.ContextWithBuilder() {
 		utils.NotImpl("tokens.ContextWithToken - V1 context only\n")
 	}
@@ -64,7 +65,9 @@ func ContextWithToken() context.Context {
 	return metadata.NewOutgoingContext(ctx, md)
 
 }
-func ContextWithTokenAndTimeout(seconds uint64) context.Context {
+
+// this function is deprecated, obsolete and broken. use authremote.Context() instead
+func DISContextWithTokenAndTimeout(seconds uint64) context.Context {
 	if cmdline.ContextWithBuilder() {
 		utils.NotImpl("contextv2 incomplete")
 	}
@@ -76,7 +79,9 @@ func ContextWithTokenAndTimeout(seconds uint64) context.Context {
 	}(cnc, seconds)
 	return metadata.NewOutgoingContext(ctx, md)
 }
-func Context2WithTokenAndTimeout(seconds uint64) (context.Context, context.CancelFunc) {
+
+// this function is deprecated, obsolete and broken. use authremote.Context() instead
+func DISContext2WithTokenAndTimeout(seconds uint64) (context.Context, context.CancelFunc) {
 	if cmdline.ContextWithBuilder() {
 		panic("contextv2 incomplete")
 	}

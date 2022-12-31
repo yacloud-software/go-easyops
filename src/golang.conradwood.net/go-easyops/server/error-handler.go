@@ -9,7 +9,6 @@ import (
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/rpc"
-	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
 	"time"
@@ -87,7 +86,7 @@ func log(l *le) {
 		}
 		e.Messages = append(e.Messages, fmd)
 	}
-	ctx := tokens.ContextWithToken()
+	ctx := getContext()
 	if *debug_elog {
 		fmt.Printf("[go-easyops] errorlog: %v\n", e)
 	}

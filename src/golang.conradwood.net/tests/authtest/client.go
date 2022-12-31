@@ -7,7 +7,6 @@ import (
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
-	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"os"
@@ -37,7 +36,7 @@ func initClient() {
 func StartClient() {
 	initClient()
 xloop:
-	ctx := tokens.ContextWithToken()
+	ctx := authremote.Context()
 	me := authremote.WhoAmI()
 	if me == nil {
 		fmt.Printf("authtest-client: pinging as 'nobody'. (new context did not provide a user)\n")

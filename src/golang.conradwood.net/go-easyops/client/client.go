@@ -8,7 +8,6 @@ import (
 	"fmt"
 	pb "golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/certificates"
-	"golang.conradwood.net/go-easyops/tokens"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 	"net"
@@ -51,7 +50,7 @@ func DialTCPWrapper(serviceName string) (net.Conn, error) {
 	if reg == nil {
 		reg = pb.NewRegistryClient(Connect("registry.Registry"))
 	}
-	ctx := tokens.ContextWithToken()
+	ctx := getContext()
 	//ctx := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
 	targets, err := reg.GetTarget(ctx, &pb.GetTargetRequest{Name: serviceName, ApiType: pb.Apitype_tcp})
 	if err != nil {

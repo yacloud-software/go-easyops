@@ -9,7 +9,6 @@ import (
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	cm "golang.conradwood.net/go-easyops/common"
-	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"time"
 )
@@ -17,12 +16,12 @@ import (
 func main() {
 	flag.Parse()
 
-	ctx := auth.Context(time.Duration(5) * time.Second)
+	ctx := authremote.Context()
 	_, err := auth.SerialiseContext(ctx)
 	utils.Bail("failed to serialise context I just created", err)
 
 	am := authremote.GetAuthManagerClient()
-	ctx = tokens.ContextWithToken()
+	ctx = authremote.Context()
 	me, err := am.WhoAmI(ctx, &common.Void{})
 	utils.Bail("failed to get me", err)
 	fmt.Printf("Result of whoami():\n")
@@ -34,7 +33,7 @@ func main() {
 		fmt.Printf("Signature inalid!!\n")
 	}
 
-	ctx, err = auth.ContextForUser(me)
+	ctx, err = authremote.ContextForUser(me)
 	utils.Bail("failed to get context for user", err)
 	me = auth.GetUser(ctx)
 	fmt.Printf("Result of context for user with whoami():\n")

@@ -7,6 +7,7 @@ import (
 	pb "golang.conradwood.net/apis/getestservice"
 	git "golang.conradwood.net/apis/gitserver"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"time"
@@ -17,7 +18,7 @@ func StartAuthProxy() {
 	//	go create.NewEasyOpsTest(&testserver{}, *port+p)
 	time.Sleep(time.Duration(500) * time.Millisecond) // give server some time to register...
 	fmt.Printf("Creating easyops client...\n")
-	_, err := pb.GetEasyOpsTestClient().CheckSerialisation(tokens.ContextWithToken(), &pb.Count{})
+	_, err := pb.GetEasyOpsTestClient().CheckSerialisation(authremote.Context(), &pb.Count{})
 	utils.Bail("failed", err)
 
 }

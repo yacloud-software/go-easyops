@@ -25,18 +25,19 @@ const (
 )
 
 var (
-//	rpci rc.RPCInterceptorServiceClient
+// rpci rc.RPCInterceptorServiceClient
 )
 
 func ForkContext(ctx context.Context) (context.Context, error) {
 	u := GetUser(ctx)
-	return ContextForUser(u)
+	return DISContextForUser(u)
 }
 
 // return a context with token and/or from environment or so
-func Context(t time.Duration) context.Context {
+// this function is obsolete and deprecated. use authremote.Context() instead
+func DISContext(t time.Duration) context.Context {
 	if tokens.GetUserTokenParameter() != "" || tokens.GetServiceTokenParameter() != "" {
-		ctx := tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
+		ctx := tokens.DISContextWithTokenAndTimeout(uint64(t.Seconds()))
 		return ctx
 	}
 	sctx := os.Getenv("GE_CTX")
@@ -53,7 +54,8 @@ func Context(t time.Duration) context.Context {
 }
 
 // this will create a context for a userobject. if the userobject is signed, it will "just work"
-func ContextForUser(u *auth.User) (context.Context, error) {
+// this function is obsolete and deprecated. use authremote.Context() instead
+func DISContextForUser(u *auth.User) (context.Context, error) {
 	if !common.VerifySignature(u) {
 		return nil, fmt.Errorf("[go-easyops] no context (User signature invalid)")
 	}
@@ -72,7 +74,7 @@ func contextForMetaWithTimeout(t time.Duration, mt *rc.InMetadata) (context.Cont
 		Debug:    true,
 		Metadata: mt,
 	}
-	ctx := tokens.ContextWithToken()
+	ctx := tokens.DISContextWithToken()
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
 	err := cs.UpdateContextFromResponseWithTimeout(t)
 	if err != nil {
@@ -87,7 +89,7 @@ func contextForMeta(mt *rc.InMetadata) (context.Context, error) {
 		Debug:    true,
 		Metadata: mt,
 	}
-	ctx := tokens.ContextWithToken()
+	ctx := tokens.DISContextWithToken()
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
 	err := cs.UpdateContextFromResponse()
 	if err != nil {

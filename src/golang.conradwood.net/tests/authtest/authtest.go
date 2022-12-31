@@ -8,6 +8,7 @@ import (
 	ge "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
 	_ "golang.conradwood.net/go-easyops/http"
 	"golang.conradwood.net/go-easyops/linux"
@@ -107,7 +108,7 @@ func (t *testserver) Ping(ctx context.Context, req *ge.Chain) (*ge.Chain, error)
 
 // use a wellknown service to do a simple call
 func StartSimple() {
-	ctx := tokens.ContextWithToken()
+	ctx := authremote.Context()
 	lreq := &registry.V2ListRequest{}
 	resp, err := client.GetRegistryClient().ListRegistrations(ctx, lreq)
 	utils.Bail("Failed to query registry", err)

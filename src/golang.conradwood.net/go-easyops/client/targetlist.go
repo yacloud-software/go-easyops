@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/cmdline"
-	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"sync"
@@ -99,7 +98,7 @@ func (t *TargetList) refresh() error {
 	}
 	rc := GetRegistryClient()
 	treq := &registry.V2GetTargetRequest{ApiType: registry.Apitype_grpc, ServiceName: []string{t.svcname}}
-	ctx := tokens.ContextWithToken()
+	ctx := getContext()
 	tr, err := rc.V2GetTarget(ctx, treq)
 	if err != nil {
 		return err

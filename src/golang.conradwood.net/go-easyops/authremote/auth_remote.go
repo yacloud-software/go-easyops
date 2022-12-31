@@ -76,7 +76,7 @@ func NewContextWithRoutingTags(rt *rc.CTXRoutingTags) context.Context {
 	this context gives a context with a full userobject
 
 todo so it _has_ to call external servers to get a signed userobject.
-if started_by_autodeployer will use tokens.ContextWithToken()
+if started_by_autodeployer will use getContext()
 else if environment variable with context, will use auth.Context() (with variable)
 else create context by asking auth service for a signed user object
 */
@@ -120,13 +120,13 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 			cb.WithTimeout(t)
 			return cb.ContextWithAutoCancel()
 		}
-		return tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
+		return getContextWithTimeout(uint64(t.Seconds()))
 	}
 
 	// command line client...
 	sctx := os.Getenv("GE_CTX")
 	if sctx != "" {
-		return auth.Context(t)
+		return auth.DISContext(t)
 	}
 	u, s := GetLocalUsers()
 
@@ -221,7 +221,7 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 		Metadata: mt,
 	}
 	newmd := metadata.Pairs(tokens.METANAME, mts)
-	ctx := tokens.ContextWithToken()
+	ctx := getContext()
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
 	res := metadata.NewOutgoingContext(ctx, newmd)
 	cs.Context = ctx
@@ -258,9 +258,9 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 	}
 	newmd = metadata.Pairs(tokens.METANAME, mts)
 	if secs == 0 {
-		ctx = tokens.ContextWithToken()
+		ctx = getContext()
 	} else {
-		ctx = tokens.ContextWithTokenAndTimeout(secs)
+		ctx = getContextWithTimeout(secs)
 	}
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
 	res = metadata.NewOutgoingContext(ctx, newmd)
@@ -307,7 +307,7 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 		Metadata: mt,
 	}
 	newmd := metadata.Pairs(tokens.METANAME, mts)
-	ctx := tokens.ContextWithToken()
+	ctx := getContext()
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
 	res := metadata.NewOutgoingContext(ctx, newmd)
 	cs.Context = ctx
@@ -334,9 +334,9 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 	}
 	newmd = metadata.Pairs(tokens.METANAME, mts)
 	if to == 0 {
-		ctx = tokens.ContextWithToken()
+		ctx = getContext()
 	} else {
-		ctx = tokens.ContextWithTokenAndTimeout(uint64(to.Seconds()))
+		ctx = getContextWithTimeout(uint64(to.Seconds()))
 	}
 	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
 	res = metadata.NewOutgoingContext(ctx, newmd)

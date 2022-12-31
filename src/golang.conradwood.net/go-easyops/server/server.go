@@ -675,7 +675,7 @@ func (sd *serverDef) lookupServiceID(token string) {
 		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
 	}
 	//ctx := ar.Context()
-	ctx := tokens.ContextWithToken()
+	ctx := getContext()
 	resp, err := rpcclient.GetMyServiceID(ctx, &rc.ServiceIDRequest{Token: token, MyName: sd.name})
 	if err != nil {
 		fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")

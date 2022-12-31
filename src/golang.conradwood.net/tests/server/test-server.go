@@ -10,7 +10,6 @@ import (
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/server"
-	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"os"
@@ -40,7 +39,6 @@ func main() {
 		for {
 			now := time.Now()
 			ctx := authremote.Context()
-			ctx = tokens.ContextWithToken()
 			ctx = authremote.Context()
 			ctx = authremote.Context()
 			u := auth.GetUser(ctx)
