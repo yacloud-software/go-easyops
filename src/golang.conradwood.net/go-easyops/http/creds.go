@@ -20,7 +20,9 @@ func (c *cred_producer) AddUsernamePassword(username, password string) {
 	c.known_creds = append(c.known_creds, cr)
 }
 func (c *cred_producer) getNetRC() *creds {
-	fmt.Printf("Getting netrc for host \"%s\"\n", c.host)
+	if *debug {
+		fmt.Printf("Getting netrc for host \"%s\"\n", c.host)
+	}
 	cr := &creds{username: "foo", password: "bar"}
 	return cr
 }
