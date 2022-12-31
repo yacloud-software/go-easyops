@@ -24,22 +24,20 @@ import (
 func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	pp.ServerRpcEntered()
 	defer pp.ServerRpcDone()
+
+	if *debug_rpc_serve {
+		fmt.Printf("[go-easyops] Debug-rpc inbound request to: \"%s\"\n", info.FullMethod)
+	}
+
 	started := time.Now()
-	cs, err := sd.buildCallStateV2(in_ctx, req, info, handler)
+	var cs *rpc.CallState
+	var err error
+	// no v2, try V1
+	cs, err = sd.buildCallStateV1(in_ctx, req, info, handler)
 	if err != nil {
-		fmt.Printf("[go-easyops] V2 context parser returned error: %s\n", err)
 		return nil, err
 	}
-	if cs == nil {
-		if cmdline.ContextV2() {
-			fmt.Printf("[go-easyops] received context/metadata contained no v2 informatinon\n")
-		}
-		// no v2, try V1
-		cs, err = sd.buildCallStateV1(in_ctx, req, info, handler)
-		if err != nil {
-			return nil, err
-		}
-	}
+
 	//fmt.Printf("Method: \"%s\"\n", method)
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{
 		"method":      cs.MethodName,

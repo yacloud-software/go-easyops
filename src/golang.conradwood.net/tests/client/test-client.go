@@ -9,6 +9,7 @@ import (
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/utils"
+	"os"
 	"time"
 )
 
@@ -16,7 +17,10 @@ func main() {
 	flag.Parse()
 	fmt.Printf("go-easyops test client\n")
 	ctx := authremote.Context()
-
+	if ctx == nil {
+		fmt.Printf("ERROR: authremote.Context() created no context\n")
+		os.Exit(10)
+	}
 	fmt.Printf("Pinging with default client...\n")
 	started := time.Now()
 	r, err := helloworld.GetHelloWorldClient().Ping(ctx, &common.Void{})

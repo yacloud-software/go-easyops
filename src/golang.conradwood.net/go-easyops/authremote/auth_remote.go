@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
-	ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cache"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
@@ -72,7 +72,9 @@ func NewContextWithRoutingTags(rt *rc.CTXRoutingTags) context.Context {
 	return ContextWithTimeoutAndTags(time.Duration(10)*time.Second, rt)
 }
 
-/* this context gives a context with a full userobject
+/*
+	this context gives a context with a full userobject
+
 todo so it _has_ to call external servers to get a signed userobject.
 if started_by_autodeployer will use tokens.ContextWithToken()
 else if environment variable with context, will use auth.Context() (with variable)
@@ -82,29 +84,60 @@ func ContextWithTimeout(t time.Duration) context.Context {
 	return ContextWithTimeoutAndTags(t, nil)
 }
 
+// get the user and service we are running as
+func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
+	if !contextRetrieved {
+		lastUser = SignedGetByToken(context.Background(), tokens.GetUserTokenParameter())
+		lastService = SignedGetByToken(context.Background(), tokens.GetServiceTokenParameter())
+		if lastUser != nil && common.VerifySignedUser(lastUser) == nil {
+			fmt.Printf("[go-easyops] Warning - local user signature invalid\n")
+			return nil, nil
+		}
+		if lastService != nil && common.VerifySignedUser(lastService) == nil {
+			fmt.Printf("[go-easyops] Warning - local service signature invalid\n")
+			return nil, nil
+		}
+		contextRetrieved = true
+	}
+	return lastUser, lastService
+}
+
 /*
 create a new context with routing tags. This is an EXPERIMENTAL API and very likely to change in future
 */
 func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.Context {
-	if cmdline.ContextV2() {
-		gert := &ge.CTXRoutingTags{}
-		return ContextV2WithTimeoutAndTags(t, gert)
-	}
-
 	if cmdline.IsStandalone() {
 		return standalone_ContextWithTimeoutAndTags(t, rt)
 	}
 	if cmdline.Datacenter() {
+		if cmdline.ContextWithBuilder() {
+			u, s := GetLocalUsers()
+			cb := ctx.NewContextBuilder()
+			cb.WithUser(u)
+			cb.WithCreatorService(s)
+			cb.WithCallingService(s)
+			cb.WithRoutingTags(rpc.Tags_rpc_to_ge(rt))
+			cb.WithTimeout(t)
+			return cb.ContextWithAuthCancel()
+		}
 		return tokens.ContextWithTokenAndTimeout(uint64(t.Seconds()))
 	}
+
+	// command line client...
 	sctx := os.Getenv("GE_CTX")
 	if sctx != "" {
 		return auth.Context(t)
 	}
-	if !contextRetrieved {
-		lastUser = SignedGetByToken(context.Background(), tokens.GetUserTokenParameter())
-		lastService = SignedGetByToken(context.Background(), tokens.GetServiceTokenParameter())
-		contextRetrieved = true
+	u, s := GetLocalUsers()
+
+	if cmdline.ContextWithBuilder() {
+		cb := ctx.NewContextBuilder()
+		cb.WithUser(u)
+		cb.WithCreatorService(s)
+		cb.WithCallingService(s)
+		cb.WithRoutingTags(rpc.Tags_rpc_to_ge(rt))
+		cb.WithTimeout(t)
+		return cb.ContextWithAuthCancel()
 	}
 	luid := ""
 	if lastUser != nil {
@@ -163,6 +196,11 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 	if user == nil {
 		return nil, fmt.Errorf("Missing user")
 	}
+
+	if cmdline.ContextWithBuilder() {
+		NotImpl("Cannot build context for userwithtimeout (user is not signed)- use contextbuilder instead")
+	}
+
 	if rpci == nil {
 		rpci = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
 	}
@@ -242,6 +280,11 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 	if userid == "" || userid == "0" {
 		return nil, fmt.Errorf("Missing userid")
 	}
+	if cmdline.ContextWithBuilder() {
+		//TODO: retrieve user and call contextbuilder
+		NotImpl("Cannot build context for UserIDWithTimeout")
+	}
+
 	if rpci == nil {
 		rpci = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
 	}
@@ -398,4 +441,8 @@ func managerClient() {
 		}
 		authManager = apb.NewAuthManagerServiceClient(client.Connect("auth.AuthManagerService"))
 	}
+}
+
+func NotImpl(format string, args ...interface{}) {
+	fmt.Printf("[go-easyops] contextv2: "+format+"\n", args...)
 }

@@ -16,15 +16,13 @@ Furthermore, go-easyops in general will parse "latest" context version and "late
 
 The context returned is ready to be used for outbound calls as-is.
 The context also includes a "value" which is only available locally (does not cross gRPC boundaries) but is used to cache stuff.
-
 */
 package ctx
 
 import (
 	"context"
 	"golang.conradwood.net/apis/auth"
-	pb "golang.conradwood.net/apis/goeasyops"
-	"golang.conradwood.net/go-easyops/cmdline"
+	ge "golang.conradwood.net/apis/goeasyops"
 	"time"
 )
 
@@ -41,17 +39,17 @@ type ContextBuilder interface {
 	/*
 	   add a user to context
 	*/
-	WithUser(user *auth.User)
+	WithUser(user *auth.SignedUser)
 
 	/*
 	   add a creator service to context
 	*/
-	WithCreatorService(user *auth.User)
+	WithCreatorService(user *auth.SignedUser)
 
 	/*
 	   add a calling service (e.g. "me") to context
 	*/
-	WithCallingService(user *auth.User)
+	WithCallingService(user *auth.SignedUser)
 
 	/*
 	   add a session to the context
@@ -64,7 +62,7 @@ type ContextBuilder interface {
 	// mark context as with trace
 	WithTrace()
 	// add routing tags
-	WithRoutingTags(pb.CTXRoutingTags)
+	WithRoutingTags(*ge.CTXRoutingTags)
 	//set the requestid
 	WithRequestID(reqid string)
 	// set a timeout for this context
@@ -75,8 +73,5 @@ type ContextBuilder interface {
 
 // get a new contextbuilder
 func NewContextBuilder() ContextBuilder {
-	if cmdline.ContextV2() {
-		return &V2ContextBuilder{}
-	}
 	return &V1ContextBuilder{}
 }

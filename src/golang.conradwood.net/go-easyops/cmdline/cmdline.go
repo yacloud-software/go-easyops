@@ -17,15 +17,15 @@ var (
 	mlock                 sync.Mutex
 	running_in_datacenter = flag.Bool("AD_started_by_auto_deployer", false, "the autodeployer sets this to true to modify the behaviour to make it suitable for general-availability services in the datacenter")
 
-	registry          = flag.String("registry", "localhost:5000", "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
-	registry_resolver = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
-	instance_id       = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
-	ext_help          = flag.Bool("X", false, "extended help")
-	XXdoappinfo       = ImmediatePara("ge_info", "print application build number", doappinfo)
-	print_easyops     = false
-	manreg            = ""
-	stdalone          = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
-	context_v2        = flag.Bool("ge_context_v2", false, "a new (experimental) context messaging method")
+	registry             = flag.String("registry", "localhost:5000", "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
+	registry_resolver    = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
+	instance_id          = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
+	ext_help             = flag.Bool("X", false, "extended help")
+	XXdoappinfo          = ImmediatePara("ge_info", "print application build number", doappinfo)
+	print_easyops        = false
+	manreg               = ""
+	stdalone             = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
+	context_with_builder = flag.Bool("ge_context_with_builder", false, "a new (experimental) context messaging method")
 )
 
 // in the init function we have not yet defined all the flags
@@ -193,6 +193,6 @@ func IsStandalone() bool {
 func LocalRegistrationDir() string {
 	return "/tmp/local_registry"
 }
-func ContextV2() bool {
-	return *context_v2
+func ContextWithBuilder() bool {
+	return *context_with_builder
 }

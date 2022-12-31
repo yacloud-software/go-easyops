@@ -8,12 +8,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func contextFromStruct(ctx context.Context, inctx *ge.InContext) context.Context {
+func DIS_contextFromStruct(ctx context.Context, inctx *ge.InContext) context.Context {
 	bs, err := utils.Marshal(inctx)
 	if err != nil {
 		panic("cannot marshal context")
 	}
-	newmd := metadata.Pairs(tokens.METANAME2, bs)
+	newmd := metadata.Pairs(tokens.METANAME, bs)
 	nctx := metadata.NewOutgoingContext(ctx, newmd)
 	return nctx
 }
