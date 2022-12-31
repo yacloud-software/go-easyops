@@ -1,6 +1,6 @@
 // client create: EasyOpsClient
 /* geninfo:
-   filename  : protos/golang.conradwood.net/apis/getestservice/echoservice.proto
+   filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_2
    varname   : client_EasyOpsClient_2

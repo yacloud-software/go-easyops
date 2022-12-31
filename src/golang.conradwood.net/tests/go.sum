@@ -24,12 +24,12 @@ github.com/prometheus/common v0.39.0 h1:oOyhkDq05hPZKItWVBkJ6g6AtGxi+fy7F4JvUV8u
 github.com/prometheus/common v0.39.0/go.mod h1:6XBZ7lYdLCbkAVhwRsWTZn+IN5AB9F/NXd5w0BbEX0Y=
 github.com/prometheus/procfs v0.8.0 h1:ODq8ZFEaYeCaZOJlZZdJA2AbQR98dSHSM1KW/You5mo=
 github.com/prometheus/procfs v0.8.0/go.mod h1:z7EfXMXOkbkqb9IINtpCn86r/to3BnA0uaxHdg830/4=
-golang.conradwood.net/apis/auth v1.1.2058 h1:d2T/cdpwWnUjv9ZqN55swDLRxJc8qZHt7FE4gwb0+no=
-golang.conradwood.net/apis/auth v1.1.2058/go.mod h1:13gt/TDpM3GL+i/FAo5uohTL8ul/eavR7zTAJ4PSS9I=
+golang.conradwood.net/apis/auth v1.1.2071 h1:8MWcQCy/mEdwNiL2VtUOvKNW1g7l0c4+zDHnzUzz7Rk=
+golang.conradwood.net/apis/auth v1.1.2071/go.mod h1:13gt/TDpM3GL+i/FAo5uohTL8ul/eavR7zTAJ4PSS9I=
 golang.conradwood.net/apis/autodeployer v1.1.2058 h1:fQDlR1kSbjCkkCy7lO8QeSZaUikZtISCxOrhBgPlsrg=
 golang.conradwood.net/apis/autodeployer v1.1.2058/go.mod h1:1N49+5L0Lvty7l+HOnN/S6y2UZOL3qFkGCcoXVdxqQo=
-golang.conradwood.net/apis/common v1.1.2058 h1:NzLalY4YB5n0IBVTNPyInqP/UTUShKmjN6X1cggIKlw=
-golang.conradwood.net/apis/common v1.1.2058/go.mod h1:82LAi77ejEi9771su5wf1GFmBcy78TnUb/lpJZutmzo=
+golang.conradwood.net/apis/common v1.1.2071 h1:3droQCl3+OlkM2odP1KKovefNrYxCcQj3KnOHQbPj+8=
+golang.conradwood.net/apis/common v1.1.2071/go.mod h1:82LAi77ejEi9771su5wf1GFmBcy78TnUb/lpJZutmzo=
 golang.conradwood.net/apis/deploymonkey v1.1.2058 h1:LZtLhvEgsi/LqQFnBOj6I6uj3rYsYd5a9dqXSSKtT0Q=
 golang.conradwood.net/apis/deploymonkey v1.1.2058/go.mod h1:D5eGV5SK8VPs9ZaAxrLphRXsZMW08S1KnV0PtMsr9hc=
 golang.conradwood.net/apis/echoservice v1.1.2043 h1:JfbJrwEch23gH4g+otjFKCYuEuxLUeujUbsdT1Y6yt0=
@@ -38,8 +38,6 @@ golang.conradwood.net/apis/errorlogger v1.1.2043 h1:lP3ewNbkvLxsKo20SK9dS3iV+n7/
 golang.conradwood.net/apis/errorlogger v1.1.2043/go.mod h1:+eKYK50e04sTKr9qD9U44eztaeMSafHkzfjejBdMaqw=
 golang.conradwood.net/apis/framework v1.1.2058 h1:fwy9/gwTYbnMecK4zCmVaZcL+ghp+n5gHgZ2rSTd8R8=
 golang.conradwood.net/apis/framework v1.1.2058/go.mod h1:aakclkFxoK6Rwfb6wWbfyCPRiWsAZM94xYz69Y9fid4=
-golang.conradwood.net/apis/getestservice v1.1.2006 h1:5oqDCovJ9WN2YB1sSSV3aTSycf2vEQU1EwzO6JSFoGE=
-golang.conradwood.net/apis/getestservice v1.1.2006/go.mod h1:4pu+kX/LtVe5CpPJxIlhbByoO780AtvJWJw2XEvgQ1o=
 golang.conradwood.net/apis/gitserver v1.1.2006 h1:API3ezurNjrZDFKEuvCfitGJemYbU7BXXPq9Rw819AE=
 golang.conradwood.net/apis/gitserver v1.1.2006/go.mod h1:NaET2knVJg3IU9bgx50nO4FWNpKHh1O3Rd3IDZwJnQY=
 golang.conradwood.net/apis/helloworld v1.1.2058 h1:S0b7AgxBsE3ek5cPMbavmffP3zQAF2e7yRa0cCvtOIE=

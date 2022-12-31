@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	ge "golang.conradwood.net/apis/goeasyops"
+	ge "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"

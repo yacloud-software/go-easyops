@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/common"
-	ge "golang.conradwood.net/apis/goeasyops"
+	ge "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/auth"
 	_ "golang.conradwood.net/go-easyops/cache"
 	"golang.conradwood.net/go-easyops/utils"

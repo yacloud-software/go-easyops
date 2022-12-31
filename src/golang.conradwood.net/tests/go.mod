@@ -6,9 +6,11 @@ replace golang.conradwood.net/go-easyops => ../go-easyops
 
 replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
 
+replace golang.conradwood.net/apis/getestservice => ../apis/getestservice
+
 require (
-	golang.conradwood.net/apis/auth v1.1.2058
-	golang.conradwood.net/apis/common v1.1.2058
+	golang.conradwood.net/apis/auth v1.1.2071
+	golang.conradwood.net/apis/common v1.1.2071
 	golang.conradwood.net/apis/echoservice v1.1.2043
 	golang.conradwood.net/apis/getestservice v1.1.2006
 	golang.conradwood.net/apis/gitserver v1.1.2006

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
-	"golang.conradwood.net/apis/goeasyops"
+	ge "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/tokens"
@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	easyopsClient        goeasyops.EasyOpsClient
+	easyopsClient        ge.EasyOpsClient
 	easyopsClientAddress = flag.String("ge_service", "localhost:5002", "go easyops service ip:port")
 	myServiceUser        *apb.User
 )
@@ -35,9 +35,9 @@ func initclient() {
 		grpc.WithTransportCredentials(client.GetClientCreds()),
 	)
 	utils.Bail("Misconfigured ip stack. Unable to connect to easyopsService", err)
-	easyopsClient = goeasyops.NewEasyOpsClient(conn)
+	easyopsClient = ge.NewEasyOpsClient(conn)
 	ctx := context.Background()
-	ubl := goeasyops.UserByTokenRequest{Token: tokens.GetServiceTokenParameter()}
+	ubl := ge.UserByTokenRequest{Token: tokens.GetServiceTokenParameter()}
 	ar, err := easyopsClient.UserByToken(ctx, &ubl)
 	if err != nil {
 		utils.Bail("Failed to get serviceaccount: \n", err) // should not happen
@@ -59,7 +59,7 @@ func ContextToString(ctx context.Context) string {
 func ContextWithLogin(username string, password string) (context.Context, error) {
 	initclient()
 	ctx := context.Background()
-	ubl := goeasyops.UserByLoginRequest{Username: username, Password: password}
+	ubl := ge.UserByLoginRequest{Username: username, Password: password}
 	ar, err := easyopsClient.UserByLogin(ctx, &ubl)
 	if err != nil {
 		return nil, err

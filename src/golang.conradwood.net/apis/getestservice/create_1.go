@@ -1,6 +1,6 @@
 // client create: EchoServiceClient
 /* geninfo:
-   filename  : protos/golang.conradwood.net/apis/getestservice/echoservice.proto
+   filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_0
    varname   : client_EchoServiceClient_0
