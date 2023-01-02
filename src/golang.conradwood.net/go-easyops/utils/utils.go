@@ -8,11 +8,13 @@ import (
 	"github.com/dustin/go-humanize"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 )
 
 var (
-	randsrc = rand.New(rand.NewSource(time.Now().UnixNano()))
+	randlock sync.Mutex
+	randsrc  = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 // return random integer between 0 and n
@@ -32,6 +34,8 @@ func RandomString(n int) string {
 
 	b := make([]byte, n)
 	// A randsrc.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	randlock.Lock()
+	defer randlock.Unlock()
 	for i, cache, remain := n-1, randsrc.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {
 			cache, remain = randsrc.Int63(), letterIdxMax

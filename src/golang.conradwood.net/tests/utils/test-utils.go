@@ -8,10 +8,26 @@ import (
 	"golang.conradwood.net/go-easyops/objectstore"
 	"golang.conradwood.net/go-easyops/utils"
 	"os"
+	"sync"
 	"time"
 )
 
 func main() {
+	fmt.Printf("Checking random string generator...\n")
+	var wg sync.WaitGroup
+	for j := 0; j < 1000; j++ {
+		wg.Add(1)
+		go func() {
+			for i := 1; i < 1000; i++ {
+				s := utils.RandomString(i)
+				if len(s) != i {
+					panic(fmt.Sprintf("invalid length %d != %d", i, len(s)))
+				}
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 	err := utils.DirWalk("/etc/systemd", func(root, rel string) error {
 		fmt.Printf("rel: %s\n", rel)
 		return nil
