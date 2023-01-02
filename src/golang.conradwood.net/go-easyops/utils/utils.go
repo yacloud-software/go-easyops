@@ -19,7 +19,9 @@ var (
 
 // return random integer between 0 and n
 func RandomInt(max int64) int {
+	randlock.Lock()
 	t := randsrc.Int63n(max)
+	randlock.Unlock()
 	return int(t)
 }
 
@@ -86,7 +88,9 @@ func RandomStall(minutes int) {
 	if minutes == 0 {
 		return
 	}
+	randlock.Lock()
 	t := randsrc.Int63n(int64(minutes * 60))
+	randlock.Unlock()
 	time.Sleep(time.Duration(t) * time.Second)
 }
 
