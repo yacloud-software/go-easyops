@@ -2,6 +2,7 @@ package utils
 
 import (
 	"strings"
+	"unicode/utf8"
 )
 
 type TextFormatter struct {
@@ -83,7 +84,7 @@ func getCharWidth(rows []*Row) []int {
 			if c == nil {
 				continue
 			}
-			w := len(c.String())
+			w := utf8.RuneCountInString(c.String())
 			if w > sz[i] {
 				sz[i] = w
 			}
