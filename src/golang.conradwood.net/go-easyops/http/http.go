@@ -27,6 +27,7 @@ type HTTPIF interface {
 	SetHeader(key string, value string)
 	SetTimeout(dur time.Duration)
 	SetDebug(b bool)
+	SetCreds(username, password string)
 }
 
 // use urlcacher for the url (needs ctx to authenticate)

@@ -140,6 +140,10 @@ func (h *cHTTP) stop_timeouter() {
 	case <-time.After(time.Duration(10) * time.Millisecond):
 	}
 }
+func (h *cHTTP) SetCreds(username, password string) {
+	panic("cannot use credentials for caching http")
+}
+
 func (h *cHTTP) timeouter(t *timeouter) {
 	h.debugf("timeouter %d started\n", t.idx)
 	var b bool

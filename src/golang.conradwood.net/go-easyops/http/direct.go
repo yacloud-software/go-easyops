@@ -246,22 +246,34 @@ func (h *HTTP) Cookie(name string) *http.Cookie {
 	}
 	return nil
 }
+func (h *HTTP) SetCreds(username, password string) {
+	h.username = username
+	h.password = password
+}
 func (h *HTTP) do(hr *HTTPResponse, req *http.Request, readbody bool) *HTTPResponse {
 	cr := &cred_producer{host: req.Host}
 	if h.username != "" {
+		h.Debugf("Setting username %s\n", h.username)
 		cr.AddUsernamePassword(h.username, h.password)
 	}
+	retry_counter := 0
 retry:
-	h.Debugf("request started\n")
+	retry_counter++
 	if h.jar == nil {
 		h.jar = &Cookies{}
 	}
 
 	ctx := context.Background()
-	creds := cr.GetCredentials()
-	if creds != nil {
-		req.SetBasicAuth(creds.username, creds.password)
+	username := "none"
+	var creds *creds
+	if retry_counter > 1 {
+		creds = cr.GetCredentials()
+		if creds != nil {
+			username = creds.username
+			req.SetBasicAuth(creds.username, creds.password)
+		}
 	}
+	h.Debugf("request attempt #%d started (username=%s, cookies=%d)\n", retry_counter, username, len(h.jar.cookies))
 	tr := mytr
 	if hr.ht.transport != nil {
 		tr = hr.ht.transport

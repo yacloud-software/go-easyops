@@ -17,7 +17,7 @@ type cred_producer struct {
 
 func (c *cred_producer) AddUsernamePassword(username, password string) {
 	cr := &creds{username: username, password: password}
-	c.known_creds = append(c.known_creds, cr)
+	c.known_creds = append([]*creds{cr}, c.known_creds...)
 }
 func (c *cred_producer) getNetRC() *creds {
 	if *debug {
@@ -29,7 +29,8 @@ func (c *cred_producer) getNetRC() *creds {
 func (c *cred_producer) GetCredentials() *creds {
 	if c.used == len(c.known_creds) {
 		c.used++
-		return c.getNetRC()
+		//return c.getNetRC()
+		return nil
 	}
 	if c.used > len(c.known_creds) {
 		return nil

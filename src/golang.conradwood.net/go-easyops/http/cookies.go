@@ -18,6 +18,8 @@ func (c *Cookies) Cookies(u *url.URL) []*http.Cookie {
 }
 func (c *Cookies) Print() {
 	for _, ck := range c.cookies {
-		fmt.Printf("Cookie: %s\n", ck.Name)
+		if *debug {
+			fmt.Printf("Cookie: %s\n", ck.Name)
+		}
 	}
 }
