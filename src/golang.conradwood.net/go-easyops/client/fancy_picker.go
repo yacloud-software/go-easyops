@@ -1,10 +1,13 @@
 package client
 
 import (
+	"context"
 	"fmt"
+	ge "golang.conradwood.net/apis/goeasyops"
 	//	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	//	"golang.conradwood.net/go-easyops/common"
+	gectx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
@@ -26,25 +29,25 @@ type FancyPicker struct {
 //
 // If an error is returned:
 //
-// - If the error is ErrNoSubConnAvailable, gRPC will block until a new
-//   Picker is provided by the balancer (using ClientConn.UpdateState).
+//   - If the error is ErrNoSubConnAvailable, gRPC will block until a new
+//     Picker is provided by the balancer (using ClientConn.UpdateState).
 //
-// - If the error implements IsTransientFailure() bool, returning true,
-//   wait for ready RPCs will wait, but non-wait for ready RPCs will be
-//   terminated with this error's Error() string and status code
-//   Unavailable.
+//   - If the error implements IsTransientFailure() bool, returning true,
+//     wait for ready RPCs will wait, but non-wait for ready RPCs will be
+//     terminated with this error's Error() string and status code
+//     Unavailable.
 //
-// - Any other errors terminate all RPCs with the code and message
-//   provided.  If the error is not a status error, it will be converted by
-//   gRPC to a status error with code Unknown.
+//   - Any other errors terminate all RPCs with the code and message
+//     provided.  If the error is not a status error, it will be converted by
+//     gRPC to a status error with code Unknown.
 func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
-	cs := rpc.CallStateFromContext(info.Ctx)
 	if f.failAll {
 		// the balancer created a special "failing" picker because it did not have any
 		// instances for this service for a long time (so it is not transient anymore, is it?)
 		// in this case we don't want to build up a queue of RPCs, we just want to fail-fast them
 		fancyPrintf(f, "Picker - failing connections for \"%s\" w/o instance\n", info.FullMethodName)
 		sn := "[unknown rpc]"
+		cs := rpc.CallStateFromContext(info.Ctx)
 		if cs != nil {
 			sn = fmt.Sprintf("%s.%s()", cs.ServiceName, cs.MethodName)
 		}
@@ -58,7 +61,7 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 
 	lf := f.addresslist
 
-	cri := cs.RoutingTags()
+	cri := tags_from_context(info.Ctx)
 	if cri != nil {
 		fancyPrintf(f, "Picking by tags (%v)\n", cri.Tags)
 		// convert tags to map[string]string, returning empty if invalid type assertion
@@ -119,4 +122,17 @@ func (f *FancyPicker) ServiceName() string {
 		return f.addresslist.Name
 	}
 	return "fancy_picker.go"
+}
+
+func tags_from_context(ctx context.Context) *ge.CTXRoutingTags {
+	ls := gectx.GetLocalState(ctx)
+	lr := ls.RoutingTags()
+	if lr != nil {
+		return lr
+	}
+	cs := rpc.CallStateFromContext(ctx)
+	if cs != nil {
+		return rpc.Tags_rpc_to_ge(cs.RoutingTags())
+	}
+	return nil
 }

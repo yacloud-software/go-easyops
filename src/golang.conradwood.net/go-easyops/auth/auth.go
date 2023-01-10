@@ -4,18 +4,57 @@ import (
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
 	//	"golang.conradwood.net/go-easyops/client"
-	"golang.conradwood.net/go-easyops/common"
-	"golang.conradwood.net/go-easyops/rpc"
-	//	"golang.conradwood.net/go-easyops/tokens"
 	"context"
+	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/rpc"
 )
 
-func GetUser(ctx context.Context) *apb.User {
-	cs := rpc.CallStateFromContext(ctx)
+// get the user in this context
+func GetUser(uctx context.Context) *apb.User {
+	u := ctx.GetLocalState(uctx).User()
+	us := common.VerifySignedUser(u)
+	if cmdline.ContextWithBuilder() {
+		return us
+	}
+	if us != nil {
+		// new path succeeded
+		return us
+	}
+	// code below to be removed:
+	cs := rpc.CallStateFromContext(uctx)
 	if cs == nil {
 		return nil
 	}
 	return cs.User()
+}
+
+// get the service which directly called us
+func GetService(uctx context.Context) *apb.User {
+	u := ctx.GetLocalState(uctx).CallingService()
+	us := common.VerifySignedUser(u)
+	if cmdline.ContextWithBuilder() {
+		return us
+	}
+	if us != nil {
+		// new path succeeded
+		return us
+	}
+	// code below to be removed:
+	cs := rpc.CallStateFromContext(uctx)
+	if cs == nil {
+		return nil
+	}
+	return cs.CallerService()
+}
+
+// get the service which created this context
+func GetCreatingService(uctx context.Context) *apb.User {
+	u := ctx.GetLocalState(uctx).CreatorService()
+	us := common.VerifySignedUser(u)
+	return us
+
 }
 
 func PrintUser(u *apb.User) {
@@ -37,14 +76,6 @@ func PrintSignedUser(uu *apb.SignedUser) {
 	fmt.Printf("  Abbrev:%s\n", u.Abbrev)
 }
 
-func GetService(ctx context.Context) *apb.User {
-	cs := rpc.CallStateFromContext(ctx)
-	if cs == nil {
-		return nil
-	}
-	return cs.CallerService()
-}
-
 // one line description of the user/caller
 func Description(user *apb.User) string {
 	if user == nil {
@@ -58,6 +89,8 @@ func Description(user *apb.User) string {
 	}
 	return "user #" + user.ID
 }
+
+// print the userid and description
 func UserIDString(user *apb.User) string {
 	if user == nil {
 		return "ANONYMOUS"

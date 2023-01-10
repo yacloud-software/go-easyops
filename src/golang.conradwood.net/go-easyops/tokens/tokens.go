@@ -54,7 +54,7 @@ func buildMeta() metadata.MD {
 // this function is deprecated, obsolete and broken. use authremote.Context() instead
 func DISContextWithToken() context.Context {
 	if cmdline.ContextWithBuilder() {
-		utils.NotImpl("tokens.ContextWithToken - V1 context only\n")
+		utils.NotImpl("(context_with_builder) tokens.ContextWithToken - V1 context only\n")
 	}
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(*Deadline)*time.Second)
@@ -154,12 +154,15 @@ if GE_TOKEN is set, does not read file (but honour GE_USERTOKEN)
 */
 func GetUserTokenParameter() string {
 	if *disusertoken {
+		//fmt.Printf("[go-easyops] tokens: user token disabled\n")
 		return ""
 	}
 	ut := cmdline.OptEnvString("", "GE_USERTOKEN")
 	if ut != "" {
 		return ut
 	}
+	// if token is set either as parameter or as ENV variable GE_TOKEN, then return ""
+	// because we are a service (services do not run as users)
 	if cmdline.OptEnvString(*token, "GE_TOKEN") != "" {
 		return ""
 	}
@@ -169,6 +172,13 @@ func GetUserTokenParameter() string {
 	u := readToken("user_token")
 	usertoken = u
 	tokenwasread = true
+	/*
+		if usertoken == "" {
+			fmt.Printf("[go-easyops] tokens: reading usertoken, but is empty\n")
+		} else {
+			fmt.Printf("[go-easyops] got usertoken\n")
+		}
+	*/
 	return usertoken
 }
 

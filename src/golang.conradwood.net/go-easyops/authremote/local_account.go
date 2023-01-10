@@ -58,7 +58,7 @@ func getLocalUserAccount() *apb.SignedUser {
 }
 
 // the local service's useraccount (nil if on commandline or service without useraccount)
-func getLocalServiceAccount() *apb.SignedUser {
+func GetLocalServiceAccount() *apb.SignedUser {
 	if local_service_resolved {
 		return local_service
 	}

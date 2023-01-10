@@ -1,14 +1,15 @@
 package server
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	el "golang.conradwood.net/apis/errorlogger"
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
-	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
 	"time"
@@ -24,11 +25,12 @@ var (
 type le struct {
 	ts  time.Time
 	sd  *serverDef
-	cs  *rpc.CallState
+	rc  *rpccall
+	ctx context.Context
 	err error
 }
 
-func (sd *serverDef) logError(cs *rpc.CallState, err error) {
+func (sd *serverDef) logError(ctx context.Context, rc *rpccall, err error) {
 	if cmdline.IsStandalone() {
 		fmt.Printf("[go-easyops] ERROR: %s\n", err)
 	}
@@ -36,7 +38,7 @@ func (sd *serverDef) logError(cs *rpc.CallState, err error) {
 		fmt.Printf("[go-easyops] Dropping errorlog\n")
 		return
 	}
-	l := &le{sd: sd, cs: cs, err: err, ts: time.Now()}
+	l := &le{sd: sd, ctx: ctx, rc: rc, err: err, ts: time.Now()}
 	logChan <- l
 }
 func error_handler_startup() {
@@ -59,22 +61,23 @@ func logLoop() {
 	}
 }
 func log(l *le) {
-	u := auth.GetUser(l.cs.Context)
+	u := auth.GetUser(l.ctx)
 	uid := ""
 	if u != nil {
 		uid = u.ID
 	}
+	svc := auth.GetService(l.ctx)
 	st := status.Convert(l.err)
 	e := &el.ErrorLogRequest{
 		UserID:         uid,
 		ErrorCode:      uint32(st.Code()),
 		ErrorMessage:   fmt.Sprintf("%s", l.err),
 		LogMessage:     utils.ErrorString(l.err),
-		ServiceName:    l.cs.ServiceName,
-		MethodName:     l.cs.MethodName,
+		ServiceName:    l.rc.ServiceName,
+		MethodName:     l.rc.MethodName,
 		Timestamp:      uint32(l.ts.Unix()),
-		RequestID:      l.cs.RequestID(),
-		CallingService: l.cs.CallerService(),
+		RequestID:      "norequestidinerrorhandler",
+		CallingService: svc,
 	}
 	for _, a := range st.Details() {
 		if a == nil {
@@ -86,7 +89,7 @@ func log(l *le) {
 		}
 		e.Messages = append(e.Messages, fmd)
 	}
-	ctx := getContext()
+	ctx := authremote.Context()
 	if *debug_elog {
 		fmt.Printf("[go-easyops] errorlog: %v\n", e)
 	}

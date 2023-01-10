@@ -6,8 +6,10 @@ import (
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
+	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
@@ -27,6 +29,28 @@ var (
 	verify_interceptor  = flag.Bool("ge_verify_noninterceptor", true, "if true, will compare the non-interceptor with interceptor by doing the actual intercept call and comparing results")
 )
 
+/*
+*********************************************************************
+newest method of authentication...
+*********************************************************************
+*/
+// return error if not allowed to access
+func (sd *serverDef) checkAccess(octx context.Context) error {
+	if sd.NoAuth || cmdline.IsStandalone() {
+		return nil
+	}
+	if auth.GetUser(octx) == nil && auth.GetService(octx) == nil {
+		fmt.Printf("[go-easyops] access denied for no-user and no-service to service with auth requirement\n")
+		return fmt.Errorf("access denied")
+	}
+	return nil
+}
+
+/*
+*********************************************************************
+older (obsolete) methods of authentication...
+*********************************************************************
+*/
 func initrpc() error {
 	if gettingrpc {
 		return fmt.Errorf("[go-easyops] (auth) RPCInterceptor unavailable")
@@ -145,7 +169,8 @@ func peerFromContext(ctx context.Context) string {
 }
 
 /*
- signatures from response. verify and copy response to metadata
+	signatures from response. verify and copy response to metadata
+
 goes through all user and service accounts and invalid ones are removed
 */
 func verifySignatures(cs *rpc.CallState) {

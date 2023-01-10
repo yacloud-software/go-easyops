@@ -63,7 +63,7 @@ this is intented to be used as outbound context to other services
 */
 func DIS_build_new_ctx_meta_struct(requestid string, user, sudo *apb.SignedUser) *ge.InContext {
 	fmt.Printf("[go-easyops] Building meta for user %s\n", auth.Description(common.VerifySignedUser(user)))
-	lsvc := getLocalServiceAccount()
+	lsvc := GetLocalServiceAccount()
 	res := &ge.InContext{
 		ImCtx: &ge.ImmutableContext{
 			CreatorService: lsvc,

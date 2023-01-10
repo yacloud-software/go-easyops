@@ -94,6 +94,7 @@ type serverDef struct {
 	asUser          *au.SignedUser // if we're running as a user rather than a server this is the account
 	tags            map[string]string
 	ErrorHandler    func(ctx context.Context, function_name string, err error)
+	local_service   *au.SignedUser // the local service account
 }
 
 func init() {
@@ -256,10 +257,14 @@ func ServerStartup(def *serverDef) error {
 			u = common.VerifySignedUser(su)
 
 		}
-		if u != nil && !u.ServiceAccount {
-			fancyPrintf("Registering as a user-specific service, because it is running as:\n")
-			auth.PrintUser(u)
-			def.asUser = su
+		if u != nil {
+			if u.ServiceAccount {
+				def.local_service = su
+			} else {
+				fancyPrintf("Registering as a user-specific service, because it is running as:\n")
+				auth.PrintUser(u)
+				def.asUser = su
+			}
 		}
 	}
 	startOnce()
@@ -675,7 +680,8 @@ func (sd *serverDef) lookupServiceID(token string) {
 		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
 	}
 	//ctx := ar.Context()
-	ctx := getContext()
+	ctx := tokens.DISContextWithToken()
+
 	resp, err := rpcclient.GetMyServiceID(ctx, &rc.ServiceIDRequest{Token: token, MyName: sd.name})
 	if err != nil {
 		fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")

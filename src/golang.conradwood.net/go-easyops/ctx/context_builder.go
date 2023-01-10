@@ -21,13 +21,35 @@ package ctx
 
 import (
 	"context"
+	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"time"
 )
 
-type ContextBuilder interface {
+const (
+	LOCALSTATENAME = "goeasysops_localstate"
+)
 
+// the local state, this is not transmitted across grpc boundaries.
+type LocalState interface {
+	CreatorService() *auth.SignedUser
+	CallingService() *auth.SignedUser
+	Debug() bool
+	Trace() bool
+	User() *auth.SignedUser
+	Session() *auth.SignedSession
+	RequestID() string
+	RoutingTags() *ge.CTXRoutingTags
+}
+
+type ContextBuilder interface {
+	/*
+		This function parses metadata found in an inbound context and, if successful, returns an "outbound" context with localstate.
+		the bool return parameter indicates if it was successful(true) or not(false).
+		Note that it requires the LOCAL service, because the calling service is modified and passed to the next service
+	*/
+	Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool)
 	/*
 		return the context from this builder based on the options and WithXXX functions
 	*/
@@ -67,11 +89,43 @@ type ContextBuilder interface {
 	WithRequestID(reqid string)
 	// set a timeout for this context
 	WithTimeout(time.Duration)
-	// set a parent context
+	// set a parent context for cancellation propagation (does not transfer metadata to the new context!)
 	WithParentContext(context context.Context)
 }
 
 // get a new contextbuilder
 func NewContextBuilder() ContextBuilder {
-	return &V1ContextBuilder{}
+	return &v1ContextBuilder{}
+}
+
+// return "localstate" from a context. This is never "nil", but it is not guaranteed that the LocalState interface actually resolves details
+func GetLocalState(ctx context.Context) LocalState {
+	return v1_getLocalState(ctx)
+}
+
+/*
+we receive a context from gRPC (e.g. in a unary interceptor). To use this context for outbount calls we need to copy the metadata, we also need to add a local callstate for the fancy_picker/balancer/dialer. This is what this function does.
+*/
+func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) context.Context {
+	cb := &v1ContextBuilder{}
+	octx, found := cb.Inbound2Outbound(in_ctx, local_service)
+	if found {
+		return octx
+	}
+	fmt.Printf("[go-easyops] could not parse inbound context!\n")
+	return in_ctx
+}
+
+func add_context_to_builder(cb ContextBuilder, ctx context.Context) {
+	ls := GetLocalState(ctx)
+	cb.WithCreatorService(ls.CreatorService())
+	if ls.Debug() {
+		cb.WithDebug()
+	}
+	cb.WithRequestID(ls.RequestID())
+	if ls.Trace() {
+		cb.WithTrace()
+	}
+	cb.WithUser(ls.User())
+	cb.WithSession(ls.Session())
 }

@@ -3,12 +3,11 @@ package auth
 import (
 	"context"
 	apb "golang.conradwood.net/apis/auth"
-	"golang.conradwood.net/go-easyops/rpc"
 	"strings"
 )
 
 func IsRoot(ctx context.Context) bool {
-	return IsRootUser(rpc.CallStateFromContext(ctx).User())
+	return IsRootUser(GetUser(ctx))
 }
 func IsRootUser(user *apb.User) bool {
 	return IsInGroupByUser(user, "1")

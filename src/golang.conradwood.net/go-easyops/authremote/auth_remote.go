@@ -87,7 +87,9 @@ func ContextWithTimeout(t time.Duration) context.Context {
 // get the user and service we are running as
 func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
 	if !contextRetrieved {
-		lastUser = SignedGetByToken(context.Background(), tokens.GetUserTokenParameter())
+		utok := tokens.GetUserTokenParameter()
+		//		fmt.Printf("utok: \"%s\"\n", utok)
+		lastUser = SignedGetByToken(context.Background(), utok)
 		lastService = SignedGetByToken(context.Background(), tokens.GetServiceTokenParameter())
 		if lastUser != nil && common.VerifySignedUser(lastUser) == nil {
 			fmt.Printf("[go-easyops] Warning - local user signature invalid\n")

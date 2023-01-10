@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	fw "golang.conradwood.net/apis/framework"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -22,8 +23,8 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	defer pp.ServerRpcDone()
 
 	name := ServiceNameFromStreamInfo(info)
-
 	method := MethodNameFromStreamInfo(info)
+	rc := &rpccall{ServiceName: name, MethodName: method, Started: time.Now()}
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{
 		"method":      method,
 		"servicename": name,
@@ -48,43 +49,55 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		return res
 	}
 
-	cs := &rpc.CallState{
-		Started:     time.Now(),
-		ServiceName: ServiceNameFromStreamInfo(info),
-		MethodName:  MethodNameFromStreamInfo(info),
-		Context:     stream.Context(),
-		MyServiceID: sd.serviceID,
-	}
-	ctx := context.WithValue(stream.Context(), rpc.LOCALCONTEXTNAME, cs)
-	cs.Context = ctx
-
 	def := getServerDefByName(name)
 	if def == nil {
 		s := fmt.Sprintf("[go-easyops] Service not registered! %s", name)
 		fmt.Println(s)
-		return errors.Error(cs.Context, codes.Unimplemented, "service unavailable", "service %s is not known here", cs.ServiceName)
+		return errors.Error(stream.Context(), codes.Unimplemented, "service unavailable", "service %s is not known here", rc.ServiceName)
 	}
 
 	grpc_server_requests.With(prometheus.Labels{
 		"method":      method,
 		"servicename": def.name,
 	}).Inc()
-	// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
-	if !def.NoAuth {
-		err := Authenticate(cs)
+
+	var cs *rpc.CallState // this variable is obsolete, only used if not context_with_builder
+
+	var out_ctx context.Context
+
+	if cmdline.ContextWithBuilder() {
+		out_ctx, _, err = sd.V1inbound2outbound(stream.Context())
 		if err != nil {
 			return err
 		}
-		if cs.RPCIResponse.Reject {
-			return errors.AccessDenied(cs.Context, "Access denied to %s for user %s", cs.TargetString(), cs.CallerString())
+	} else {
+		cs = &rpc.CallState{
+			Started:     time.Now(),
+			ServiceName: ServiceNameFromStreamInfo(info),
+			MethodName:  MethodNameFromStreamInfo(info),
+			Context:     stream.Context(),
+			MyServiceID: sd.serviceID,
 		}
+		ctx := context.WithValue(stream.Context(), rpc.LOCALCONTEXTNAME, cs)
+		cs.Context = ctx
+		out_ctx = ctx
+		// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
+		if !def.NoAuth {
+			err := Authenticate(cs)
+			if err != nil {
+				return err
+			}
+			if cs.RPCIResponse.Reject {
+				return errors.AccessDenied(out_ctx, "Access denied to %s for user %s", cs.TargetString(), cs.CallerString())
+			}
+		}
+		if cs.Metadata != nil {
+			cs.Metadata.FooBar = "nonmoo"
+		}
+		cs.UpdateContextFromResponse()
+		cs.DebugPrintContext()
 	}
-	if cs.Metadata != nil {
-		cs.Metadata.FooBar = "nonmoo"
-	}
-	cs.UpdateContextFromResponse()
-	cs.DebugPrintContext()
-	nstream := newServerStream(stream, cs.Context)
+	nstream := newServerStream(stream, out_ctx)
 	err = handler(srv, nstream)
 	if err == nil {
 		return nil
@@ -107,12 +120,12 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 
 	// if adding details failed, just return the undecorated error message
 	if errx != nil {
-		sd.logError(cs, err)
+		sd.logError(out_ctx, rc, err)
 		return err
 	}
 
 	re := st.Err()
-	sd.logError(cs, re)
+	sd.logError(out_ctx, rc, re)
 	return re
 }
 func MethodNameFromStreamInfo(info *grpc.StreamServerInfo) string {
