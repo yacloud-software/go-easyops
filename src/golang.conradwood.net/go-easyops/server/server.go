@@ -178,7 +178,7 @@ func stopping() {
 	// value is a serverdef
 	for _, sd := range knownServices {
 		fancyPrintf("Deregistering Service \"%s\"\n", sd.toString())
-		ctx := context.Background()
+		ctx := context_Background()
 		ctx, _ = context.WithTimeout(ctx, time.Duration(2)*time.Second) // don't hang on shutdown
 		_, err := c.V2DeregisterService(ctx, &pb.DeregisterServiceRequest{ProcessID: sd.registered_id})
 		if err != nil {
@@ -247,7 +247,7 @@ func ServerStartup(def *serverDef) error {
 				fancyPrintf("Cannot connect to a server without %s token.\n", tokname)
 				//os.Exit(10)
 			}
-			su = ar.SignedGetByToken(context.Background(), tk)
+			su = ar.SignedGetByToken(context_Background(), tk)
 			if su == nil {
 				fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
 				fancyPrintf("The authentication %s token is not valid.\n", tokname)
@@ -458,7 +458,7 @@ func UnregisterPortRegistry(port []int) error {
 		ps = append(ps, int32(p))
 	}
 	psr := pb.ProcessShutdownRequest{Port: ps}
-	_, err = client.InformProcessShutdown(context.Background(), &psr)
+	_, err = client.InformProcessShutdown(context_Background(), &psr)
 	return err
 }
 
@@ -503,7 +503,7 @@ func AddRegistry(sd *serverDef) (string, error) {
 	if rgclient == nil {
 		rgclient = pb.NewRegistryClient(client.ConnectAt(cmdline.GetRegistryAddress(), "registry.Registry"))
 	}
-	resp, err := rgclient.V2RegisterService(context.Background(), rsr)
+	resp, err := rgclient.V2RegisterService(context_Background(), rsr)
 	if err != nil {
 		fancyPrintf("RegisterService(%s) failed: %s\n", req.Service.Name, err)
 		return "", err

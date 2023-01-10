@@ -1,19 +1,20 @@
 package client
 
 import (
-	"context"
+	//	"context"
 	"flag"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
 	"golang.conradwood.net/apis/common"
 	"golang.conradwood.net/go-easyops/cmdline"
 	cm "golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/tokens"
 	"sync"
 )
 
 /*
- we attempt to get the public key for authentication from the auth-server
+we attempt to get the public key for authentication from the auth-server
 */
 var (
 	pubkeylock    sync.Mutex
@@ -54,10 +55,12 @@ func GetSignatureFromAuth() {
 	if retrieved_sig {
 		return
 	}
-	ctx := context.Background()
+	cb := ctx.NewContextBuilder()
+	cctx := cb.ContextWithAutoCancel()
+	//ctx := context.Background()
 	cn := Connect("auth.AuthenticationService")
 	authServer := apb.NewAuthenticationServiceClient(cn)
-	pk, err := authServer.GetPublicSigningKey(ctx, &common.Void{})
+	pk, err := authServer.GetPublicSigningKey(cctx, &common.Void{})
 	if err != nil {
 		fmt.Printf("[go-easyops] failed to get public auth key (%s)\n", err)
 		cn.Close()

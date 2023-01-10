@@ -43,10 +43,17 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	started := time.Now()
 
 	// no v2, try V1
-	outbound_ctx, _, err := sd.V1inbound2outbound(in_ctx)
+	var outbound_ctx context.Context
+	var err error
+	if cmdline.ContextWithBuilder() {
+		outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
+	} else {
+		outbound_ctx, err = sd.buildCallStateV1(in_ctx, req, info, handler)
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	//fmt.Printf("LS: %#v\n", ls)
 	//fmt.Printf("Method: \"%s\"\n", method)
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{
@@ -104,18 +111,21 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	return i, st.Err()
 }
 
-func (sd *serverDef) V1inbound2outbound(in_ctx context.Context) (context.Context, ctx.LocalState, error) {
+func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (context.Context, ctx.LocalState, error) {
 	octx := ctx.Inbound2Outbound(in_ctx, sd.local_service)
 	ls := ctx.GetLocalState(octx)
-	err := sd.checkAccess(octx)
+	err := sd.checkAccess(octx, rc)
 	if err != nil {
+		if *debug_rpc_serve {
+			fmt.Printf("%#v\n", octx)
+		}
 		return nil, nil, err
 	}
 	return octx, ls, nil
 }
 
 // method "pre builder"
-func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (*rpc.CallState, error) {
+func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (context.Context, error) {
 	cs := &rpc.CallState{
 		Started:     time.Now(),
 		ServiceName: ServiceNameFromUnaryInfo(info),
@@ -162,5 +172,5 @@ func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, i
 		svc := auth.GetService(cs.Context)
 		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s\" from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.UserIDString(user), auth.UserIDString(svc))
 	}
-	return cs, nil
+	return cs.Context, nil
 }

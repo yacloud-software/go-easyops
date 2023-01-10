@@ -93,7 +93,6 @@ func connectWithIPOptions(servicename string, block bool) (*grpc.ClientConn, err
 
 }
 
-//
 func Connect(serviceNameOrPath string) *grpc.ClientConn {
 	return ConnectAt(cmdline.GetClientRegistryAddress(), serviceNameOrPath)
 }

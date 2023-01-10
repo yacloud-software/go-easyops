@@ -66,7 +66,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	var out_ctx context.Context
 
 	if cmdline.ContextWithBuilder() {
-		out_ctx, _, err = sd.V1inbound2outbound(stream.Context())
+		out_ctx, _, err = sd.V1inbound2outbound(stream.Context(), rc)
 		if err != nil {
 			return err
 		}

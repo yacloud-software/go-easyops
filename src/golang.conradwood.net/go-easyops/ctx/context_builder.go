@@ -21,14 +21,21 @@ package ctx
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/utils"
 	"time"
 )
 
 const (
 	LOCALSTATENAME = "goeasysops_localstate"
+)
+
+var (
+	debug = flag.Bool("ge_debug_context", false, "if true print context debug stuff")
 )
 
 // the local state, this is not transmitted across grpc boundaries.
@@ -100,7 +107,17 @@ func NewContextBuilder() ContextBuilder {
 
 // return "localstate" from a context. This is never "nil", but it is not guaranteed that the LocalState interface actually resolves details
 func GetLocalState(ctx context.Context) LocalState {
-	return v1_getLocalState(ctx)
+	res := v1_getLocalState(ctx)
+	if res == nil {
+		if cmdline.ContextWithBuilder() {
+			if *debug {
+				utils.PrintStack("Localstate missing")
+			}
+			Debugf("could not get localstate from context (caller: %s)\n", utils.CallingFunction())
+		}
+		return &EmptyLocalState{}
+	}
+	return res
 }
 
 /*
@@ -110,6 +127,7 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 	cb := &v1ContextBuilder{}
 	octx, found := cb.Inbound2Outbound(in_ctx, local_service)
 	if found {
+		Debugf("converted inbound to outbound context\n")
 		return octx
 	}
 	fmt.Printf("[go-easyops] could not parse inbound context!\n")
@@ -128,4 +146,13 @@ func add_context_to_builder(cb ContextBuilder, ctx context.Context) {
 	}
 	cb.WithUser(ls.User())
 	cb.WithSession(ls.Session())
+}
+
+func Debugf(format string, args ...interface{}) {
+	if !*debug {
+		return
+	}
+	s1 := fmt.Sprintf("[go-easyops] CONTEXT: ")
+	s2 := fmt.Sprintf(format, args...)
+	fmt.Printf("%s%s", s1, s2)
 }

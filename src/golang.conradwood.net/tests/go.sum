@@ -42,6 +42,8 @@ golang.conradwood.net/apis/gitserver v1.1.2006 h1:API3ezurNjrZDFKEuvCfitGJemYbU7
 golang.conradwood.net/apis/gitserver v1.1.2006/go.mod h1:NaET2knVJg3IU9bgx50nO4FWNpKHh1O3Rd3IDZwJnQY=
 golang.conradwood.net/apis/helloworld v1.1.2058 h1:S0b7AgxBsE3ek5cPMbavmffP3zQAF2e7yRa0cCvtOIE=
 golang.conradwood.net/apis/helloworld v1.1.2058/go.mod h1:XB7jCe8hgT60M73lO7nQ7LNtRfF9Uw0ikC54cQ0r8Oc=
+golang.conradwood.net/apis/helloworld v1.1.2091 h1:MErJP45szFke0MB4mjnfTO0epVLg7In3q+EYV+NJn/w=
+golang.conradwood.net/apis/helloworld v1.1.2091/go.mod h1:XB7jCe8hgT60M73lO7nQ7LNtRfF9Uw0ikC54cQ0r8Oc=
 golang.conradwood.net/apis/objectstore v1.1.2073 h1:r6OlxYbyxhWaNUNa/v/x0BvCApkItRqqgy7v57huyCQ=
 golang.conradwood.net/apis/objectstore v1.1.2073/go.mod h1:e2yf47IrPI8nSmbDODyI1zvhtP/f22VWK32GvFZgYjU=
 golang.conradwood.net/apis/registry v1.1.2073 h1:oPVjORzylKwe8ND/Rnvn9zDxscgWYNAuvumGcHmUV2w=

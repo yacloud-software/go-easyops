@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/ctx"
 	"io"
 	"os"
 	"os/exec"
@@ -46,10 +47,11 @@ func NewWithContext(ctx context.Context) Linux {
 	return l
 }
 func New() Linux {
+	cb := ctx.NewContextBuilder()
 	res := &linux{
 		Runtime:          *maxRuntime,
 		AllowConcurrency: false,
-		ctx:              context.TODO(),
+		ctx:              cb.ContextWithAutoCancel(),
 	}
 	return res
 }

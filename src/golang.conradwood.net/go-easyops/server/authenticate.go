@@ -35,12 +35,12 @@ newest method of authentication...
 *********************************************************************
 */
 // return error if not allowed to access
-func (sd *serverDef) checkAccess(octx context.Context) error {
+func (sd *serverDef) checkAccess(octx context.Context, rc *rpccall) error {
 	if sd.NoAuth || cmdline.IsStandalone() {
 		return nil
 	}
 	if auth.GetUser(octx) == nil && auth.GetService(octx) == nil {
-		fmt.Printf("[go-easyops] access denied for no-user and no-service to service with auth requirement\n")
+		fmt.Printf("[go-easyops] access denied to %s/%s for no-user and no-service to service with auth requirement (caller:%s)\n", rc.ServiceName, rc.MethodName, utils.CallingFunction())
 		return fmt.Errorf("access denied")
 	}
 	return nil

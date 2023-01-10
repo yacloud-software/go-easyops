@@ -7,6 +7,7 @@ import (
 	//	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	//	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/cmdline"
 	gectx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc/balancer"
@@ -125,10 +126,12 @@ func (f *FancyPicker) ServiceName() string {
 }
 
 func tags_from_context(ctx context.Context) *ge.CTXRoutingTags {
-	ls := gectx.GetLocalState(ctx)
-	lr := ls.RoutingTags()
-	if lr != nil {
-		return lr
+	if cmdline.ContextWithBuilder() {
+		ls := gectx.GetLocalState(ctx)
+		lr := ls.RoutingTags()
+		if lr != nil {
+			return lr
+		}
 	}
 	cs := rpc.CallStateFromContext(ctx)
 	if cs != nil {
