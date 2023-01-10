@@ -129,7 +129,7 @@ func (alq *AsyncLogQueue) Close(exitcode int) error {
 	if lerr != nil {
 		return lerr
 	}
-	_, e := grpcClient.CloseLog(context.Background(), &cl)
+	_, e := grpcClient.CloseLog(getctx(), &cl)
 	if e != nil {
 		return e
 	}
@@ -171,7 +171,7 @@ func (alq *AsyncLogQueue) Flush() error {
 		)
 	}
 
-	_, err := grpcClient.LogCommandStdout(context.Background(), logRequest)
+	_, err := grpcClient.LogCommandStdout(getctx(), logRequest)
 	if err != nil {
 		if time.Since(alq.lastErrPrinted) > (10 * time.Second) {
 			fmt.Printf("Failed to send log: %s\n", err)
@@ -182,4 +182,9 @@ func (alq *AsyncLogQueue) Flush() error {
 	// all done, so clear the array so we free up the memory
 
 	return nil
+}
+
+func getctx() context.Context {
+	cb := ctx.NewContextBuilder()
+	return cb.ContextWithAutoCancel()
 }
