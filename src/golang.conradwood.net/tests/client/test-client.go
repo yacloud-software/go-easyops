@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	au "golang.conradwood.net/apis/auth"
 	"golang.conradwood.net/apis/common"
 	"golang.conradwood.net/apis/helloworld"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
+	cm "golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"time"
@@ -16,6 +18,15 @@ import (
 func main() {
 	flag.Parse()
 	fmt.Printf("go-easyops test client\n")
+	u, s := authremote.GetLocalUsers()
+	fmt.Printf("Local User account   : %s\n", user2string(u))
+	fmt.Printf("Local Service account: %s\n", user2string(s))
+
+	pingLoop()
+	pingLookup()
+	pingStream()
+}
+func pingLoop() {
 	ctx := authremote.Context()
 	if ctx == nil {
 		fmt.Printf("ERROR: authremote.Context() created no context\n")
@@ -23,29 +34,75 @@ func main() {
 	}
 	fmt.Printf("Pinging with default client...\n")
 	started := time.Now()
-	r, err := helloworld.GetHelloWorldClient().Ping(ctx, &common.Void{})
+	res, err := helloworld.GetHelloWorldClient().PingLoop(ctx, &helloworld.PingRequest{Loops: 5})
 	utils.Bail("failed to ping", err)
-	fmt.Printf("Pinged (%0.2fs), User=%s, Service=%s\n", time.Since(started).Seconds(), auth.Description(r.CallingUser), auth.Description(r.CallingService))
-
+	fmt.Printf("Pinged (%0.2fs)\n", time.Since(started).Seconds())
+	t := &utils.Table{}
+	t.AddHeaders("#", "User", "Service", "Creator")
+	for i, r := range res.Responses {
+		t.AddInt(i + 1)
+		t.AddString(auth.Description(r.CallingUser))
+		t.AddString(auth.Description(r.CallingService))
+		t.AddString(auth.Description(r.CallingService))
+		t.NewRow()
+	}
+	fmt.Println(t.ToPrettyString())
+}
+func pingLookup() {
 	fmt.Printf("Pinging with lookup...\n")
-	started = time.Now()
+	ctx := authremote.Context()
+	started := time.Now()
 	con := client.Connect("helloworld.HelloWorld")
 	c := helloworld.NewHelloWorldClient(con)
-	_, err = c.Ping(ctx, &common.Void{})
+	r, err := c.Ping(ctx, &common.Void{})
 	utils.Bail("failed to ping", err)
-	fmt.Printf("Pinged (%0.2fs), User=%s, Service=%s\n", time.Since(started).Seconds(), auth.Description(r.CallingUser), auth.Description(r.CallingService))
-	/*
-		fmt.Printf("Pinging stream...\n")
-		psreq := &helloworld.PingStreamRequest{DelayInMillis: 500}
-		srv, err := helloworld.GetHelloWorldClient().PingStream(ctx, psreq)
-		utils.Bail("failed to set up pingstream", err)
-		for {
-			pr, err := srv.Recv()
-			if err != nil {
-				fmt.Printf("error received: %s\n", err)
-				break
-			}
-			fmt.Printf("Received Sequence %d\n", pr.SequenceNumber)
+	fmt.Printf("Pinged (%0.2fs), User=%s, Service=%s, Creator=%s\n", time.Since(started).Seconds(), auth.Description(r.CallingUser), auth.Description(r.CallingService), auth.Description(r.CreatingService))
+}
+
+func pingStream() {
+	fmt.Printf("Pinging stream...\n")
+	ctx := authremote.Context()
+	psreq := &helloworld.PingStreamRequest{DelayInMillis: 500}
+	started := time.Now()
+	srv, err := helloworld.GetHelloWorldClient().PingStream(ctx, psreq)
+	utils.Bail("failed to set up pingstream", err)
+	pings := 0
+	var user, service, cservice *au.User
+	for {
+		pr, err := srv.Recv()
+		if err != nil {
+			fmt.Printf("error received: %s\n", err)
+			break
 		}
-	*/
+		pings++
+		fmt.Printf("Received Sequence %d (Stream %d)\n", pr.SequenceNumber, pr.StreamID)
+		print := false
+		if pr.User != nil && pr.User != user {
+			user = pr.User
+			print = true
+		}
+		if pr.CallingService != nil && pr.CallingService != service {
+			service = pr.CallingService
+			print = true
+		}
+		if pr.CreatorService != nil && pr.CreatorService != cservice {
+			cservice = pr.CreatorService
+			print = true
+		}
+		if print {
+			fmt.Printf("User:%s, Service:%s, Creator:%s\n", auth.Description(user), auth.Description(service), auth.Description(cservice))
+		}
+	}
+	dur := time.Since(started)
+	fmt.Printf("Stream ended after %0.2fs and %d pings\n", dur.Seconds(), pings)
+	fmt.Printf("Sleeping a few seconds after stream end...\n")
+	for i := 5; i > 0; i-- {
+		fmt.Printf(" %d\r", i)
+		time.Sleep(time.Duration(1) * time.Second)
+	}
+
+}
+func user2string(u *au.SignedUser) string {
+	uu := cm.VerifySignedUser(u)
+	return auth.Description(uu)
 }
