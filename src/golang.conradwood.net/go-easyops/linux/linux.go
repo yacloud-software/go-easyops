@@ -117,6 +117,9 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) 
 	go func() {
 		<-timer1.C
 		if running {
+			if c.Process == nil {
+				panic("no process to kill")
+			}
 			c.Process.Kill()
 			killed = true
 		}
