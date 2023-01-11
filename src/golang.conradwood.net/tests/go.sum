@@ -60,8 +60,6 @@ golang.conradwood.net/apis/framework v1.1.2073 h1:JTsdvDHop/S9vUD7LWxZXiOGckog8T
 golang.conradwood.net/apis/framework v1.1.2073/go.mod h1:aakclkFxoK6Rwfb6wWbfyCPRiWsAZM94xYz69Y9fid4=
 golang.conradwood.net/apis/gitserver v1.1.2006 h1:API3ezurNjrZDFKEuvCfitGJemYbU7BXXPq9Rw819AE=
 golang.conradwood.net/apis/gitserver v1.1.2006/go.mod h1:NaET2knVJg3IU9bgx50nO4FWNpKHh1O3Rd3IDZwJnQY=
-golang.conradwood.net/apis/helloworld v1.1.2091 h1:MErJP45szFke0MB4mjnfTO0epVLg7In3q+EYV+NJn/w=
-golang.conradwood.net/apis/helloworld v1.1.2091/go.mod h1:XB7jCe8hgT60M73lO7nQ7LNtRfF9Uw0ikC54cQ0r8Oc=
 golang.conradwood.net/apis/helloworld v1.1.2092 h1:BLL3MjiwqIJimdhFXaqANRsIQJ7BQFmaMKQJc46K9x8=
 golang.conradwood.net/apis/helloworld v1.1.2092/go.mod h1:XB7jCe8hgT60M73lO7nQ7LNtRfF9Uw0ikC54cQ0r8Oc=
 golang.conradwood.net/apis/logservice v1.1.2073 h1:Y6Z/sl5RuBc5lZqHRVO/FqXdd2FeMoeDuBbMTj0q7fA=
