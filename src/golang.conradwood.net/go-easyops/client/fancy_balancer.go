@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/resolver"
@@ -70,6 +71,9 @@ type FancyBalancer struct {
 
 // EXPERIMENTAL: this is the new-style grpc callback
 func (f *FancyBalancer) ResolverError(err error) {
+	if *debug_fancy {
+		utils.NotImpl("resolver error")
+	}
 	fmt.Printf("[go-easyops] Resolver reported an error, which is not handled yet: %s\n", err)
 	//	panic("[go-easyops] compiled with incompatible grpc library version")
 }
