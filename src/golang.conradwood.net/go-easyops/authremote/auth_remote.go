@@ -361,6 +361,18 @@ func GetUserByID(ctx context.Context, userid string) (*apb.User, error) {
 	}
 	return o.(*apb.User), nil
 }
+
+func GetSignedUserByID(ctx context.Context, userid string) (*apb.SignedUser, error) {
+	if userid == "" {
+		return nil, fmt.Errorf("[go-easyops] No userid provided")
+	}
+	res, err := authManager.SignedGetUserByID(ctx, &apb.ByIDRequest{UserID: userid})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func GetUserByEmail(ctx context.Context, email string) (*apb.User, error) {
 	if email == "" {
 		return nil, fmt.Errorf("[go-easyops] No email provided")

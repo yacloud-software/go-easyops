@@ -22,10 +22,23 @@ func main() {
 	fmt.Printf("Local User account   : %s\n", user2string(u))
 	fmt.Printf("Local Service account: %s\n", user2string(s))
 
+	pingAs("1")
 	pingLoop()
 	pingLookup()
 	pingStream()
 }
+func pingAs(userid string) {
+	fmt.Printf("Pinging with lookup...\n")
+	ctx, err := authremote.ContextForUserID(userid)
+	utils.Bail("failed to get context", err)
+	started := time.Now()
+	con := client.Connect("helloworld.HelloWorld")
+	c := helloworld.NewHelloWorldClient(con)
+	r, err := c.Ping(ctx, &common.Void{})
+	utils.Bail("failed to ping", err)
+	fmt.Printf("Pinged (%0.2fs), User=%s, Service=%s, Creator=%s\n", time.Since(started).Seconds(), auth.Description(r.CallingUser), auth.Description(r.CallingService), auth.Description(r.CreatingService))
+}
+
 func pingLoop() {
 	ctx := authremote.Context()
 	if ctx == nil {
