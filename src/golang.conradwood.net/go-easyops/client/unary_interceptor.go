@@ -80,7 +80,7 @@ func print_debug_client(ictx context.Context, targetname string) {
 		if u != nil {
 			us = fmt.Sprintf("UserID=%s, Email=%s", u.ID, u.Email)
 		}
-		fmt.Printf("Invoking method %s as %s...\n", targetname, us)
+		fmt.Printf("Invoking method as %s...\n", targetname, us)
 		return
 	}
 	cs := rpc.CallStateFromContext(ictx)

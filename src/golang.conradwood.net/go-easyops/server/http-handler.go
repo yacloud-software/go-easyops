@@ -184,13 +184,21 @@ func serveVersion(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	fmt.Fprintf(w, "go_framework_buildid: %d\n", cmdline.BUILD_NUMBER)
 	fmt.Fprintf(w, "go_framework_timestamp: %d\n", cmdline.BUILD_TIMESTAMP)
 	fmt.Fprintf(w, "go_framework_description: %s\n", cmdline.BUILD_DESCRIPTION)
-	fmt.Fprintf(w, "app_buildid: %d\n", appinfo.AppInfo().Number)
-	fmt.Fprintf(w, "app_timestamp: %d\n", appinfo.AppInfo().Timestamp)
-	fmt.Fprintf(w, "app_description: %s\n", appinfo.AppInfo().Description)
-	fmt.Fprintf(w, "app_repository: %s\n", appinfo.AppInfo().RepositoryName)
-	fmt.Fprintf(w, "app_repository_id: %d\n", appinfo.AppInfo().RepositoryID)
-	fmt.Fprintf(w, "app_commit: %s\n", appinfo.AppInfo().CommitID)
-
+	if appinfo.AppInfo == nil {
+		fmt.Fprintf(w, "app_buildid: %d\n", 0)
+		fmt.Fprintf(w, "app_timestamp: %d\n", 0)
+		fmt.Fprintf(w, "app_description: %s\n", "local")
+		fmt.Fprintf(w, "app_repository: %s\n", "0")
+		fmt.Fprintf(w, "app_repository_id: %d\n", 0)
+		fmt.Fprintf(w, "app_commit: %s\n", "some")
+	} else {
+		fmt.Fprintf(w, "app_buildid: %d\n", appinfo.AppInfo().Number)
+		fmt.Fprintf(w, "app_timestamp: %d\n", appinfo.AppInfo().Timestamp)
+		fmt.Fprintf(w, "app_description: %s\n", appinfo.AppInfo().Description)
+		fmt.Fprintf(w, "app_repository: %s\n", appinfo.AppInfo().RepositoryName)
+		fmt.Fprintf(w, "app_repository_id: %d\n", appinfo.AppInfo().RepositoryID)
+		fmt.Fprintf(w, "app_commit: %s\n", appinfo.AppInfo().CommitID)
+	}
 }
 
 // this servers /internal/parameters url

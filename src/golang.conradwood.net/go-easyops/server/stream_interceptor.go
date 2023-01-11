@@ -96,6 +96,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		}
 		cs.UpdateContextFromResponse()
 		cs.DebugPrintContext()
+		out_ctx = cs.Context
 	}
 	nstream := newServerStream(stream, out_ctx)
 	err = handler(srv, nstream)

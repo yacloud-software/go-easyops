@@ -1,12 +1,12 @@
 package logger
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/logservice"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/ctx"
+	"golang.org/x/net/context"
 	"sync"
 	"time"
 )
