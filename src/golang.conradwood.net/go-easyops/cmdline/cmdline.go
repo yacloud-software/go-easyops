@@ -63,21 +63,12 @@ func PrintUsage() {
 	fmt.Fprintf(os.Stdout, "  Go-Easyops build time       : %s\n", time.Unix(BUILD_TIMESTAMP, 0))
 	fmt.Fprintf(os.Stdout, "  Go-Easyops description      : %s\n", BUILD_DESCRIPTION)
 
-	if appinfo.AppInfo == nil {
-		fmt.Fprintf(os.Stdout, "  [old style vendor repository] \n")
-		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", 0)
-		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", 0)
-		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", "n/a")
-		fmt.Fprintf(os.Stdout, "  App description             : %s\n", "local")
-		fmt.Fprintf(os.Stdout, "  App repository              : %s\n", "some")
+	fmt.Fprintf(os.Stdout, "  App version                 : %d\n", appinfo.AppInfo().Number)
+	fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", appinfo.AppInfo().Timestamp)
+	fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(appinfo.AppInfo().Timestamp, 0))
+	fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo().Description)
+	fmt.Fprintf(os.Stdout, "  App repository              : %d\n", appinfo.AppInfo().RepositoryID)
 
-	} else {
-		fmt.Fprintf(os.Stdout, "  App version                 : %d\n", appinfo.AppInfo().Number)
-		fmt.Fprintf(os.Stdout, "  App build timestamp         : %d\n", appinfo.AppInfo().Timestamp)
-		fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(appinfo.AppInfo().Timestamp, 0))
-		fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo().Description)
-		fmt.Fprintf(os.Stdout, "  App repository              : %d\n", appinfo.AppInfo().RepositoryID)
-	}
 	PrintDefaults()
 }
 func PrintDefaults() {

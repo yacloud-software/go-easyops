@@ -89,8 +89,8 @@ func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
 	if !contextRetrieved {
 		utok := tokens.GetUserTokenParameter()
 		//		fmt.Printf("utok: \"%s\"\n", utok)
-		lastUser = SignedGetByToken(context.Background(), utok)
-		lastService = SignedGetByToken(context.Background(), tokens.GetServiceTokenParameter())
+		lastUser = SignedGetByToken(context_background(), utok)
+		lastService = SignedGetByToken(context_background(), tokens.GetServiceTokenParameter())
 		if lastUser != nil && common.VerifySignedUser(lastUser) == nil {
 			fmt.Printf("[go-easyops] Warning - local user signature invalid\n")
 			return nil, nil
@@ -283,8 +283,14 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 		return nil, fmt.Errorf("Missing userid")
 	}
 	if cmdline.ContextWithBuilder() {
-		//TODO: retrieve user and call contextbuilder
-		utils.NotImpl("Cannot build context for UserIDWithTimeout")
+		su, err := GetSignedUserByID(Context(), userid)
+		if err != nil {
+			return nil, err
+		}
+		cb := ctx.NewContextBuilder()
+		cb.WithTimeout(to)
+		cb.WithUser(su)
+		return cb.ContextWithAutoCancel(), nil
 	}
 
 	if rpci == nil {
@@ -361,6 +367,19 @@ func GetUserByID(ctx context.Context, userid string) (*apb.User, error) {
 	}
 	return o.(*apb.User), nil
 }
+
+func GetSignedUserByID(ctx context.Context, userid string) (*apb.SignedUser, error) {
+	if userid == "" {
+		return nil, fmt.Errorf("[go-easyops] No userid provided")
+	}
+	managerClient()
+	res, err := authManager.SignedGetUserByID(ctx, &apb.ByIDRequest{UserID: userid})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func GetUserByEmail(ctx context.Context, email string) (*apb.User, error) {
 	if email == "" {
 		return nil, fmt.Errorf("[go-easyops] No email provided")
@@ -377,7 +396,7 @@ func GetUserByEmail(ctx context.Context, email string) (*apb.User, error) {
 }
 func WhoAmI() *apb.User {
 	tok := tokens.GetUserTokenParameter()
-	return GetByToken(context.Background(), tok)
+	return GetByToken(context_background(), tok)
 }
 func GetByToken(ctx context.Context, token string) *apb.User {
 	if token == "" {
@@ -443,4 +462,9 @@ func managerClient() {
 		}
 		authManager = apb.NewAuthManagerServiceClient(client.Connect("auth.AuthManagerService"))
 	}
+}
+
+func context_background() context.Context {
+	cb := ctx.NewContextBuilder()
+	return cb.ContextWithAutoCancel()
 }
