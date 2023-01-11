@@ -283,7 +283,7 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 		return nil, fmt.Errorf("Missing userid")
 	}
 	if cmdline.ContextWithBuilder() {
-		su, err := GetSignedUserByID(context_background(), userid)
+		su, err := GetSignedUserByID(Context(), userid)
 		if err != nil {
 			return nil, err
 		}
