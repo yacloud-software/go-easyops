@@ -69,6 +69,8 @@ func PrintUsage() {
 	fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo().Description)
 	fmt.Fprintf(os.Stdout, "  App repository              : %d\n", appinfo.AppInfo().RepositoryID)
 
+	fmt.Fprintf(os.Stdout, "  Source code path            : %s\n", SourceCodePath())
+
 	PrintDefaults()
 }
 func PrintDefaults() {
