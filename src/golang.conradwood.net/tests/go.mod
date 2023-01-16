@@ -12,8 +12,8 @@ require (
 	golang.conradwood.net/apis/auth v1.1.2073
 	golang.conradwood.net/apis/common v1.1.2073
 	golang.conradwood.net/apis/echoservice v1.1.2073
-	golang.conradwood.net/apis/getestservice v1.1.2006
-	golang.conradwood.net/apis/gitserver v1.1.2006
+	golang.conradwood.net/apis/getestservice v1.1.2099
+	golang.conradwood.net/apis/gitserver v1.1.2099
 	golang.conradwood.net/apis/helloworld v1.1.2092
 	golang.conradwood.net/apis/registry v1.1.2073
 	golang.conradwood.net/apis/rpcinterceptor v1.1.2073
