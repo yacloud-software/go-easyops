@@ -1,6 +1,6 @@
 /*
 Package ctx contains methods to build authenticated contexts and retrieve information of them.
-Package ctx is a "leaf" package - it is imported from many other goeasyops packages but does not import other goeasyops packages.
+Package ctx is a "leaf" package - it is imported from many other goeasyops packages but does not import (many) other goeasyops packages.
 
 This package supports the following usecases:
 
@@ -16,6 +16,8 @@ Furthermore, go-easyops in general will parse "latest" context version and "late
 
 The context returned is ready to be used for outbound calls as-is.
 The context also includes a "value" which is only available locally (does not cross gRPC boundaries) but is used to cache stuff.
+
+Definition of CallingService: the LocalValue contains the service who called us. The context metadata contains this service definition (which in then is transmitted to downstream services)
 */
 package ctx
 
@@ -26,6 +28,7 @@ import (
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
 	"time"
 )
@@ -127,7 +130,12 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 	cb := &v1ContextBuilder{}
 	octx, found := cb.Inbound2Outbound(in_ctx, local_service)
 	if found {
-		Debugf("converted inbound to outbound context\n")
+		svc := common.VerifySignedUser(local_service)
+		svs := "[none]"
+		if svc != nil {
+			svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
+		}
+		Debugf("converted inbound to outbound context (me.service=%s)\n", svs)
 		return octx
 	}
 	fmt.Printf("[go-easyops] could not parse inbound context!\n")
@@ -155,4 +163,13 @@ func Debugf(format string, args ...interface{}) {
 	s1 := fmt.Sprintf("[go-easyops] CONTEXT: ")
 	s2 := fmt.Sprintf(format, args...)
 	fmt.Printf("%s%s", s1, s2)
+}
+
+// for debugging purposes we can convert a context to a human readable string
+func Context2String(ctx context.Context) string {
+	ls := GetLocalState(ctx)
+	if ls == nil {
+		return "[no localstate]"
+	}
+	return fmt.Sprintf("Localstate: %#v", ls)
 }

@@ -112,6 +112,9 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 }
 
 func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (context.Context, ctx.LocalState, error) {
+	if sd.local_service == nil {
+		fmt.Printf("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
+	}
 	octx := ctx.Inbound2Outbound(in_ctx, sd.local_service)
 	ls := ctx.GetLocalState(octx)
 	err := sd.checkAccess(octx, rc)
@@ -148,7 +151,7 @@ func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, i
 
 	// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
 	if !def.NoAuth && !cmdline.IsStandalone() {
-		err := Authenticate(cs)
+		err := Authenticate(in_ctx, cs)
 		if err != nil {
 			fancyPrintf("Debug-rpc Request: Authenticate() failed for \"%s/%s\" => rejected: %s\n", cs.MethodName, cs.ServiceName, err)
 			return nil, err

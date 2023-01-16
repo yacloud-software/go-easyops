@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx"
@@ -11,7 +12,6 @@ import (
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/utils"
 	//	"reflect"
-	//"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"time"
@@ -75,12 +75,15 @@ func print_debug_client(ictx context.Context, targetname string) {
 	}
 	if cmdline.ContextWithBuilder() {
 		ls := ctx.GetLocalState(ictx)
-		us := "none"
-		u := common.VerifySignedUser(ls.User())
-		if u != nil {
-			us = fmt.Sprintf("UserID=%s, Email=%s", u.ID, u.Email)
-		}
-		fmt.Printf("Invoking method %s as %s...\n", targetname, us)
+		/*
+			if ls == nil || ls.CallingService() == nil && strings.Contains(targetname, "Mail") {
+				panic("no calling service")
+			}
+		*/
+		us := auth.UserIDString(common.VerifySignedUser(ls.User()))
+		sv := auth.UserIDString(common.VerifySignedUser(ls.CallingService()))
+		fmt.Printf("Invoking method %s as %s (service %s)...\n", targetname, us, sv)
+		fmt.Printf("Outbound context: %#v\n", ctx.Context2String(ictx))
 		return
 	}
 	cs := rpc.CallStateFromContext(ictx)

@@ -83,7 +83,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		out_ctx = ctx
 		// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
 		if !def.NoAuth {
-			err := Authenticate(cs)
+			err := Authenticate(stream.Context(), cs)
 			if err != nil {
 				return err
 			}

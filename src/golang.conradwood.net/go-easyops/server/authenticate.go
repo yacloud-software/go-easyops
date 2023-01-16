@@ -11,6 +11,7 @@ import (
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
@@ -72,7 +73,8 @@ func initrpc() error {
 }
 
 // authenticate a user (and authorise access to this method/service)
-func Authenticate(cs *rpc.CallState) error {
+func Authenticate(ictx context.Context, cs *rpc.CallState) error {
+	var mss *apb.SignedUser // serviceuser we extra and (maybe) return later
 	if *debug_auth {
 		cs.Debug = true
 	}
@@ -87,6 +89,7 @@ func Authenticate(cs *rpc.CallState) error {
 	cs.Metadata = MetaFromContext(cs.Context)
 	if cs.Debug {
 		fmt.Printf("[go-easyops] Inbound metadata: %#v\n", cs.Metadata)
+		fmt.Printf("Context: %v\n", ictx)
 	}
 
 	// call the interceptor
@@ -98,6 +101,7 @@ func Authenticate(cs *rpc.CallState) error {
 
 	// preserve some of the inbound metadata information (before we overwrite it withour outbound data)
 	if cs.Metadata != nil {
+		mss = cs.Metadata.SignedService
 		verifySignatures(cs)
 		cs.CallingMethodID = cs.Metadata.CallerMethodID
 		if cs.Metadata.UserToken == "" && cs.Metadata.ServiceToken == "" && cs.Metadata.User == nil && cs.Metadata.Service == nil && cs.Metadata.SignedUser == nil {
@@ -114,7 +118,14 @@ func Authenticate(cs *rpc.CallState) error {
 	if *disable_interceptor {
 		res, err = build_access_details(cs.Context, irr)
 	} else {
-		res, err = rpcclient.InterceptRPC(cs.Context, irr)
+		res, err = rpcclient.InterceptRPC(ictx, irr)
+	}
+	if *debug_auth {
+		fmt.Printf("[go-easyops] rpcinterceptor response: %#v\n", res)
+		if res != nil {
+			fmt.Printf("[go-easyops] rpcinterceptor response (signed caller user): %#v\n", auth.UserIDString(common.VerifySignedUser(res.SignedCallerUser)))
+			fmt.Printf("[go-easyops] rpcinterceptor response (signed caller service): %#v\n", auth.UserIDString(common.VerifySignedUser(res.SignedCallerService)))
+		}
 	}
 	if err != nil {
 		if *debug_auth {
@@ -122,8 +133,33 @@ func Authenticate(cs *rpc.CallState) error {
 		}
 		return err
 	}
-	cs.RPCIResponse = res
+	// rpc interceptor needs a "servicetoken", but that is no longer transmitted with contextbuilder, so we fill it in here
+	if res.SignedCallerService == nil || res.CallerService == nil {
+		if *debug_auth {
+			fmt.Printf("[go-easyops] rpcinterceptor did not return service, using localstate\n")
+		}
+		ls := ctx.GetLocalState(ictx)
+		res.SignedCallerService = ls.CallingService()
+		res.CallerService = common.VerifySignedUser(ls.CallingService())
+	}
+	// still nil? copy from inbound countext
+	if (res.SignedCallerService == nil || res.CallerService == nil) && cs.Metadata != nil {
+		if *debug_auth {
+			fmt.Printf("[go-easyops] localstate did not return service, using metadata (%s)\n", auth.UserIDString(common.VerifySignedUser(mss)))
+		}
+		res.SignedCallerService = mss
+		res.CallerService = common.VerifySignedUser(res.SignedCallerService)
+	}
+	if *debug_auth {
+		fmt.Printf("[go-easyops] service after fiddling:\n")
+		if res != nil {
+			fmt.Printf("[go-easyops] rpcinterceptor response (signed caller user): %#v\n", auth.UserIDString(common.VerifySignedUser(res.SignedCallerUser)))
+			fmt.Printf("[go-easyops] rpcinterceptor response (signed caller service): %#v\n", auth.UserIDString(common.VerifySignedUser(res.SignedCallerService)))
+		}
+	}
 
+	cs.RPCIResponse = res
+	//
 	// copy /some/ responses to inmeta
 	cs.Metadata.RequestID = cs.RPCIResponse.RequestID
 	cs.Metadata.CallerMethodID = cs.RPCIResponse.CallerMethodID
