@@ -105,7 +105,7 @@ func Authenticate(cs *rpc.CallState) error {
 			if ok && t != nil && t.Addr != nil {
 				irr.Source = t.Addr.String()
 			}
-			fmt.Printf("[go-easyops] no identification by caller whatsoever (from %s)\n", irr.Source)
+			fmt.Printf("[go-easyops] no identification by caller whatsoever (from %s) calling %s.%s\n", irr.Source, irr.Service, irr.Method)
 		}
 	} else {
 	}
