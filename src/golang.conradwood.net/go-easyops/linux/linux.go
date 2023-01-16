@@ -120,7 +120,9 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) 
 		<-timer1.C
 		if running {
 			if c.Process == nil {
-				panic("no process to kill")
+				fmt.Printf("[go-easyops] no process to kill after %0.2fs", timeout.Seconds())
+				killed = true
+				return
 			}
 			c.Process.Kill()
 			killed = true
