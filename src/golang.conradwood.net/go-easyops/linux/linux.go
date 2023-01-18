@@ -121,7 +121,6 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) 
 		if running {
 			if c.Process == nil {
 				fmt.Printf("[go-easyops] no process to kill after %0.2fs", timeout.Seconds())
-				killed = true
 				return
 			}
 			c.Process.Kill()
@@ -135,7 +134,7 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) 
 	b, err := c.CombinedOutput()
 	running = false
 	if killed {
-		err = fmt.Errorf("Process killed after %d seconds", timeout)
+		err = fmt.Errorf("Process killed after %0.2f seconds", timeout.Seconds())
 	}
 	return string(b), err
 }
