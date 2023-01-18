@@ -41,7 +41,7 @@ func (ps *ProcessState) getChildrenOf() ([]*ProcessState, error) {
 	var res []*ProcessState
 	uts, err := ioutil.ReadDir(fmt.Sprintf("/proc/%d/task", pid))
 	if err != nil {
-		return nil, err
+		return res, nil
 	}
 	var tids []int
 	for _, dir := range uts {
@@ -51,7 +51,6 @@ func (ps *ProcessState) getChildrenOf() ([]*ProcessState, error) {
 		}
 		cname := fmt.Sprintf("/proc/%d/task/%d/children", pid, xpid)
 		if _, err := os.Stat(cname); errors.Is(err, os.ErrNotExist) {
-			fmt.Printf("File \"%s\" does not exist\n", cname)
 			continue
 		}
 		tids = append(tids, xpid)
@@ -60,6 +59,9 @@ func (ps *ProcessState) getChildrenOf() ([]*ProcessState, error) {
 	for _, tid := range tids {
 		chs, err := readProc(fmt.Sprintf("%d/task/%d/children", pid, tid))
 		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
 			return nil, err
 		}
 		for _, ns := range strings.Split(string(chs), " ") {
