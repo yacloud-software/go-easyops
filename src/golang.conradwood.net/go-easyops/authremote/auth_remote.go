@@ -333,6 +333,14 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 		mt.Service = resp.CallerService
 		mt.SignedService = resp.SignedCallerService
 	}
+	if mt.SignedUser == nil {
+		su, err := GetSignedUserByID(Context(), userid)
+		if err != nil {
+			return nil, err
+		}
+		mt.SignedUser = su
+		mt.User = common.VerifySignedUser(mt.SignedUser)
+	}
 
 	// now rebuild metadata again to add to outbound context
 	// this must be the final step

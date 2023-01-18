@@ -109,6 +109,8 @@ func init() {
 		}
 	}()
 }
+
+// add a routing tag to a serverdef
 func (s *serverDef) AddTag(key, value string) {
 	s.tags[key] = value
 }
