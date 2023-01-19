@@ -13,7 +13,7 @@ func main() {
 	utils.Bail("failed to get pids", err)
 	fmt.Printf("Got %d pids\n", len(allps))
 	for _, ps := range allps {
-		fmt.Printf("Pid: %s\n", ps)
+		fmt.Printf("Pid: %s, Parent: %d\n", ps, ps.ParentPid())
 	}
 
 	ps := linux.PidStatus(1)
