@@ -172,7 +172,7 @@ func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.Signe
 	c.service = svc
 	c.user = res.SignedUser
 	c.session = res.SignedSession
-	c.parent = ctx
+	c.WithParentContext(ctx)
 	c.routing_tags = rpc.Tags_rpc_to_ge(res.RoutingTags)
 	out_ctx, _ := c.Context()
 	v1_getLocalState(out_ctx).callingservice = cservice
