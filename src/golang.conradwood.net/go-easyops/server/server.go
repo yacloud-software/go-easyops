@@ -15,6 +15,7 @@ import (
 	pb "golang.conradwood.net/apis/registry"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/authremote"
 	ar "golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/certificates"
 	"golang.conradwood.net/go-easyops/client"
@@ -678,6 +679,12 @@ func (sd *serverDef) lookupServiceID(token string) {
 	if token == "" {
 		return
 	}
+	_, s_svc := authremote.GetLocalUsers()
+	svc := common.VerifySignedUser(s_svc)
+	svcid := ""
+	if svc != nil {
+		svcid = fmt.Sprintf("Service-User ID: %s\n", svc.ID)
+	}
 	if rpcclient == nil {
 		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
 	}
@@ -691,7 +698,7 @@ func (sd *serverDef) lookupServiceID(token string) {
 		//	os.Exit(10)
 	}
 	if resp != nil {
-		fancyPrintf("ServiceID for service \"%s\" is %d\n", sd.name, resp.ServiceID)
+		fancyPrintf("Service UserID: %s (rpcinterceptor:ServiceID for service \"%s\" is %d)\n", svcid, sd.name, resp.ServiceID)
 		sd.serviceID = resp.ServiceID
 	}
 }
