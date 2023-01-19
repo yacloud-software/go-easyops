@@ -683,7 +683,7 @@ func (sd *serverDef) lookupServiceID(token string) {
 	svc := common.VerifySignedUser(s_svc)
 	svcid := ""
 	if svc != nil {
-		svcid = fmt.Sprintf("Service-User ID: %s\n", svc.ID)
+		svcid = fmt.Sprintf("Service-User ID: %s", svc.ID)
 	}
 	if rpcclient == nil {
 		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
