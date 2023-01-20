@@ -421,9 +421,6 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 	fancyPrintf("Serve failed: %v\n", err)
 	return err
 }
-func serveSwagger(mux *http.ServeMux) {
-	//fmt.Println("serverSwagger??", mux)
-}
 
 // this function is called by http and works out wether it's a grpc or http-serve request
 func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
@@ -683,7 +680,7 @@ func (sd *serverDef) lookupServiceID(token string) {
 	svc := common.VerifySignedUser(s_svc)
 	svcid := ""
 	if svc != nil {
-		svcid = fmt.Sprintf("Service-User ID: %s", svc.ID)
+		svcid = fmt.Sprintf("%s", svc.ID)
 	}
 	if rpcclient == nil {
 		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
