@@ -54,8 +54,8 @@ golang.conradwood.net/apis/deploymonkey v1.1.2073 h1:59UTzXYuvq3stjNYCWj+Z9Ga2Cp
 golang.conradwood.net/apis/deploymonkey v1.1.2073/go.mod h1:D5eGV5SK8VPs9ZaAxrLphRXsZMW08S1KnV0PtMsr9hc=
 golang.conradwood.net/apis/echoservice v1.1.2073 h1:GIcZwBx1f6C/AoolNi0ylG9NE0Y6NRGcVFqzqXORmVg=
 golang.conradwood.net/apis/echoservice v1.1.2073/go.mod h1:n7dJwvgDXvGYy6vxFH3Mk2FguPmFWP/CCLAuUee+r7E=
-golang.conradwood.net/apis/errorlogger v1.1.2073 h1:JdEKs+gKihR38UECkoSOEURnAFCTffO8yEC43XdeJXE=
-golang.conradwood.net/apis/errorlogger v1.1.2073/go.mod h1:+eKYK50e04sTKr9qD9U44eztaeMSafHkzfjejBdMaqw=
+golang.conradwood.net/apis/errorlogger v1.1.2121 h1:CwipGe8MOQEZlQKjn/Vn3LRIun1pb/fPdXspr1hPT5I=
+golang.conradwood.net/apis/errorlogger v1.1.2121/go.mod h1:+eKYK50e04sTKr9qD9U44eztaeMSafHkzfjejBdMaqw=
 golang.conradwood.net/apis/framework v1.1.2073 h1:JTsdvDHop/S9vUD7LWxZXiOGckog8TqRGMiJUQ1BB1Y=
 golang.conradwood.net/apis/framework v1.1.2073/go.mod h1:aakclkFxoK6Rwfb6wWbfyCPRiWsAZM94xYz69Y9fid4=
 golang.conradwood.net/apis/gitserver v1.1.2099 h1:XsNuILjKJ9VEvq1bl2eDopBuCL40/J44U8s9FMQw3so=

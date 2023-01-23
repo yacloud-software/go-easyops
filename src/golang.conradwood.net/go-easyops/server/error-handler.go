@@ -6,6 +6,7 @@ import (
 	"fmt"
 	el "golang.conradwood.net/apis/errorlogger"
 	fw "golang.conradwood.net/apis/framework"
+	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
@@ -78,20 +79,98 @@ func log(l *le) {
 		Timestamp:      uint32(l.ts.Unix()),
 		RequestID:      "norequestidinerrorhandler",
 		CallingService: svc,
+		Errors:         &ge.GRPCErrorList{},
 	}
+	/*
+		for _, a := range st.Details() {
+			if a == nil {
+				continue
+			}
+			fmd, ok := a.(*fw.FrameworkMessageDetail)
+			if !ok {
+				continue
+			}
+			e.Messages = append(e.Messages, fmd)
+		}
+	*/
 	for _, a := range st.Details() {
 		if a == nil {
 			continue
 		}
-		fmd, ok := a.(*fw.FrameworkMessageDetail)
+		fmd, ok := a.(*ge.GRPCError)
 		if !ok {
 			continue
 		}
-		e.Messages = append(e.Messages, fmd)
+		e.Errors.Errors = append(e.Errors.Errors, fmd)
 	}
 	ctx := authremote.Context()
 	if *debug_elog {
 		fmt.Printf("[go-easyops] errorlog: %v\n", e)
 	}
 	els.Log(ctx, e)
+}
+func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
+	// add details (and keep previous)
+	odet := st.Details()
+	if *debug_rpc_serve {
+		fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
+	}
+	add := &ge.GRPCErrorList{}
+	for _, d := range odet {
+		if *debug_rpc_serve {
+			fancyPrintf("keeping error %v\n", d)
+		}
+		fmd, ok := d.(*ge.GRPCError)
+		if ok {
+			add.Errors = append(add.Errors, fmd)
+		} else {
+			add.Errors = append(add.Errors, &ge.GRPCError{LogMessage: fmt.Sprintf("%v", d)})
+
+		}
+	}
+	add.Errors = append(add.Errors, ct)
+	stn, errx := st.WithDetails(add)
+
+	// if adding details failed, just return the undecorated error message
+	if errx != nil {
+		if *debug_rpc_serve {
+			fancyPrintf("failed to get status with detail: %s", errx)
+		}
+		return st
+	}
+	return stn
+}
+func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
+	return st
+	/*
+		// add details (and keep previous)
+		add := &fw.FrameworkMessageDetail{Message: ct.Message}
+		odet := st.Details()
+		if *debug_rpc_serve {
+			fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
+		}
+		for _, d := range odet {
+			if *debug_rpc_serve {
+				fancyPrintf("keeping error %v\n", d)
+			}
+			fmd, ok := d.(*fw.FrameworkMessageDetail)
+			if ok {
+				add.CallTraces = append(add.CallTraces, fmd.CallTraces...)
+			} else {
+				add.CallTraces = append(add.CallTraces, &fw.CallTrace{Message: fmt.Sprintf("%v", d)})
+
+			}
+		}
+		add.CallTraces = append(add.CallTraces, ct)
+		stn, errx := st.WithDetails(add)
+
+		// if adding details failed, just return the undecorated error message
+		if errx != nil {
+			if *debug_rpc_serve {
+				fancyPrintf("failed to get status with detail: %s", errx)
+			}
+			return st
+		}
+		return stn
+	*/
 }

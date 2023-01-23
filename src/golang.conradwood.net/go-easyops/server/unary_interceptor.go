@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	fw "golang.conradwood.net/apis/framework"
+	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/ctx"
@@ -102,6 +103,12 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		Service: cs.ServiceName,
 	}
 	st = AddStatusDetail(st, fm)
+	gerr := &ge.GRPCError{
+		LogMessage:  fmt.Sprintf("%s", err),
+		MethodName:  cs.MethodName,
+		ServiceName: cs.ServiceName,
+	}
+	st = AddErrorDetail(st, gerr)
 	re := st.Err()
 	sd.logError(in_ctx, cs, re)
 	eh := sd.ErrorHandler

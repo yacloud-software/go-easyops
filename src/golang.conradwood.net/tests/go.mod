@@ -34,7 +34,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	golang.conradwood.net/apis/autodeployer v1.1.2073 // indirect
 	golang.conradwood.net/apis/deploymonkey v1.1.2073 // indirect
-	golang.conradwood.net/apis/errorlogger v1.1.2073 // indirect
+	golang.conradwood.net/apis/errorlogger v1.1.2121 // indirect
 	golang.conradwood.net/apis/framework v1.1.2073 // indirect
 	golang.conradwood.net/apis/goeasyops v1.1.2073 // indirect
 	golang.conradwood.net/apis/logservice v1.1.2073 // indirect

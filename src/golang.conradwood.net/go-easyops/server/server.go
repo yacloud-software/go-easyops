@@ -11,7 +11,6 @@ import (
 	au "golang.conradwood.net/apis/auth"
 	cm "golang.conradwood.net/apis/common"
 	echo "golang.conradwood.net/apis/echoservice"
-	fw "golang.conradwood.net/apis/framework"
 	pb "golang.conradwood.net/apis/registry"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
@@ -25,7 +24,6 @@ import (
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/standalone"
 	"golang.conradwood.net/go-easyops/tokens"
-	"golang.conradwood.net/go-easyops/utils"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -630,39 +628,6 @@ func incFailure(service string, method string, err error) {
 		code = status.Code()
 	}
 	grpc_failed_requests.With(prometheus.Labels{"method": method, "servicename": service, "grpccode": fmt.Sprintf("%d", code)}).Inc()
-}
-
-func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
-	// add details (and keep previous)
-	add := &fw.FrameworkMessageDetail{Message: ct.Message}
-	odet := st.Details()
-	if *debug_rpc_serve {
-		fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
-	}
-	for _, d := range odet {
-		if *debug_rpc_serve {
-			fancyPrintf("keeping error %v\n", d)
-		}
-		fmd, ok := d.(*fw.FrameworkMessageDetail)
-		if ok {
-			add.CallTraces = append(add.CallTraces, fmd.CallTraces...)
-		} else {
-			add.CallTraces = append(add.CallTraces, &fw.CallTrace{Message: fmt.Sprintf("%v", d)})
-
-		}
-	}
-	add.CallTraces = append(add.CallTraces, ct)
-	stn, errx := st.WithDetails(add)
-
-	// if adding details failed, just return the undecorated error message
-	if errx != nil {
-		if *debug_rpc_serve {
-			fancyPrintf("failed to get status with detail: %s", errx)
-		}
-		return st
-	}
-	return stn
-
 }
 
 /*
