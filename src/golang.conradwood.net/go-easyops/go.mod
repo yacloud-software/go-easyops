@@ -12,7 +12,7 @@ require (
 	golang.conradwood.net/apis/auth v1.1.2073
 	golang.conradwood.net/apis/common v1.1.2073
 	golang.conradwood.net/apis/echoservice v1.1.2073
-	golang.conradwood.net/apis/errorlogger v1.1.2121
+	golang.conradwood.net/apis/errorlogger v1.1.2125
 	golang.conradwood.net/apis/framework v1.1.2073
 	golang.conradwood.net/apis/goeasyops v0.0.0-00010101000000-000000000000
 	golang.conradwood.net/apis/logservice v1.1.2073
