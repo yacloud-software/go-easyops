@@ -1,3 +1,6 @@
+/*
+obsolete, deprecated in favour of ctx package
+*/
 package rpc
 
 import (

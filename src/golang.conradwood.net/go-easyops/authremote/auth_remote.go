@@ -207,6 +207,9 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 		cb := ctx.NewContextBuilder()
 		cb.WithTimeout(time.Duration(secs) * time.Second)
 		cb.WithUser(su)
+		_, svc := GetLocalUsers()
+		cb.WithCreatorService(svc)
+		cb.WithCallingService(svc)
 		return cb.ContextWithAutoCancel(), nil
 	}
 
@@ -297,6 +300,9 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 		cb := ctx.NewContextBuilder()
 		cb.WithTimeout(to)
 		cb.WithUser(su)
+		_, svc := GetLocalUsers()
+		cb.WithCreatorService(svc)
+		cb.WithCallingService(svc)
 		return cb.ContextWithAutoCancel(), nil
 	}
 
