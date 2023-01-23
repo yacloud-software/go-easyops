@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package goeasyops;
+import "golang.conradwood.net/apis/auth/auth.proto";
+import "golang.conradwood.net/apis/common/common.proto";
+
+option java_package = "golang.conradwood.net.goeasyops";
+
+/**************
+this package does not include a client because it would be a circular import.
+this package is imported by goeasyops packages
+ **************/
+
+//******************************************************************
+// what follows is data within a context
+//******************************************************************
+
+
+// this is transported within the Context of a call. This proto is on-purpose very brief and static so that old versions of go-easyops can handle it
+message InContext {
+  ImmutableContext ImCtx=1;
+  MutableContext MCtx=2;
+}
+// this must not be changed throughout its lifetime. furthermore, go-easyops _must_ transport this as-is (preserving unknown fields)
+message ImmutableContext {
+  string RequestID=1; // a request id for a call
+  auth.SignedUser CreatorService=2; // which service created this context (nil if not created by a service)
+  auth.SignedUser User=3; // the user making this RPC call
+  auth.SignedUser SudoUser=4; // the permissions to use for this RPC call
+  auth.SignedSession Session=5; // this logins session
+}
+// this may change. fields are not guaranteed to be preserved
+message MutableContext {
+  auth.SignedUser CallingService=1; // the most recent service (the service making the call)
+  bool Debug=2; // if debug is enabled for this call
+  bool Trace=3; // if trace is enabled for this call
+  CTXRoutingTags Tags=4;
+}
+// within the context, routing tags are transported
+message CTXRoutingTags {
+  map<string,string> Tags=1;
+  bool FallbackToPlain=2; // if true, fallback to any service with NO tags, if no service with MATCHING tags is found
+  bool Propagate=3;  // if true, propagate as part of the rpc call
+}
+
+// a single error can only hold a single proto
+message GRPCErrorList {
+  repeated GRPCError Errors=1;
+}
+message GRPCError {
+  string UserMessage=1;
+  string LogMessage=2;
+  string MethodName=3; // the method which returned the error
+  string ServiceName=4; // the service which returned the error
+  string CallingServiceID=5; // the service which called the method which  returned the error
+  string CallingServiceEmail=6; // the service which called the service/method which returned the error
+}
