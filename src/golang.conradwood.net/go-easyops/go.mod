@@ -14,7 +14,7 @@ require (
 	golang.conradwood.net/apis/echoservice v1.1.2073
 	golang.conradwood.net/apis/errorlogger v1.1.2121
 	golang.conradwood.net/apis/framework v1.1.2073
-	golang.conradwood.net/apis/goeasyops v1.1.2073
+	golang.conradwood.net/apis/goeasyops v0.0.0-00010101000000-000000000000
 	golang.conradwood.net/apis/logservice v1.1.2073
 	golang.conradwood.net/apis/objectstore v1.1.2073
 	golang.conradwood.net/apis/registry v1.1.2073
@@ -37,3 +37,5 @@ require (
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
+
+replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
