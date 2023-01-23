@@ -200,7 +200,14 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 	}
 
 	if cmdline.ContextWithBuilder() {
-		utils.NotImpl("Cannot build context for userwithtimeout (user is not signed)- use contextbuilder instead")
+		su, err := GetSignedUserByID(Context(), user.ID)
+		if err != nil {
+			return nil, err
+		}
+		cb := ctx.NewContextBuilder()
+		cb.WithTimeout(time.Duration(secs) * time.Second)
+		cb.WithUser(su)
+		return cb.ContextWithAutoCancel(), nil
 	}
 
 	if rpci == nil {

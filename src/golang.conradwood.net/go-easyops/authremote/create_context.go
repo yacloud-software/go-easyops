@@ -5,6 +5,7 @@ import (
 	"golang.conradwood.net/go-easyops/tokens"
 )
 
+// get a local context
 func getContext() context.Context {
 	return tokens.DISContextWithToken()
 }
