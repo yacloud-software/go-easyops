@@ -174,3 +174,7 @@ func Context2String(ctx context.Context) string {
 	}
 	return fmt.Sprintf("Localstate: %#v", ls)
 }
+
+func SerialiseContext(ctx context.Context) ([]byte, error) {
+	return nil, fmt.Errorf("cannot serialisecontext builder context")
+}
