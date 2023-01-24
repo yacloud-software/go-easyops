@@ -9,8 +9,9 @@ import (
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	//"google.golang.org/protobuf/proto"
 	//	"golang.conradwood.net/go-easyops/client"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
-	_ "golang.conradwood.net/go-easyops/ctx"
+	pctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
@@ -104,6 +105,10 @@ func serialiseContextRaw(ctx context.Context) ([]byte, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("Cannot serialise 'nil' context")
 	}
+	if cmdline.ContextWithBuilder() {
+		return pctx.SerialiseContext(ctx)
+	}
+
 	md := tryGetMetadata(ctx)
 
 	if md == nil {

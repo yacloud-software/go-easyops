@@ -6,6 +6,18 @@ import (
 	"unicode"
 )
 
+// return a mini hexdump as single line string
+func HexStr(buf []byte) string {
+	s := ""
+	deli := ""
+	for _, b := range buf {
+		s = s + deli + fmt.Sprintf("%02X", b)
+		deli = " "
+	}
+	return s
+}
+
+// return the buffer as a hexdump with ascii. each line prefixed by 'prefix'
 func Hexdump(prefix string, buf []byte) string {
 	return HexdumpWithLen(60, prefix, buf)
 }

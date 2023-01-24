@@ -125,9 +125,10 @@ func GetLocalState(ctx context.Context) LocalState {
 
 /*
 we receive a context from gRPC (e.g. in a unary interceptor). To use this context for outbount calls we need to copy the metadata, we also need to add a local callstate for the fancy_picker/balancer/dialer. This is what this function does.
+It is intented to convert any (supported) version of context into the current version of this package
 */
 func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) context.Context {
-	cb := &v1ContextBuilder{}
+	cb := NewContextBuilder()
 	octx, found := cb.Inbound2Outbound(in_ctx, local_service)
 	if found {
 		svc := common.VerifySignedUser(local_service)

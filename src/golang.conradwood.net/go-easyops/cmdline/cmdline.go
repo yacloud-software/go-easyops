@@ -189,3 +189,6 @@ func LocalRegistrationDir() string {
 func ContextWithBuilder() bool {
 	return *context_with_builder
 }
+func SetContextWithBuilder(b bool) {
+	*context_with_builder = b
+}
