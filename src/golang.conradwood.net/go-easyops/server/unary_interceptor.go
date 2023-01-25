@@ -8,6 +8,7 @@ import (
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -123,7 +124,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	return i, st.Err()
 }
 
-func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (context.Context, ctx.LocalState, error) {
+func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (context.Context, shared.LocalState, error) {
 	if sd.local_service == nil {
 		fmt.Printf("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
 	}

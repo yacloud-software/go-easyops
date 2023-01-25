@@ -4,6 +4,7 @@ import (
 	"context"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/rpc"
 	"time"
 )
@@ -15,8 +16,8 @@ type v1LocalState struct {
 	started        time.Time
 }
 
-func v1_getLocalState(ctx context.Context) *v1LocalState {
-	v := ctx.Value(LOCALSTATENAME)
+func GetLocalState(ctx context.Context) *v1LocalState {
+	v := ctx.Value(shared.LOCALSTATENAME)
 	res, ok := v.(*v1LocalState)
 	if !ok {
 		return nil

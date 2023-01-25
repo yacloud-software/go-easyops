@@ -7,6 +7,7 @@ import (
 	ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/metadata"
@@ -67,7 +68,7 @@ func (c *v1ContextBuilder) Context() (context.Context, context.CancelFunc) {
 	} else {
 		ctx, cnc = context.WithCancel(octx)
 	}
-	ctx = context.WithValue(ctx, LOCALSTATENAME, c.newLocalState(cs))
+	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, c.newLocalState(cs))
 
 	newmd := metadata.Pairs(METANAME, cs.MetadataValue())
 	ctx = metadata.NewOutgoingContext(ctx, newmd)
@@ -175,7 +176,10 @@ func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.Signe
 	c.WithParentContext(ctx)
 	c.routing_tags = rpc.Tags_rpc_to_ge(res.RoutingTags)
 	out_ctx, _ := c.Context()
-	v1_getLocalState(out_ctx).callingservice = cservice
+	GetLocalState(out_ctx).callingservice = cservice
 
 	return out_ctx, true
+}
+func NewContextBuilder() *v1ContextBuilder {
+	return &v1ContextBuilder{}
 }
