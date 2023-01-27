@@ -26,13 +26,19 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
+	"strings"
 	//	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/ctx/ctxv1"
 	"golang.conradwood.net/go-easyops/ctx/shared"
-	v1 "golang.conradwood.net/go-easyops/ctx/v1"
 	"golang.conradwood.net/go-easyops/utils"
 	// "time"
+	"encoding/base64"
+)
+
+const (
+	SER_PREFIX_STR = "CTX_SER"
 )
 
 var (
@@ -41,12 +47,12 @@ var (
 
 // get a new contextbuilder
 func NewContextBuilder() shared.ContextBuilder {
-	return v1.NewContextBuilder()
+	return ctxv1.NewContextBuilder()
 }
 
 // return "localstate" from a context. This is never "nil", but it is not guaranteed that the LocalState interface actually resolves details
 func GetLocalState(ctx context.Context) shared.LocalState {
-	res := v1.GetLocalState(ctx)
+	res := ctxv1.GetLocalState(ctx)
 	if res == nil {
 		if cmdline.ContextWithBuilder() {
 			if *debug {
@@ -111,6 +117,55 @@ func Context2String(ctx context.Context) string {
 	return fmt.Sprintf("Localstate: %#v", ls)
 }
 
+// serialise a context to bunch of bytes
 func SerialiseContext(ctx context.Context) ([]byte, error) {
-	return nil, fmt.Errorf("cannot serialisecontext builder context")
+	version := byte(1) // to de-serialise later
+	b, err := ctxv1.Serialise(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	b = append([]byte{version}, b...)
+	return b, nil
+}
+
+// serialise a context to bunch of bytes
+func SerialiseContextToString(ctx context.Context) (string, error) {
+	b, err := SerialiseContext(ctx)
+	if err != nil {
+		return "", err
+	}
+	s := base64.StdEncoding.EncodeToString(b)
+	s = SER_PREFIX_STR + s
+	return s, nil
+}
+
+// this unmarshals a context from a string into a context
+func DeserialiseContextFromString(s string) (context.Context, error) {
+	if !strings.HasPrefix(s, SER_PREFIX_STR) {
+		return nil, fmt.Errorf("not a valid string to deserialise into a context")
+	}
+	s = strings.TrimPrefix(s, SER_PREFIX_STR)
+	userdata, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return nil, err
+	}
+	return DeserialiseContext(userdata)
+}
+
+// this unmarshals a context from a binary blob into a context
+func DeserialiseContext(buf []byte) (context.Context, error) {
+	if len(buf) < 2 {
+		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
+	}
+	version := buf[0]
+	buf = buf[1:]
+	var err error
+	var res context.Context
+	if version == 1 {
+		res, err = ctxv1.Deserialise(buf)
+	} else {
+		return nil, fmt.Errorf("attempt to deserialise incompatible version (%d) to context", version)
+	}
+	return res, err
 }

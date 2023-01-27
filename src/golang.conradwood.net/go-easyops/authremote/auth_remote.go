@@ -111,28 +111,18 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 	if cmdline.IsStandalone() {
 		return standalone_ContextWithTimeoutAndTags(t, rt)
 	}
-	if cmdline.Datacenter() {
-		if cmdline.ContextWithBuilder() {
-			u, s := GetLocalUsers()
-			cb := ctx.NewContextBuilder()
-			cb.WithUser(u)
-			cb.WithCreatorService(s)
-			cb.WithCallingService(s)
-			cb.WithRoutingTags(rpc.Tags_rpc_to_ge(rt))
-			cb.WithTimeout(t)
-			return cb.ContextWithAutoCancel()
-		}
-		return getContextWithTimeout(uint64(t.Seconds()))
-	}
-
-	// command line client...
-	sctx := os.Getenv("GE_CTX")
-	if sctx != "" {
-		return auth.DISContext(t)
-	}
-	u, s := GetLocalUsers()
-
 	if cmdline.ContextWithBuilder() {
+		sctx := os.Getenv("GE_CTX")
+		if sctx != "" {
+			//				fmt.Printf("Recreating context from environment variable GE_CTX\n")
+			res, err := auth.RecreateContextWithTimeout(t, []byte(sctx))
+			if err == nil {
+				return res
+			} else {
+				fmt.Printf("[go-easyops] invalid context in environment variable GE_CTX\n")
+			}
+		}
+		u, s := GetLocalUsers()
 		cb := ctx.NewContextBuilder()
 		cb.WithUser(u)
 		cb.WithCreatorService(s)
@@ -141,6 +131,17 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 		cb.WithTimeout(t)
 		return cb.ContextWithAutoCancel()
 	}
+
+	if cmdline.Datacenter() {
+		return getContextWithTimeout(uint64(t.Seconds()))
+	}
+
+	// command line client...
+	sctx := os.Getenv("GE_CTX")
+	if sctx != "" {
+		return auth.DISContext(t)
+	}
+
 	luid := ""
 	if lastUser != nil {
 		luid = common.VerifySignedUser(lastUser).ID

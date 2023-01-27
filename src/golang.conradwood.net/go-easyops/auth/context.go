@@ -155,6 +155,9 @@ func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, er
 }
 
 func SerialiseContextToString(ctx context.Context) (string, error) {
+	if cmdline.ContextWithBuilder() {
+		return pctx.SerialiseContextToString(ctx)
+	}
 	b, err := serialiseContextRaw(ctx)
 	if err != nil {
 		return "", err
@@ -170,6 +173,9 @@ func SerialiseContextToString(ctx context.Context) (string, error) {
 }
 
 func SerialiseContext(ctx context.Context) ([]byte, error) {
+	if cmdline.ContextWithBuilder() {
+		return pctx.SerialiseContext(ctx)
+	}
 	b, err := serialiseContextRaw(ctx)
 	if err != nil {
 		return nil, err

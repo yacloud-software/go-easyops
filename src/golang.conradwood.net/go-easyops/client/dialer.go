@@ -20,6 +20,7 @@ const (
 var (
 	known_not_auth_rpcs = []string{
 		"rpcinterceptor.RPCInterceptorService.InterceptRPC",
+		"registry.Registry.V2GetTarget",
 	}
 	// I think part of a refactoring, the metrics below
 	// should move into a metrics package, together with
