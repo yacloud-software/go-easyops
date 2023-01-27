@@ -139,20 +139,23 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 	// command line client...
 	sctx := os.Getenv("GE_CTX")
 	if sctx != "" {
+		//		fmt.Printf("[go-easyops] restoring context from environment\n")
 		return auth.DISContext(t)
 	}
 
 	luid := ""
-	if lastUser != nil {
-		luid = common.VerifySignedUser(lastUser).ID
+	user, svc := GetLocalUsers()
+	if user != nil {
+		luid = common.VerifySignedUser(user).ID
 	}
+
 	cs := &rpc.CallState{
 		Metadata: &rc.InMetadata{
 			UserID:        luid,
-			Service:       common.VerifySignedUser(lastService),
-			User:          common.VerifySignedUser(lastUser),
-			SignedService: lastService,
-			SignedUser:    lastUser,
+			Service:       common.VerifySignedUser(svc),
+			User:          common.VerifySignedUser(user),
+			SignedService: svc,
+			SignedUser:    user,
 			RoutingTags:   rt,
 		},
 		RPCIResponse: &rc.InterceptRPCResponse{
