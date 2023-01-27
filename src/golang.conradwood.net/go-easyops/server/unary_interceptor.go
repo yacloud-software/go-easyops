@@ -49,6 +49,9 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	var err error
 	if cmdline.ContextWithBuilder() {
 		outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
+		if err != nil {
+			outbound_ctx, err = sd.buildCallStateV1(in_ctx, req, info, handler)
+		}
 	} else {
 		outbound_ctx, err = sd.buildCallStateV1(in_ctx, req, info, handler)
 	}
