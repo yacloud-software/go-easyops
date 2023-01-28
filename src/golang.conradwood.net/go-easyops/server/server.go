@@ -20,6 +20,7 @@ import (
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
+	easyhttp "golang.conradwood.net/go-easyops/http"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/standalone"
@@ -76,6 +77,7 @@ type Server interface {
 
 // no longer exported - please use NewServerDef instead
 type serverDef struct {
+	callback    func() // called if/when server started up successfully
 	Port        int
 	Certificate []byte
 	Key         []byte
@@ -107,6 +109,13 @@ func init() {
 			reRegister()
 		}
 	}()
+}
+
+/*
+set a callback that is called AFTER grpc server started successfully
+*/
+func (s *serverDef) SetOnStartupCallback(f func()) {
+	s.callback = f
 }
 
 // add a routing tag to a serverdef
@@ -415,9 +424,27 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 	}
 
 	fancyPrintf("grpc on port: %d\n", sd.Port)
+	go callback_attempt(sd)
 	err = srv.Serve(tls.NewListener(conn, srv.TLSConfig))
 	fancyPrintf("Serve failed: %v\n", err)
 	return err
+}
+
+// attempt to http call into the server to trigger server_started callback
+func callback_attempt(sd *serverDef) {
+	url := fmt.Sprintf("https://localhost:%d/internal/healthz", sd.Port)
+	for {
+		//fmt.Printf("Testing %s\n", url)
+		hr := easyhttp.NewDirectClient().Get(url)
+		if hr.Error() == nil {
+			break
+		}
+		time.Sleep(time.Duration(100) * time.Millisecond)
+	}
+	fmt.Printf("[go-easyops] Server started on port %d\n", sd.Port)
+	if sd.callback != nil {
+		sd.callback()
+	}
 }
 
 // this function is called by http and works out wether it's a grpc or http-serve request

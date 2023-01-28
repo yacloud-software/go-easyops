@@ -13,7 +13,7 @@ var (
 func main() {
 	flag.Parse()
 	if *run_server {
-		server()
+		start_server()
 	} else {
 		client()
 	}
