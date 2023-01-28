@@ -86,6 +86,9 @@ service EasyOpsTest {
   // does exactly nothing
   rpc SimplePing(common.Void) returns (common.Void);
 }
+service CtxTest {
+  rpc TestFork(common.Void) returns (common.Void);
+}
 message Chain {
   int32 Position = 1;
   repeated Call Calls = 2;
