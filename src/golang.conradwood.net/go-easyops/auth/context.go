@@ -29,8 +29,15 @@ var (
 // rpci rc.RPCInterceptorServiceClient
 )
 
-func ForkContext(ctx context.Context) (context.Context, error) {
-	u := GetUser(ctx)
+func ForkContext(ictx context.Context) (context.Context, error) {
+	if cmdline.ContextWithBuilder() {
+		u := GetSignedUser(ictx)
+		cb := pctx.NewContextBuilder()
+		cb.WithUser(u)
+		nctx := cb.ContextWithAutoCancel()
+		return nctx, nil
+	}
+	u := GetUser(ictx)
 	return DISContextForUser(u)
 }
 

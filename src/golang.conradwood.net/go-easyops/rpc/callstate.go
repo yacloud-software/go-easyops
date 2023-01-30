@@ -87,6 +87,14 @@ func (cs *CallState) RequestID() string {
 	return im.RequestID
 }
 
+func (cs *CallState) SignedUser() *auth.SignedUser {
+	if cs.Metadata != nil && cs.Metadata.SignedUser != nil {
+		cs.userbysource("signedv2")
+		return cs.Metadata.SignedUser
+	}
+	return nil
+}
+
 // return the authenticated user
 func (cs *CallState) User() *auth.User {
 	if cs == nil {
