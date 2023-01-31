@@ -48,6 +48,24 @@ func GetSignedUser(uctx context.Context) *apb.SignedUser {
 	return cs.SignedUser()
 }
 
+// get the user in this context
+func GetSignedService(uctx context.Context) *apb.SignedUser {
+	u := ctx.GetLocalState(uctx).CallingService()
+	if cmdline.ContextWithBuilder() {
+		return u
+	}
+	if u != nil {
+		// new path succeeded
+		return u
+	}
+	// code below to be removed:
+	cs := rpc.CallStateFromContext(uctx)
+	if cs == nil {
+		return nil
+	}
+	return cs.SignedService()
+}
+
 // get the service which directly called us
 func GetService(uctx context.Context) *apb.User {
 	u := ctx.GetLocalState(uctx).CallingService()

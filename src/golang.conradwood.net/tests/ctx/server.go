@@ -14,6 +14,7 @@ import (
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"os"
+	"time"
 )
 
 func start_server() {
@@ -48,9 +49,30 @@ func (g *geServer) TestFork(ctx context.Context, req *common.Void) (*common.Void
 
 	return &common.Void{}, nil
 }
+
+func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.SerialisedContext, error) {
+	b, err := auth.SerialiseContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ictx, err := auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, b)
+	if err != nil {
+		return nil, err
+	}
+	res := &gs.SerialisedContext{
+		Data:    b,
+		User:    auth.GetSignedUser(ctx),
+		Service: auth.GetSignedService(ctx),
+	}
+	err = AssertEqualContexts(ctx, ictx)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
 func NewTest(format string, args ...interface{}) *test {
 	t := &test{prefix: fmt.Sprintf(format, args...)}
-	fmt.Printf("%s -------- Starting test\n", t.Prefix())
+	fmt.Printf("%s -------- STARTING\n", t.Prefix())
 	return t
 }
 
@@ -76,9 +98,10 @@ func (t *test) Error(err error) {
 }
 func (t *test) Done() {
 	if t.err != nil {
+		fmt.Printf("%s -------- FAILURE\n", t.Prefix())
 		return
 	}
-	fmt.Printf("%s Completed\n", t.Prefix())
+	fmt.Printf("%s -------- SUCCESS\n", t.Prefix())
 }
 func run_tests() {
 	fmt.Printf("Running tests...\n")
@@ -94,6 +117,20 @@ func run_tests() {
 	t = NewTest("fork test")
 	ctx = authremote.Context()
 	_, err = gs.GetCtxTestClient().TestFork(ctx, &common.Void{})
+	t.Error(err)
+	t.Done()
+
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("(de)serialise")
+	ctx = authremote.Context()
+	_, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
+	t.Error(err)
+	t.Done()
+
+	cmdline.SetContextWithBuilder(true)
+	t = NewTest("(de)serialise")
+	ctx = authremote.Context()
+	_, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
 	t.Error(err)
 	t.Done()
 

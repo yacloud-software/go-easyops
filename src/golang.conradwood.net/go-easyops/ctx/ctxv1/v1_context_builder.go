@@ -143,9 +143,11 @@ func (c *v1ContextBuilder) newLocalState(cs *rpc.CallState) *v1LocalState {
 	return &v1LocalState{callstate: cs, builder: c}
 }
 func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool) {
-	if svc == nil {
-		fmt.Printf("[go-easyops] WARNING, creating context from inbound without service\n")
-	}
+	/*
+		if svc == nil {
+			fmt.Printf("[go-easyops] WARNING, creating context from inbound without service\n")
+		}
+	*/
 	// get the proto from metadata:
 	md, ex := metadata.FromIncomingContext(ctx)
 	if !ex {

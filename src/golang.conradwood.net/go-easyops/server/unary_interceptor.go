@@ -129,7 +129,9 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 
 func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (context.Context, shared.LocalState, error) {
 	if sd.local_service == nil {
-		fmt.Printf("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
+		if *debug_rpc_serve {
+			fmt.Printf("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
+		}
 	}
 	octx := ctx.Inbound2Outbound(in_ctx, sd.local_service)
 	ls := ctx.GetLocalState(octx)

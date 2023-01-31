@@ -29,18 +29,6 @@ var (
 // rpci rc.RPCInterceptorServiceClient
 )
 
-func ForkContext(ictx context.Context) (context.Context, error) {
-	if cmdline.ContextWithBuilder() {
-		u := GetSignedUser(ictx)
-		cb := pctx.NewContextBuilder()
-		cb.WithUser(u)
-		nctx := cb.ContextWithAutoCancel()
-		return nctx, nil
-	}
-	u := GetUser(ictx)
-	return DISContextForUser(u)
-}
-
 // return a context with token and/or from environment or so
 // this function is obsolete and deprecated. use authremote.Context() instead
 func DISContext(t time.Duration) context.Context {
@@ -61,14 +49,26 @@ func DISContext(t time.Duration) context.Context {
 	return ctx
 }
 
+func ForkContext(ictx context.Context) (context.Context, error) {
+	if cmdline.ContextWithBuilder() {
+		u := GetSignedUser(ictx)
+		cb := pctx.NewContextBuilder()
+		cb.WithUser(u)
+		nctx := cb.ContextWithAutoCancel()
+		return nctx, nil
+	}
+	u := GetSignedUser(ictx)
+	return DISContextForSignedUser(u)
+}
+
 // this will create a context for a userobject. if the userobject is signed, it will "just work"
 // this function is obsolete and deprecated. use authremote.Context() instead
-func DISContextForUser(u *auth.User) (context.Context, error) {
-	if u == nil {
+func DISContextForSignedUser(su *auth.SignedUser) (context.Context, error) {
+	if su == nil {
 		return nil, fmt.Errorf("[go-easyops] ctxforuser: no user specified")
 	}
-	if !common.VerifySignature(u) {
-		//		fmt.Printf("[go-easyops] Signature invalid: \"%v\"\n", u.SignatureFull)
+	u := common.VerifySignedUser(su)
+	if u == nil {
 		return nil, fmt.Errorf("[go-easyops] ctxforuser: no context (User signature invalid)")
 	}
 	token := tokens.GetServiceTokenParameter()
@@ -76,6 +76,7 @@ func DISContextForUser(u *auth.User) (context.Context, error) {
 		FooBar:       "local",
 		ServiceToken: token,
 		UserID:       u.ID,
+		SignedUser:   su,
 		User:         u,
 	}
 	return contextForMeta(mt)
@@ -134,7 +135,11 @@ func serialiseContextRaw(ctx context.Context) ([]byte, error) {
 
 // this recreates a context from a previously stored state (see SerialiseContext())
 func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, error) {
+	if pctx.IsSerialisedByBuilder(bs) {
+		return pctx.DeserialiseContextWithTimeout(t, bs)
+	}
 	uid := string(bs)
+
 	var userdata []byte
 	var err error
 	if strings.HasPrefix(uid, SERSTRPREFIX) {
@@ -146,7 +151,11 @@ func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, er
 	} else if strings.HasPrefix(uid, SERBINPREFIX) {
 		userdata = bs[len(SERBINPREFIX):]
 	} else {
-		return nil, fmt.Errorf("invalid serialised context prefix (%s)", uid)
+		us := uid
+		if len(us) > 10 {
+			us = us[:10]
+		}
+		return nil, fmt.Errorf("invalid serialised context prefix (%s (%s))", us, utils.HexStr([]byte(us)))
 	}
 
 	md := &rc.InMetadata{}

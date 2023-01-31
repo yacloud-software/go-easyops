@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	"golang.conradwood.net/go-easyops/utils"
+	"time"
 )
 
 var (
 	ser_prefix = []byte("SER-CTX-V1")
 )
 
+func GetPrefix() []byte {
+	return ser_prefix
+}
 func Serialise(ctx context.Context) ([]byte, error) {
 	ls := GetLocalState(ctx)
 	u := ls.User()
@@ -26,7 +30,7 @@ func Serialise(ctx context.Context) ([]byte, error) {
 	b = append(prefix, b...)
 	return b, nil
 }
-func Deserialise(buf []byte) (context.Context, error) {
+func DeserialiseWithTimeout(t time.Duration, buf []byte) (context.Context, error) {
 	if len(buf) < len(ser_prefix) {
 		return nil, fmt.Errorf("v1 context too short to deserialise (len=%d)", len(buf))
 	}

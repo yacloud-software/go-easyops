@@ -94,6 +94,13 @@ func (cs *CallState) SignedUser() *auth.SignedUser {
 	}
 	return nil
 }
+func (cs *CallState) SignedService() *auth.SignedUser {
+	if cs.Metadata != nil && cs.Metadata.SignedService != nil {
+		cs.userbysource("signedv2")
+		return cs.Metadata.SignedService
+	}
+	return nil
+}
 
 // return the authenticated user
 func (cs *CallState) User() *auth.User {

@@ -22,19 +22,20 @@ Definition of CallingService: the LocalValue contains the service who called us.
 package ctx
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	"strings"
 	//	ge "golang.conradwood.net/apis/goeasyops"
+	"encoding/base64"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx/ctxv1"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
-	// "time"
-	"encoding/base64"
+	"time"
 )
 
 const (
@@ -117,6 +118,30 @@ func Context2String(ctx context.Context) string {
 	return fmt.Sprintf("Localstate: %#v", ls)
 }
 
+// check if 'buf' contains a context, serialised by the builder. a 'true' result implies that it can be deserialised from this package
+func IsSerialisedByBuilder(buf []byte) bool {
+	if len(buf) < 2 {
+		return false
+	}
+	version := buf[0]
+	buf = buf[1:]
+	var b []byte
+	if version == 1 {
+		b = ctxv1.GetPrefix()
+	} else {
+		return false
+	}
+
+	if bytes.HasPrefix(buf, b) {
+		return true
+	}
+
+	fmt.Printf("Not a valid context (%s/%s)\n", string(ctxv1.GetPrefix()), string(buf))
+	fmt.Printf("a: %s\n", utils.HexStr(b))
+	fmt.Printf("b: %s\n", utils.HexStr(buf[:20]))
+	return false
+}
+
 // serialise a context to bunch of bytes
 func SerialiseContext(ctx context.Context) ([]byte, error) {
 	version := byte(1) // to de-serialise later
@@ -163,7 +188,24 @@ func DeserialiseContext(buf []byte) (context.Context, error) {
 	var err error
 	var res context.Context
 	if version == 1 {
-		res, err = ctxv1.Deserialise(buf)
+		res, err = ctxv1.DeserialiseWithTimeout(time.Duration(10)*time.Second, buf)
+	} else {
+		return nil, fmt.Errorf("attempt to deserialise incompatible version (%d) to context", version)
+	}
+	return res, err
+}
+
+// this unmarshals a context from a binary blob into a context
+func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context, error) {
+	if len(buf) < 2 {
+		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
+	}
+	version := buf[0]
+	buf = buf[1:]
+	var err error
+	var res context.Context
+	if version == 1 {
+		res, err = ctxv1.DeserialiseWithTimeout(t, buf)
 	} else {
 		return nil, fmt.Errorf("attempt to deserialise incompatible version (%d) to context", version)
 	}
