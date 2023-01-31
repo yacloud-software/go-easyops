@@ -86,8 +86,14 @@ service EasyOpsTest {
   // does exactly nothing
   rpc SimplePing(common.Void) returns (common.Void);
 }
+message SerialisedContext {
+  bytes Data=1;
+  auth.SignedUser User=2; // user as found in context
+  auth.SignedUser Service=3; // service as found in context
+}
 service CtxTest {
   rpc TestFork(common.Void) returns (common.Void);
+  rpc TestDeSer(common.Void)returns(SerialisedContext);
 }
 message Chain {
   int32 Position = 1;
