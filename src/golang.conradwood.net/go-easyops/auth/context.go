@@ -64,8 +64,12 @@ func DISContext(t time.Duration) context.Context {
 // this will create a context for a userobject. if the userobject is signed, it will "just work"
 // this function is obsolete and deprecated. use authremote.Context() instead
 func DISContextForUser(u *auth.User) (context.Context, error) {
+	if u == nil {
+		return nil, fmt.Errorf("[go-easyops] ctxforuser: no user specified")
+	}
 	if !common.VerifySignature(u) {
-		return nil, fmt.Errorf("[go-easyops] no context (User signature invalid)")
+		//		fmt.Printf("[go-easyops] Signature invalid: \"%v\"\n", u.SignatureFull)
+		return nil, fmt.Errorf("[go-easyops] ctxforuser: no context (User signature invalid)")
 	}
 	token := tokens.GetServiceTokenParameter()
 	mt := &rc.InMetadata{
@@ -152,6 +156,7 @@ func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, er
 		return nil, err
 	}
 	if md.User != nil && !common.VerifySignature(md.User) {
+		//fmt.Printf("user: %#v\n", md.User)
 		return nil, fmt.Errorf("[go-easyops] no context (User signature invalid)")
 	}
 	if md.Service != nil && !common.VerifySignature(md.Service) {

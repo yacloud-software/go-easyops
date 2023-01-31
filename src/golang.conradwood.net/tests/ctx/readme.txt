@@ -12,3 +12,5 @@ testcases:
 
 * client->server cb->old
 * client->server cb->cb
+
+* check contexts with/without -token=xx

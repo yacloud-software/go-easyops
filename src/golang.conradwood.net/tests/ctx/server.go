@@ -33,6 +33,10 @@ func start_server() {
 type geServer struct{}
 
 func (g *geServer) TestFork(ctx context.Context, req *common.Void) (*common.Void, error) {
+	/*
+		u1 := auth.GetUser(ctx)
+		fmt.Printf("[testfork] invoked as user %s\n", auth.UserIDString(u1))
+	*/
 	nctx, err := auth.ForkContext(ctx)
 	if err != nil {
 		return nil, err
@@ -112,6 +116,9 @@ func AssertEqualContexts(ctx1, ctx2 context.Context) error {
 func CompareUsers(su1, su2 *apb.SignedUser) bool {
 	u1 := gcm.VerifySignedUser(su1)
 	u2 := gcm.VerifySignedUser(su2)
+	if u1 == nil && u2 == nil {
+		return true
+	}
 	if u1 == nil && u2 != nil {
 		return false
 	}
