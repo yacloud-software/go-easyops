@@ -134,6 +134,22 @@ func run_tests() {
 	t.Error(err)
 	t.Done()
 
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("serialise old, deserialse new")
+	ctx = authremote.Context()
+	r, err := gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
+	t.Error(err)
+	if err == nil {
+		cmdline.SetContextWithBuilder(true)
+		nctx, err := auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, r.Data)
+		t.Error(err)
+		if err != nil {
+			err = AssertEqualContexts(ctx, nctx)
+			t.Error(err)
+		}
+	}
+	t.Done()
+
 	fmt.Printf("Done\n")
 	os.Exit(0)
 }

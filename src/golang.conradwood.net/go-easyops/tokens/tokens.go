@@ -53,9 +53,12 @@ func buildMeta() metadata.MD {
 // look at Environment variable GE_CTX and deserialise it
 // this function is deprecated, obsolete and broken. use authremote.Context() instead
 func DISContextWithToken() context.Context {
-	if cmdline.ContextWithBuilder() {
-		utils.NotImpl("(context_with_builder) tokens.ContextWithToken - V1 context only\n")
-	}
+	// we need to allow this as long as we have OLD contexts that need deserialising
+	/*
+		if cmdline.ContextWithBuilder() {
+			utils.NotImpl("(context_with_builder) tokens.ContextWithToken - V1 context only\n")
+		}
+	*/
 	md := buildMeta()
 	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(*Deadline)*time.Second)
 	go func(cf context.CancelFunc) {

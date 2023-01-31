@@ -138,6 +138,9 @@ func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, er
 	if pctx.IsSerialisedByBuilder(bs) {
 		return pctx.DeserialiseContextWithTimeout(t, bs)
 	}
+	if cmdline.ContextWithBuilder() {
+		// we have a context build without builder, but we are running the builder..
+	}
 	uid := string(bs)
 
 	var userdata []byte
