@@ -199,15 +199,15 @@ func (fal *FancyAddressList) readyOnly(in []*fancy_adr) []*fancy_adr {
 }
 
 /*
- this is called for _every_ rpc call. it should be performance optimised
- this returns a list of addresses for the picker to pick from.
- the rules are:
- First: Never return any addresses which are not in connectivty state READY.
- Then from the remaining addresses (in ready state), follow these rules:
- 1. If we have 0 addresses with routinginfo for a user, return all.
- 2. if context has no user, return those without routinginfo.user
- 3. if 1 or more addresses have a routinginfo.user that matches user in context, return only those
- 4. otherwise return those without routinguser.info
+this is called for _every_ rpc call. it should be performance optimised
+this returns a list of addresses for the picker to pick from.
+the rules are:
+First: Never return any addresses which are not in connectivty state READY.
+Then from the remaining addresses (in ready state), follow these rules:
+1. If we have 0 addresses with routinginfo for a user, return all.
+2. if context has no user, return those without routinginfo.user
+3. if 1 or more addresses have a routinginfo.user that matches user in context, return only those
+4. otherwise return those without routinguser.info
 */
 func (fal *FancyAddressList) SelectValid(ctx context.Context) []*fancy_adr {
 	nro := fal.ByNoUserRoutingInfo()
@@ -220,6 +220,9 @@ func (fal *FancyAddressList) SelectValid(ctx context.Context) []*fancy_adr {
 	if u == nil {
 		// user has no context, return those without routinginfo
 		fancyPrintf(fal, "user-less rpc\n")
+		if len(nro) == 0 && len(fal.addresses) > 0 {
+			fmt.Printf("[go-easyops] Warning - of %d targets, all require a user in outbound context (but none provided)\n", len(fal.addresses))
+		}
 		return fal.readyOnly(nro)
 	}
 	bu := fal.ByUser(u.ID)

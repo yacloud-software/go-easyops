@@ -51,6 +51,7 @@ func (g *geServer) TestFork(ctx context.Context, req *common.Void) (*common.Void
 }
 
 func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.SerialisedContext, error) {
+	//	fmt.Printf("b\n")
 	b, err := auth.SerialiseContext(ctx)
 	if err != nil {
 		return nil, err
@@ -69,39 +70,6 @@ func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.Seriali
 		return nil, err
 	}
 	return res, nil
-}
-func NewTest(format string, args ...interface{}) *test {
-	t := &test{prefix: fmt.Sprintf(format, args...)}
-	fmt.Printf("%s -------- STARTING\n", t.Prefix())
-	return t
-}
-
-type test struct {
-	err    error
-	prefix string
-}
-
-func (t *test) Prefix() string {
-	v := fmt.Sprintf("%v", cmdline.ContextWithBuilder())
-	return fmt.Sprintf("[%s (builder=%5s)]", t.prefix, v)
-}
-
-func (t *test) Printf(format string, args ...interface{}) {
-	fmt.Printf(t.Prefix()+" "+format, args...)
-}
-func (t *test) Error(err error) {
-	if err == nil {
-		return
-	}
-	t.err = err
-	fmt.Printf("%s Failed (%s)\n", t.Prefix(), err)
-}
-func (t *test) Done() {
-	if t.err != nil {
-		fmt.Printf("%s -------- FAILURE\n", t.Prefix())
-		return
-	}
-	fmt.Printf("%s -------- SUCCESS\n", t.Prefix())
 }
 func run_tests() {
 	fmt.Printf("Running tests...\n")
@@ -150,7 +118,18 @@ func run_tests() {
 	}
 	t.Done()
 
+	//	fmt.Printf("a\n")
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("old context, call new service")
+	ctx = authremote.Context()
+	cmdline.SetContextWithBuilder(true)
+	//	fmt.Printf("c\n")
+	_, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
+	t.Error(err)
+	t.Done()
+
 	fmt.Printf("Done\n")
+	PrintResult()
 	os.Exit(0)
 }
 

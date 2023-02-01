@@ -96,6 +96,7 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 			fancyPrintf(f, "picker address: %s\n", a.String())
 		}
 		fancyPrintf(f, "Picker - No valid connections for %s\n", info.FullMethodName)
+		//fmt.Printf("[go-easyops] picker: No valid connections for %s\n", info.FullMethodName)
 		return balancer.PickResult{}, balancer.ErrNoSubConnAvailable
 	}
 
