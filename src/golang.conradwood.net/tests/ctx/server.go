@@ -10,6 +10,7 @@ import (
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/cmdline"
 	gcm "golang.conradwood.net/go-easyops/common"
+	pctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
@@ -56,18 +57,45 @@ func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.Seriali
 	if err != nil {
 		return nil, err
 	}
+
+	s, err := auth.SerialiseContextToString(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	ictx, err := auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, b)
 	if err != nil {
 		return nil, err
 	}
-	res := &gs.SerialisedContext{
-		Data:    b,
-		User:    auth.GetSignedUser(ctx),
-		Service: auth.GetSignedService(ctx),
-	}
+
 	err = AssertEqualContexts(ctx, ictx)
 	if err != nil {
 		return nil, err
+	}
+
+	if cmdline.ContextWithBuilder() {
+		ictx, err = pctx.DeserialiseContextFromString(s)
+		if err != nil {
+			return nil, err
+		}
+
+		err = AssertEqualContexts(ctx, ictx)
+		if err != nil {
+			return nil, err
+		}
+		if !pctx.IsSerialisedByBuilder(b) {
+			return nil, fmt.Errorf("ctx does not recognise its own (byte) serialised context")
+		}
+		if !pctx.IsSerialisedByBuilder([]byte(s)) {
+			return nil, fmt.Errorf("ctx does not recognise its own (byte) serialised context")
+		}
+	}
+
+	res := &gs.SerialisedContext{
+		Data:    b,
+		SData:   s,
+		User:    auth.GetSignedUser(ctx),
+		Service: auth.GetSignedService(ctx),
 	}
 	return res, nil
 }
@@ -98,12 +126,40 @@ func run_tests() {
 	cmdline.SetContextWithBuilder(true)
 	t = NewTest("(de)serialise")
 	ctx = authremote.Context()
-	_, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
+	dctx, err := gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
 	t.Error(err)
 	t.Done()
 
+	cmdline.SetContextWithBuilder(true)
+	t = NewTest("use serialised context to access service")
+	if !pctx.IsSerialisedByBuilder(dctx.Data) {
+		t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
+	}
+	ctx, err = pctx.DeserialiseContext(dctx.Data)
+	t.Error(err)
+	dctx, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
+	t.Error(err)
+	if dctx == nil || dctx.User == nil {
+		t.Error(fmt.Errorf("No user in service with serialised context"))
+	}
+	t.Done()
+
 	cmdline.SetContextWithBuilder(false)
-	t = NewTest("serialise old, deserialse new")
+	t = NewTest("use serialised context to access service")
+	if !pctx.IsSerialisedByBuilder(dctx.Data) {
+		t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
+	}
+	ctx, err = pctx.DeserialiseContext(dctx.Data)
+	t.Error(err)
+	dctx, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
+	t.Error(err)
+	if dctx == nil || dctx.User == nil {
+		t.Error(fmt.Errorf("No user in service with serialised context"))
+	}
+	t.Done()
+
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("serialise old, deserialise new")
 	ctx = authremote.Context()
 	r, err := gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
 	t.Error(err)

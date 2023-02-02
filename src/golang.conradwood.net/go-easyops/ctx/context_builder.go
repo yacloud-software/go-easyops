@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	SER_PREFIX_STR = "CTX_SER"
+	SER_PREFIX_STR = "CTX_SER_STR_"
 )
 
 var (
@@ -123,6 +123,10 @@ func IsSerialisedByBuilder(buf []byte) bool {
 	if len(buf) < 2 {
 		return false
 	}
+	if strings.HasPrefix(string(buf), SER_PREFIX_STR) {
+		// it was serialised by context_builder - as a string
+		return true
+	}
 	version := buf[0]
 	buf = buf[1:]
 	var b []byte
@@ -136,9 +140,9 @@ func IsSerialisedByBuilder(buf []byte) bool {
 		return true
 	}
 
-	fmt.Printf("Not a valid context (%s/%s)\n", string(ctxv1.GetPrefix()), string(buf))
-	fmt.Printf("a: %s\n", utils.HexStr(b))
-	fmt.Printf("b: %s\n", utils.HexStr(buf[:20]))
+	fmt.Printf("[go-easyops] Not a valid context (%s/%s)\n", string(ctxv1.GetPrefix()), string(buf))
+	//	fmt.Printf("a: %s\n", utils.HexStr(b))
+	//	fmt.Printf("b: %s\n", utils.HexStr(buf[:20]))
 	return false
 }
 
