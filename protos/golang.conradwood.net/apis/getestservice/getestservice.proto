@@ -88,8 +88,9 @@ service EasyOpsTest {
 }
 message SerialisedContext {
   bytes Data=1;
-  auth.SignedUser User=2; // user as found in context
-  auth.SignedUser Service=3; // service as found in context
+  string SData=2;
+  auth.SignedUser User=3; // user as found in context
+  auth.SignedUser Service=4; // service as found in context
 }
 service CtxTest {
   rpc TestFork(common.Void) returns (common.Void);
