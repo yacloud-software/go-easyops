@@ -83,6 +83,7 @@ func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.Seriali
 		if err != nil {
 			return nil, err
 		}
+
 		if !pctx.IsSerialisedByBuilder(b) {
 			return nil, fmt.Errorf("ctx does not recognise its own (byte) serialised context")
 		}
