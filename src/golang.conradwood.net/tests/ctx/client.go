@@ -108,7 +108,7 @@ func mustBeSame(ctx1, ctx2 context.Context) {
 func checkFile(filename string) {
 	b, err := utils.ReadFile(filename)
 	if err != nil {
-		fmt.Printf("ignoring file \"%s\", could not read it\n")
+		fmt.Printf("ignoring file \"%s\", could not read it\n", filename)
 		return
 	}
 	ctx1, err := ctx.DeserialiseContext(b)
