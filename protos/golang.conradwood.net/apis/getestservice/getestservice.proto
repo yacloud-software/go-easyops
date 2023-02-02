@@ -95,6 +95,11 @@ message SerialisedContext {
 service CtxTest {
   rpc TestFork(common.Void) returns (common.Void);
   rpc TestDeSer(common.Void)returns(SerialisedContext);
+  rpc TestStream(common.Void)returns(stream common.Void);
+  rpc CallUnaryFromStream(common.Void)returns(stream common.Void);
+  rpc CallUnaryFromUnary(common.Void)returns(common.Void);
+  rpc CallStreamFromStream(common.Void)returns(stream common.Void);
+  rpc CallStreamFromUnary(common.Void)returns(common.Void);
 }
 message Chain {
   int32 Position = 1;
