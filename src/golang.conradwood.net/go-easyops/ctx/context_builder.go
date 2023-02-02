@@ -24,17 +24,16 @@ package ctx
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
-	"strings"
-	//	ge "golang.conradwood.net/apis/goeasyops"
-	"encoding/base64"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx/ctxv1"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
+	"strings"
 	"time"
 )
 
