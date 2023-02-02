@@ -186,6 +186,11 @@ func DeserialiseContext(buf []byte) (context.Context, error) {
 	if len(buf) < 2 {
 		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
 	}
+	s := string(buf)
+	if strings.HasPrefix(s, SER_PREFIX_STR) {
+		// it's a string...
+		return DeserialiseContextFromString(s)
+	}
 	version := buf[0]
 	buf = buf[1:]
 	var err error

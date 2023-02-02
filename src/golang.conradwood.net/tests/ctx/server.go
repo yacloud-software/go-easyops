@@ -11,9 +11,11 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	gcm "golang.conradwood.net/go-easyops/common"
 	pctx "golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
+	"io"
 	"os"
 	"time"
 )
@@ -50,8 +52,26 @@ func (g *geServer) TestFork(ctx context.Context, req *common.Void) (*common.Void
 
 	return &common.Void{}, nil
 }
-
+func (g *geServer) TestStream(req *common.Void, srv gs.CtxTest_TestStreamServer) error {
+	ctx := srv.Context()
+	u := auth.GetUser(ctx)
+	if u == nil {
+		return errors.Unauthenticated(ctx, "no user")
+	}
+	_, err := g.TestDeSer(ctx, req)
+	return err
+}
 func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.SerialisedContext, error) {
+	u := auth.GetUser(ctx)
+	if u == nil {
+		return nil, errors.Unauthenticated(ctx, "no user")
+	}
+	ictx := authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
+	err := AssertEqualContexts(ctx, ictx)
+	if err != nil {
+		return nil, err
+	}
+
 	//	fmt.Printf("b\n")
 	b, err := auth.SerialiseContext(ctx)
 	if err != nil {
@@ -63,7 +83,7 @@ func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.Seriali
 		return nil, err
 	}
 
-	ictx, err := auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, b)
+	ictx, err = auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, b)
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +128,41 @@ func run_tests() {
 	fmt.Printf("Running tests...\n")
 
 	cmdline.SetContextWithBuilder(false)
-	t := NewTest("fork test")
+	t := NewTest("stream test")
 	ctx := authremote.Context()
-	_, err := gs.GetCtxTestClient().TestFork(ctx, &common.Void{})
+	srv, err := gs.GetCtxTestClient().TestStream(ctx, &common.Void{})
+	t.Error(err)
+	t.Error(checkSrv(srv))
+	t.Done()
+
+	cmdline.SetContextWithBuilder(true)
+	t = NewTest("stream test")
+	ctx = authremote.Context()
+	srv, err = gs.GetCtxTestClient().TestStream(ctx, &common.Void{})
+	t.Error(err)
+	t.Error(checkSrv(srv))
+	t.Done()
+
+	checkStream("CallUnaryFromStream", func(ctx context.Context) (recv, error) {
+		return gs.GetCtxTestClient().CallUnaryFromStream(ctx, &common.Void{})
+	})
+
+	checkStream("CallStreamFromStream", func(ctx context.Context) (recv, error) {
+		return gs.GetCtxTestClient().CallStreamFromStream(ctx, &common.Void{})
+	})
+	checkUnary("CallStreamFromUnary", func(ctx context.Context) error {
+		_, err := gs.GetCtxTestClient().CallStreamFromUnary(ctx, &common.Void{})
+		return err
+	})
+	checkUnary("CallUnaryFromUnary", func(ctx context.Context) error {
+		_, err := gs.GetCtxTestClient().CallUnaryFromUnary(ctx, &common.Void{})
+		return err
+	})
+
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("fork test")
+	ctx = authremote.Context()
+	_, err = gs.GetCtxTestClient().TestFork(ctx, &common.Void{})
 	t.Error(err)
 	t.Done()
 
@@ -223,4 +275,89 @@ func CompareUsers(su1, su2 *apb.SignedUser) bool {
 		return false
 	}
 	return true
+}
+
+type recv interface {
+	Recv() (*common.Void, error)
+}
+
+func checkSrv(r recv) error {
+	for {
+		_, err := r.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func checkStream(name string, f func(ctx context.Context) (recv, error)) {
+	cmdline.SetContextWithBuilder(true)
+	t := NewTest("stream-bouncer %s test", name)
+	ctx := authremote.Context()
+	srv, err := f(ctx)
+	t.Error(err)
+	t.Error(checkSrv(srv))
+	t.Done()
+
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("stream-bouncer %s test", name)
+	ctx = authremote.Context()
+	srv, err = f(ctx)
+	t.Error(err)
+	t.Error(checkSrv(srv))
+	t.Done()
+
+	cmdline.SetContextWithBuilder(true)
+	ctx = authremote.Context()
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("stream-bouncer %s test", name)
+	srv, err = f(ctx)
+	t.Error(err)
+	t.Error(checkSrv(srv))
+	t.Done()
+
+	cmdline.SetContextWithBuilder(false)
+	ctx = authremote.Context()
+	cmdline.SetContextWithBuilder(true)
+	t = NewTest("stream-bouncer %s test", name)
+	srv, err = f(ctx)
+	t.Error(err)
+	t.Error(checkSrv(srv))
+	t.Done()
+
+}
+func checkUnary(name string, f func(ctx context.Context) error) {
+	cmdline.SetContextWithBuilder(true)
+	t := NewTest("unary-bouncer %s test", name)
+	ctx := authremote.Context()
+	err := f(ctx)
+	t.Error(err)
+	t.Done()
+
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("unary-bouncer %s test", name)
+	ctx = authremote.Context()
+	err = f(ctx)
+	t.Error(err)
+	t.Done()
+
+	cmdline.SetContextWithBuilder(true)
+	ctx = authremote.Context()
+	cmdline.SetContextWithBuilder(false)
+	t = NewTest("unary-bouncer %s test", name)
+	err = f(ctx)
+	t.Error(err)
+	t.Done()
+
+	cmdline.SetContextWithBuilder(false)
+	ctx = authremote.Context()
+	cmdline.SetContextWithBuilder(true)
+	t = NewTest("unary-bouncer %s test", name)
+	err = f(ctx)
+	t.Error(err)
+	t.Done()
+
 }

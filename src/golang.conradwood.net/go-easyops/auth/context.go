@@ -36,7 +36,7 @@ func DISContext(t time.Duration) context.Context {
 		ctx := tokens.DISContextWithTokenAndTimeout(uint64(t.Seconds()))
 		return ctx
 	}
-	sctx := os.Getenv("GE_CTX")
+	sctx := cmdline.GetEnvContext()
 	if sctx == "" {
 		fmt.Fprintf(os.Stderr, "[go-easyops] Warning no context with tokens or environment at all\n")
 		return nil

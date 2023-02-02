@@ -53,9 +53,11 @@ older (obsolete) methods of authentication...
 *********************************************************************
 */
 func initrpc() error {
-	if gettingrpc {
-		return fmt.Errorf("[go-easyops] (auth) RPCInterceptor unavailable")
-	}
+	/*
+		if gettingrpc {
+			return fmt.Errorf("[go-easyops] (auth) RPCInterceptor unavailable")
+		}
+	*/
 	if rpcclient != nil {
 		return nil
 	}
@@ -63,6 +65,7 @@ func initrpc() error {
 	defer rpclock.Unlock()
 	gettingrpc = true
 	if rpcclient != nil {
+		gettingrpc = false
 		return nil
 	}
 	if rpcclient == nil {

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/appinfo"
+	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"strings"
 	"sync"
@@ -17,15 +18,16 @@ var (
 	mlock                 sync.Mutex
 	running_in_datacenter = flag.Bool("AD_started_by_auto_deployer", false, "the autodeployer sets this to true to modify the behaviour to make it suitable for general-availability services in the datacenter")
 
-	registry             = flag.String("registry", "localhost:5000", "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
-	registry_resolver    = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
-	instance_id          = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
-	ext_help             = flag.Bool("X", false, "extended help")
-	XXdoappinfo          = ImmediatePara("ge_info", "print application build number", doappinfo)
-	print_easyops        = false
-	manreg               = ""
-	stdalone             = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
-	context_with_builder = flag.Bool("ge_context_with_builder", false, "a new (experimental) context messaging method")
+	registry               = flag.String("registry", "localhost:5000", "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
+	registry_resolver      = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
+	instance_id            = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
+	ext_help               = flag.Bool("X", false, "extended help")
+	XXdoappinfo            = ImmediatePara("ge_info", "print application build number", doappinfo)
+	print_easyops          = false
+	manreg                 = ""
+	stdalone               = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
+	context_with_builder   = flag.Bool("ge_context_with_builder", false, "a new (experimental) context messaging method")
+	overridden_env_context = ""
 )
 
 // in the init function we have not yet defined all the flags
@@ -191,4 +193,20 @@ func ContextWithBuilder() bool {
 }
 func SetContextWithBuilder(b bool) {
 	*context_with_builder = b
+}
+
+// get a serialised context from environment variable GE_CTX
+func GetEnvContext() string {
+	if overridden_env_context != "" {
+		s := overridden_env_context
+		if len(s) > 10 {
+			s = s[:10]
+		}
+		fmt.Printf("[go-easyops] using overriden env context (%s %s)\n", s, utils.HexStr([]byte(s)))
+		return overridden_env_context
+	}
+	return os.Getenv("GE_CTX")
+}
+func SetEnvContext(s string) {
+	overridden_env_context = s
 }

@@ -15,7 +15,6 @@ import (
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/metadata"
-	"os"
 	"sync"
 	"time"
 )
@@ -111,17 +110,26 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 	if cmdline.IsStandalone() {
 		return standalone_ContextWithTimeoutAndTags(t, rt)
 	}
-	if cmdline.ContextWithBuilder() {
-		sctx := os.Getenv("GE_CTX")
-		if sctx != "" {
-			//				fmt.Printf("Recreating context from environment variable GE_CTX\n")
-			res, err := auth.RecreateContextWithTimeout(t, []byte(sctx))
-			if err == nil {
-				return res
+	sctx := cmdline.GetEnvContext()
+	if sctx != "" {
+		if ctx.IsSerialisedByBuilder([]byte(sctx)) {
+			ctx, err := ctx.DeserialiseContext([]byte(sctx))
+			if err != nil {
+				fmt.Printf("[go-easyops] weird context GE_CTX (%s)\n", err)
 			} else {
-				fmt.Printf("[go-easyops] invalid context in environment variable GE_CTX\n")
+				return ctx
 			}
+
 		}
+		//				fmt.Printf("Recreating context from environment variable GE_CTX\n")
+		res, err := auth.RecreateContextWithTimeout(t, []byte(sctx))
+		if err == nil {
+			return res
+		} else {
+			fmt.Printf("[go-easyops] invalid context in environment variable GE_CTX\n")
+		}
+	}
+	if cmdline.ContextWithBuilder() {
 		u, s := GetLocalUsers()
 		cb := ctx.NewContextBuilder()
 		cb.WithUser(u)
@@ -137,7 +145,7 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 	}
 
 	// command line client...
-	sctx := os.Getenv("GE_CTX")
+
 	if sctx != "" {
 		//		fmt.Printf("[go-easyops] restoring context from environment\n")
 		return auth.DISContext(t)
