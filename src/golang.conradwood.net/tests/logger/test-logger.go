@@ -9,7 +9,7 @@ import (
 
 func main() {
 	flag.Parse()
-	lo, err := logger.NewAsyncLogQueue("test", 1, "test", "test", "foodeplid")
+	lo, err := logger.NewAsyncLogQueue("test", 50, 1, "test", "test", "foodeplid")
 	utils.Bail("failed to create logger", err)
 	for i := 0; i < 100; i++ {
 		lo.Log("testing", "Line %d logged", i)

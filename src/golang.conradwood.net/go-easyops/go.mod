@@ -9,16 +9,16 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
-	golang.conradwood.net/apis/auth v1.1.2125
-	golang.conradwood.net/apis/common v1.1.2125
+	golang.conradwood.net/apis/auth v1.1.2136
+	golang.conradwood.net/apis/common v1.1.2136
 	golang.conradwood.net/apis/echoservice v1.1.2125
 	golang.conradwood.net/apis/errorlogger v1.1.2125
-	golang.conradwood.net/apis/framework v1.1.2125
+	golang.conradwood.net/apis/framework v1.1.2136
 	golang.conradwood.net/apis/goeasyops v0.0.0-00010101000000-000000000000
-	golang.conradwood.net/apis/logservice v1.1.2125
-	golang.conradwood.net/apis/objectstore v1.1.2125
-	golang.conradwood.net/apis/registry v1.1.2125
-	golang.conradwood.net/apis/rpcinterceptor v1.1.2125
+	golang.conradwood.net/apis/logservice v1.1.2136
+	golang.conradwood.net/apis/objectstore v1.1.2136
+	golang.conradwood.net/apis/registry v1.1.2136
+	golang.conradwood.net/apis/rpcinterceptor v1.1.2136
 	golang.org/x/net v0.5.0
 	golang.org/x/sys v0.4.0
 	golang.yacloud.eu/apis/urlcacher v1.1.2125
@@ -31,8 +31,8 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.2125 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.2125 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.2136 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.2136 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

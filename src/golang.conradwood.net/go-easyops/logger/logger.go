@@ -48,7 +48,7 @@ func getClient() error {
 	return nil
 }
 
-func NewAsyncLogQueue(appname string, repoid uint64, group, namespace, deplid string) (*AsyncLogQueue, error) {
+func NewAsyncLogQueue(appname string, buildid, repoid uint64, group, namespace, deplid string) (*AsyncLogQueue, error) {
 	if appname == "" {
 		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without appname")
 	}
@@ -73,6 +73,7 @@ func NewAsyncLogQueue(appname string, repoid uint64, group, namespace, deplid st
 			Groupname:    group,
 			Namespace:    namespace,
 			DeploymentID: deplid,
+			BuildID:      buildid,
 		},
 		closed:  false,
 		MaxSize: 5000,
