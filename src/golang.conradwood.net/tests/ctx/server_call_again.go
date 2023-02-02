@@ -4,6 +4,7 @@ import (
 	"context"
 	"golang.conradwood.net/apis/common"
 	ge "golang.conradwood.net/apis/getestservice"
+	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"io"
 )
@@ -59,6 +60,7 @@ func (g *geServer) CallStreamFromStream(req *common.Void, srv ge.CtxTest_CallStr
 	return nil
 }
 func (g *geServer) CallStreamFromUnary(ctx context.Context, req *common.Void) (*common.Void, error) {
+	m := map[string]string{"provides": "default"}
 
 	b := cmdline.ContextWithBuilder()
 	cmdline.SetContextWithBuilder(!b)
@@ -67,14 +69,9 @@ func (g *geServer) CallStreamFromUnary(ctx context.Context, req *common.Void) (*
 	if err != nil {
 		return nil, err
 	}
-	for {
-		_, err := srv2.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
+	err = checkSrv(srv2)
+	if err != nil {
+		return nil, err
 	}
 
 	cmdline.SetContextWithBuilder(b)
@@ -82,14 +79,31 @@ func (g *geServer) CallStreamFromUnary(ctx context.Context, req *common.Void) (*
 	if err != nil {
 		return nil, err
 	}
-	for {
-		_, err := srv2.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
+	err = checkSrv(srv2)
+	if err != nil {
+		return nil, err
+	}
+
+	cmdline.SetContextWithBuilder(!b)
+	nctx := authremote.DerivedContextWithRouting(ctx, m, true)
+	srv2, err = ge.GetCtxTestClient().TestStream(nctx, req)
+	if err != nil {
+		return nil, err
+	}
+	err = checkSrv(srv2)
+	if err != nil {
+		return nil, err
+	}
+
+	cmdline.SetContextWithBuilder(b)
+	nctx = authremote.DerivedContextWithRouting(ctx, m, true)
+	srv2, err = ge.GetCtxTestClient().TestStream(nctx, req)
+	if err != nil {
+		return nil, err
+	}
+	err = checkSrv(srv2)
+	if err != nil {
+		return nil, err
 	}
 
 	return &common.Void{}, nil

@@ -66,7 +66,12 @@ func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.Seriali
 	if u == nil {
 		return nil, errors.Unauthenticated(ctx, "no user")
 	}
-	ictx := authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
+	m := map[string]string{"foo": "bar"}
+	ictx := authremote.DerivedContextWithRouting(ctx, m, true)
+	u = auth.GetUser(ictx)
+	if u == nil {
+		return nil, fmt.Errorf("DerivedContextWithRouting lost user information!")
+	}
 	err := AssertEqualContexts(ctx, ictx)
 	if err != nil {
 		return nil, err
@@ -125,6 +130,16 @@ func (g *geServer) TestDeSer(ctx context.Context, req *common.Void) (*gs.Seriali
 	return res, nil
 }
 func run_tests() {
+	cmdline.SetDatacenter(false)
+	run_all_tests()
+	cmdline.SetDatacenter(true)
+	run_all_tests()
+	fmt.Printf("Done\n")
+	PrintResult()
+	os.Exit(0)
+
+}
+func run_all_tests() {
 	fmt.Printf("Running tests...\n")
 
 	cmdline.SetContextWithBuilder(false)
@@ -187,13 +202,15 @@ func run_tests() {
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(true)
-	t = NewTest("use serialised context to access service")
-	if !pctx.IsSerialisedByBuilder(dctx.Data) {
-		t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
+	if dctx != nil {
+		cmdline.SetContextWithBuilder(true)
+		t = NewTest("use serialised context to access service")
+		if !pctx.IsSerialisedByBuilder(dctx.Data) {
+			t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
+		}
+		ctx, err = pctx.DeserialiseContext(dctx.Data)
+		t.Error(err)
 	}
-	ctx, err = pctx.DeserialiseContext(dctx.Data)
-	t.Error(err)
 	dctx, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
 	t.Error(err)
 	if dctx == nil || dctx.User == nil {
@@ -201,13 +218,15 @@ func run_tests() {
 	}
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
-	t = NewTest("use serialised context to access service")
-	if !pctx.IsSerialisedByBuilder(dctx.Data) {
-		t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
+	if dctx != nil {
+		cmdline.SetContextWithBuilder(false)
+		t = NewTest("use serialised context to access service")
+		if !pctx.IsSerialisedByBuilder(dctx.Data) {
+			t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
+		}
+		ctx, err = pctx.DeserialiseContext(dctx.Data)
+		t.Error(err)
 	}
-	ctx, err = pctx.DeserialiseContext(dctx.Data)
-	t.Error(err)
 	dctx, err = gs.GetCtxTestClient().TestDeSer(ctx, &common.Void{})
 	t.Error(err)
 	if dctx == nil || dctx.User == nil {
@@ -241,9 +260,6 @@ func run_tests() {
 	t.Error(err)
 	t.Done()
 
-	fmt.Printf("Done\n")
-	PrintResult()
-	os.Exit(0)
 }
 
 func AssertEqualContexts(ctx1, ctx2 context.Context) error {

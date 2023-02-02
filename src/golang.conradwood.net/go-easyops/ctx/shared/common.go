@@ -4,6 +4,7 @@ import (
 	"context"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/common"
 	"time"
 )
 
@@ -71,4 +72,12 @@ type ContextBuilder interface {
 	WithTimeout(time.Duration)
 	// set a parent context for cancellation propagation (does not transfer metadata to the new context!)
 	WithParentContext(context context.Context)
+}
+
+func PrettyUser(su *auth.SignedUser) string {
+	u := common.VerifySignedUser(su)
+	if u == nil {
+		return "NOUSER"
+	}
+	return u.Email
 }

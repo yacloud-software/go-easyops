@@ -171,6 +171,11 @@ func Datacenter() bool {
 	return *running_in_datacenter
 }
 
+// for testing purposes to mock parameter -AD_started_by_auto_deployer
+func SetDatacenter(b bool) {
+	*running_in_datacenter = b
+}
+
 // if (para != "") { return para }, else return os.GetEnv(envname)
 func OptEnvString(para, envname string) string {
 	if para != "" {
@@ -191,6 +196,8 @@ func LocalRegistrationDir() string {
 func ContextWithBuilder() bool {
 	return *context_with_builder
 }
+
+// this is for testing purposes to mock the parameter -ge_context_with_builder
 func SetContextWithBuilder(b bool) {
 	*context_with_builder = b
 }
@@ -207,6 +214,8 @@ func GetEnvContext() string {
 	}
 	return os.Getenv("GE_CTX")
 }
+
+// this is for testing purposes to mock the environment variable GE_CTX
 func SetEnvContext(s string) {
 	overridden_env_context = s
 }

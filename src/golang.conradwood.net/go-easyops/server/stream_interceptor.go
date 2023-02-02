@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	fw "golang.conradwood.net/apis/framework"
+	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
@@ -70,6 +71,13 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		if err != nil {
 			return err
 		}
+		if *debug_rpc_serve {
+			fmt.Printf("[go-easyops] (with_builder) Invoked by user %s\n", auth.UserIDString(auth.GetUser(out_ctx)))
+			if auth.GetUser(out_ctx) == nil {
+				fmt.Printf("[go-easyops] Context: %#v\n", out_ctx)
+			}
+		}
+
 	} else {
 		cs = &rpc.CallState{
 			Started:     time.Now(),
@@ -97,6 +105,9 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		cs.UpdateContextFromResponse()
 		cs.DebugPrintContext()
 		out_ctx = cs.Context
+		if *debug_rpc_serve {
+			fmt.Printf("[go-easyops] (without_builder) Invoked by user %s\n", auth.UserIDString(auth.GetUser(out_ctx)))
+		}
 	}
 	nstream := newServerStream(stream, out_ctx)
 	err = handler(srv, nstream)

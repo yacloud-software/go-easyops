@@ -1,11 +1,8 @@
 package client
 
 import (
-	"context"
 	"flag"
-	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -40,10 +37,4 @@ var (
 
 func init() {
 	prometheus.MustRegister(blockCtr, failedQueryCtr)
-}
-func unaryStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	pp.ClientRpcEntered()
-	cs, err := streamer(ctx, desc, cc, method, opts...)
-	pp.ClientRpcDone()
-	return cs, err
 }

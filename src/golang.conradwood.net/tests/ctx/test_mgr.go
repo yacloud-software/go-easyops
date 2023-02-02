@@ -9,21 +9,26 @@ var (
 	tests []*test
 )
 
+type test struct {
+	err    error
+	prefix string
+	dc     bool
+}
+
 func NewTest(format string, args ...interface{}) *test {
-	t := &test{prefix: fmt.Sprintf(format, args...)}
+	t := &test{
+		prefix: fmt.Sprintf(format, args...),
+		dc:     cmdline.Datacenter(),
+	}
 	fmt.Printf("%s -------- STARTING\n", t.Prefix())
 	tests = append(tests, t)
 	return t
 }
 
-type test struct {
-	err    error
-	prefix string
-}
-
 func (t *test) Prefix() string {
 	v := fmt.Sprintf("%v", cmdline.ContextWithBuilder())
-	return fmt.Sprintf("[%s (builder=%5s)]", t.prefix, v)
+	d := fmt.Sprintf("%v", t.dc)
+	return fmt.Sprintf("[dc=%5s %s (builder=%5s)]", d, t.prefix, v)
 }
 
 func (t *test) Printf(format string, args ...interface{}) {

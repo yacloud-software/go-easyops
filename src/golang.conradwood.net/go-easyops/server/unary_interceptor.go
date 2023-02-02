@@ -138,7 +138,8 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 	err := sd.checkAccess(octx, rc)
 	if err != nil {
 		if *debug_rpc_serve {
-			fmt.Printf("%#v\n", octx)
+			fmt.Printf("[go-easyops] checkaccess error: %s\n", err)
+			fmt.Printf("[go-easyops] Context: %#v\n", octx)
 		}
 		return nil, nil, err
 	}

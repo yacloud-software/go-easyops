@@ -79,6 +79,7 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 			svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
 		}
 		Debugf("converted inbound to outbound context (me.service=%s)\n", svs)
+		Debugf("New Context: %s\n", Context2String(octx))
 		return octx
 	}
 	fmt.Printf("[go-easyops] could not parse inbound context!\n")
@@ -114,7 +115,7 @@ func Context2String(ctx context.Context) string {
 	if ls == nil {
 		return "[no localstate]"
 	}
-	return fmt.Sprintf("Localstate: %#v", ls)
+	return fmt.Sprintf("Localstate (userid=%s,callingservice=%s): %#v", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), ls)
 }
 
 // check if 'buf' contains a context, serialised by the builder. a 'true' result implies that it can be deserialised from this package

@@ -2,6 +2,7 @@ package ctxv1
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
@@ -16,6 +17,10 @@ import (
 
 const (
 	METANAME = "goeasyops_meta" // marshaled proto, must match tokens.METANAME (avoiding import cycle)
+)
+
+var (
+	debug = flag.Bool("debug_context_v1", false, "if true debug v1 context builder in more detail")
 )
 
 // build V2 Contexts. That is, a context with metadata serialised into an rpc InContext struct
@@ -52,6 +57,7 @@ func (c *v1ContextBuilder) Context() (context.Context, context.CancelFunc) {
 			SignedUser:    c.user,
 			SignedSession: c.session,
 			RoutingTags:   rpc.Tags_ge_to_rpc(c.routing_tags),
+			User:          common.VerifySignedUser(c.user),
 		},
 	}
 	//	fmt.Printf("Build with service: %s\n", describeUser(cs.Metadata.SignedService))
@@ -166,15 +172,18 @@ func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.Signe
 		fmt.Printf("[go-easyops] invalid metadata: %s\n", err)
 		return nil, false
 	}
-	//fmt.Printf("Metadata: svc=%v,user=%v\n", describeUser(res.SignedService), describeUser(res.SignedUser))
-
+	if *debug {
+		fmt.Printf("[go-easyops] CONTEXT: inbound metadata: user=%s\n", shared.PrettyUser(res.SignedUser))
+		fmt.Printf("[go-easyops] CONTEXT: inbound metadata: user=%v\n", res.User)
+		fmt.Printf("[go-easyops] CONTEXT: inbound metadata: %v\n", res)
+	}
 	// calling service is overwritten - store
 	cservice := res.SignedService
 	// now create new "outbound" context
 	c.requestid = res.RequestID
 	c.service = svc
-	c.user = res.SignedUser
-	c.session = res.SignedSession
+	c.WithUser(res.SignedUser)
+	c.WithSession(res.SignedSession)
 	c.WithParentContext(ctx)
 	c.routing_tags = rpc.Tags_rpc_to_ge(res.RoutingTags)
 	out_ctx, _ := c.Context()

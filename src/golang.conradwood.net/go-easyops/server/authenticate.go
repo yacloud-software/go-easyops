@@ -164,13 +164,15 @@ func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 	cs.RPCIResponse = res
 	//
 	// copy /some/ responses to inmeta
-	cs.Metadata.RequestID = cs.RPCIResponse.RequestID
-	cs.Metadata.CallerMethodID = cs.RPCIResponse.CallerMethodID
-	verifySignatures(cs)
-	cs.Metadata.CallerServiceID = cs.MyServiceID
-	// all subsequent rpcs propagate OUR servicetoken
-	cs.Metadata.ServiceToken = tokens.GetServiceTokenParameter()
-	cs.Metadata.FooBar = "authmoo"
+	if cs.Metadata != nil {
+		cs.Metadata.RequestID = cs.RPCIResponse.RequestID
+		cs.Metadata.CallerMethodID = cs.RPCIResponse.CallerMethodID
+		verifySignatures(cs)
+		cs.Metadata.CallerServiceID = cs.MyServiceID
+		// all subsequent rpcs propagate OUR servicetoken
+		cs.Metadata.ServiceToken = tokens.GetServiceTokenParameter()
+		cs.Metadata.FooBar = "authmoo"
+	}
 	if *debug_auth {
 		fmt.Printf("[go-easyops] metadata after rpc interceptor: %#v\n", cs.Metadata)
 		fmt.Printf("[go-easyops] RPC Interceptor (reject=%t) said: %v\n", cs.RPCIResponse.Reject, cs.RPCIResponse)
