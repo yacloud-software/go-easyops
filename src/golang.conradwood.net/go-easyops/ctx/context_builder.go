@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	SER_PREFIX_STR = "CTX_SER_STR_"
+	SER_PREFIX_STR = "CTX_SER"
 )
 
 var (
