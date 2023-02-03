@@ -311,5 +311,5 @@ func findBetterSplitAt(line string, proposed int) int {
 		}
 
 	}
-	return proposed
+
 }
