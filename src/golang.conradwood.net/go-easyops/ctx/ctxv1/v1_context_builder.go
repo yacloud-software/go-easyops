@@ -74,8 +74,8 @@ func (c *v1ContextBuilder) Context() (context.Context, context.CancelFunc) {
 	} else {
 		ctx, cnc = context.WithCancel(octx)
 	}
-	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, c.newLocalState(cs))
-
+	ls := c.newLocalState(cs)
+	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, ls)
 	newmd := metadata.Pairs(METANAME, cs.MetadataValue())
 	ctx = metadata.NewOutgoingContext(ctx, newmd)
 
@@ -146,7 +146,11 @@ func (c *v1ContextBuilder) WithTimeout(t time.Duration) {
 	c.timeout = t
 }
 func (c *v1ContextBuilder) newLocalState(cs *rpc.CallState) *v1LocalState {
-	return &v1LocalState{callstate: cs, builder: c}
+	return &v1LocalState{this_is_v1_local_state: "v1localstate",
+		callstate:      cs,
+		builder:        c,
+		callingservice: cs.Metadata.SignedService,
+	}
 }
 func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool) {
 	/*

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"golang.conradwood.net/apis/common"
 	ge "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/authremote"
@@ -9,7 +10,7 @@ import (
 	"io"
 )
 
-func (g *geServer) CallUnaryFromStream(req *common.Void, srv ge.CtxTest_CallUnaryFromStreamServer) error {
+func (g *geServer) CallUnaryFromStream(req *ge.RequiredContext, srv ge.CtxTest_CallUnaryFromStreamServer) error {
 	b := cmdline.ContextWithBuilder()
 	cmdline.SetContextWithBuilder(!b)
 	_, err := ge.GetCtxTestClient().TestDeSer(srv.Context(), req)
@@ -24,21 +25,23 @@ func (g *geServer) CallUnaryFromStream(req *common.Void, srv ge.CtxTest_CallUnar
 	return nil
 }
 
-func (g *geServer) CallUnaryFromUnary(ctx context.Context, req *common.Void) (*common.Void, error) {
+func (g *geServer) CallUnaryFromUnary(ctx context.Context, req *ge.RequiredContext) (*common.Void, error) {
 	b := cmdline.ContextWithBuilder()
 	cmdline.SetContextWithBuilder(!b)
 	_, err := ge.GetCtxTestClient().TestDeSer(ctx, req)
 	if err != nil {
+		fmt.Printf("ufu: %s\n", err)
 		return nil, err
 	}
 	cmdline.SetContextWithBuilder(b)
 	_, err = ge.GetCtxTestClient().TestDeSer(ctx, req)
 	if err != nil {
+		fmt.Printf("ufu: %s\n", err)
 		return nil, err
 	}
 	return &common.Void{}, nil
 }
-func (g *geServer) CallStreamFromStream(req *common.Void, srv ge.CtxTest_CallStreamFromStreamServer) error {
+func (g *geServer) CallStreamFromStream(req *ge.RequiredContext, srv ge.CtxTest_CallStreamFromStreamServer) error {
 	srv2, err := ge.GetCtxTestClient().TestStream(srv.Context(), req)
 	if err != nil {
 		return err
@@ -59,7 +62,7 @@ func (g *geServer) CallStreamFromStream(req *common.Void, srv ge.CtxTest_CallStr
 
 	return nil
 }
-func (g *geServer) CallStreamFromUnary(ctx context.Context, req *common.Void) (*common.Void, error) {
+func (g *geServer) CallStreamFromUnary(ctx context.Context, req *ge.RequiredContext) (*common.Void, error) {
 	m := map[string]string{"provides": "default"}
 
 	b := cmdline.ContextWithBuilder()

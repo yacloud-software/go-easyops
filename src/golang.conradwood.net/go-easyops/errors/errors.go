@@ -10,6 +10,7 @@ package errors
 import (
 	"fmt"
 	"golang.conradwood.net/apis/common"
+	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.org/x/net/context"
@@ -161,4 +162,44 @@ func ToHTTPCode(err error) *HTTPError {
 	}
 	return he
 
+}
+
+type GEError struct {
+	details []*GEEntry
+	code    codes.Code
+}
+type GEEntry struct {
+	txt string
+	fmd *fw.FrameworkMessageDetail
+}
+
+func (g *GEError) MultilineError() string {
+	res := fmt.Sprintf("Errorcode: %v\n", g.code)
+	for _, d := range g.details {
+		if d.txt != "" {
+			res = res + d.txt + "\n"
+			continue
+		}
+		for _, ct := range d.fmd.CallTraces {
+			res = res + ct.Method + ":" + ct.Message + "\n"
+		}
+	}
+	return res
+}
+func UnmarshalError(err error) *GEError {
+	res := &GEError{}
+	st := status.Convert(err)
+	res.code = st.Code()
+	for _, a := range st.Details() {
+		fmd, ok := a.(*fw.FrameworkMessageDetail)
+		if !ok {
+			s := fmt.Sprintf("\"%v\" ", a)
+			res.details = append(res.details, &GEEntry{txt: s})
+			continue
+		}
+		res.details = append(res.details, &GEEntry{fmd: fmd})
+
+	}
+
+	return res
 }

@@ -28,11 +28,13 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
+	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx/ctxv1"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
+	"google.golang.org/grpc/metadata"
 	"strings"
 	"time"
 )
@@ -60,7 +62,7 @@ func GetLocalState(ctx context.Context) shared.LocalState {
 			}
 			Debugf("could not get localstate from context (caller: %s)\n", utils.CallingFunction())
 		}
-		return &EmptyLocalState{}
+		return newEmptyLocalState()
 	}
 	return res
 }
@@ -108,14 +110,38 @@ func Debugf(format string, args ...interface{}) {
 	s2 := fmt.Sprintf(format, args...)
 	fmt.Printf("%s%s", s1, s2)
 }
+func isEmptyLocalState(ls shared.LocalState) bool {
+	_, f := ls.(*emptyLocalState)
+	return f
+}
 
 // for debugging purposes we can convert a context to a human readable string
 func Context2String(ctx context.Context) string {
 	ls := GetLocalState(ctx)
-	if ls == nil {
+	if ls == nil || isEmptyLocalState(ls) {
 		return "[no localstate]"
 	}
-	return fmt.Sprintf("Localstate (userid=%s,callingservice=%s): %#v", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), ls)
+	if ls.User() != nil || ls.CallingService() != nil {
+		return fmt.Sprintf("Localstate (userid=%s,callingservice=%s): %#v", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), ls)
+	}
+
+	md, ex := metadata.FromIncomingContext(ctx)
+	if !ex {
+		// no metadata at all
+		return fmt.Sprintf("no user, no service and no metadata")
+	}
+	mdas, fd := md[ctxv1.METANAME]
+	if !fd || mdas == nil || len(mdas) != 1 {
+		// got metadata, but not our key
+		return fmt.Sprintf("no user, no service and metadata has not got our key")
+	}
+	mds := mdas[0]
+	res := &rc.InMetadata{}
+	err := utils.Unmarshal(mds, res)
+	if err != nil {
+		return fmt.Sprintf("no user, no service, metadata invalid (%s)", err)
+	}
+	return fmt.Sprintf("no user, no service, metadata: %#v\n", res)
 }
 
 // check if 'buf' contains a context, serialised by the builder. a 'true' result implies that it can be deserialised from this package

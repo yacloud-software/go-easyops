@@ -51,13 +51,40 @@ derive  a context with routing tags (routing criteria to route to specific insta
 if fallback is true, fallback to any service without tags if none is found (default was false)
 */
 func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallback bool) context.Context {
+	t := time.Duration(10) * time.Second
 	cri := &rc.CTXRoutingTags{Tags: kv, FallbackToPlain: fallback}
+
+	if cmdline.ContextWithBuilder() {
+		_, s := GetLocalUsers()
+		if s == nil {
+			s = auth.GetSignedService(cv)
+		}
+		if s == nil {
+			panic("no service to derive from")
+		}
+		cb := ctx.NewContextBuilder()
+		cb.WithUser(auth.GetSignedUser(cv))
+		cb.WithCreatorService(s)
+		cb.WithCallingService(s)
+		cb.WithRoutingTags(rpc.Tags_rpc_to_ge(cri))
+		cb.WithTimeout(t)
+		cb.WithParentContext(cv)
+		nctx := cb.ContextWithAutoCancel()
+		if auth.GetSignedService(nctx) == nil {
+			fmt.Printf("[go-easyops] Localstate: %#v\n", ctx.GetLocalState(nctx))
+			fmt.Printf("[go-easyops] WARNING derived context includes no service, but should")
+			return nil
+		}
+		return nctx
+
+	}
+
 	cs := rpc.CallStateFromContext(cv)
 	if cs == nil || cs.Metadata == nil {
 		return NewContextWithRoutingTags(cri)
 	}
 	cs.Metadata.RoutingTags = cri
-	err := cs.UpdateContextFromResponseWithTimeout(time.Duration(10) * time.Second)
+	err := cs.UpdateContextFromResponseWithTimeout(t)
 	if err != nil {
 		panic(fmt.Sprintf("bad context: %s", err))
 	}
@@ -140,9 +167,11 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 		return cb.ContextWithAutoCancel()
 	}
 
-	if cmdline.Datacenter() {
-		return getContextWithTimeout(uint64(t.Seconds()))
-	}
+	/*
+		if cmdline.Datacenter() {
+			return getContextWithTimeout(uint64(t.Seconds()))
+		}
+	*/
 
 	// command line client...
 

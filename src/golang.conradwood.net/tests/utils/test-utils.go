@@ -13,6 +13,9 @@ import (
 )
 
 func main() {
+	td, err := utils.TerminalSize()
+	utils.Bail("failed to get terminal dimensions", err)
+	fmt.Printf("Terminal is %dx%d size\n", td.Columns(), td.Rows())
 	fmt.Printf("Checking random string generator...\n")
 	var wg sync.WaitGroup
 	for j := 0; j < 1000; j++ {
@@ -28,7 +31,7 @@ func main() {
 		}()
 	}
 	wg.Wait()
-	err := utils.DirWalk("/etc/systemd", func(root, rel string) error {
+	err = utils.DirWalk("/etc/systemd", func(root, rel string) error {
 		fmt.Printf("rel: %s\n", rel)
 		return nil
 	})

@@ -12,6 +12,7 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
@@ -42,7 +43,7 @@ func (sd *serverDef) checkAccess(octx context.Context, rc *rpccall) error {
 	}
 	if auth.GetUser(octx) == nil && auth.GetService(octx) == nil {
 		fmt.Printf("[go-easyops] access denied to %s/%s for no-user and no-service to service with auth requirement (caller:%s)\n", rc.ServiceName, rc.MethodName, utils.CallingFunction())
-		return fmt.Errorf("access denied")
+		return errors.Unauthenticated(octx, "denied for access with no user and no service to rpc with auth requirement")
 	}
 	return nil
 }
@@ -92,7 +93,7 @@ func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 	cs.Metadata = MetaFromContext(cs.Context)
 	if cs.Debug {
 		fmt.Printf("[go-easyops] Inbound metadata: %#v\n", cs.Metadata)
-		fmt.Printf("Context: %v\n", ictx)
+		fmt.Printf("Context: %v\n", ctx.Context2String(ictx))
 	}
 
 	// call the interceptor

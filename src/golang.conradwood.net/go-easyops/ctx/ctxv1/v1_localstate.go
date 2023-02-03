@@ -10,10 +10,11 @@ import (
 )
 
 type v1LocalState struct {
-	callstate      *rpc.CallState
-	builder        *v1ContextBuilder
-	callingservice *auth.SignedUser
-	started        time.Time
+	this_is_v1_local_state string
+	callstate              *rpc.CallState
+	builder                *v1ContextBuilder
+	callingservice         *auth.SignedUser
+	started                time.Time
 }
 
 func GetLocalState(ctx context.Context) *v1LocalState {

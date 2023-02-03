@@ -3,7 +3,8 @@ package ctxv1
 import (
 	"context"
 	"fmt"
-	"golang.conradwood.net/apis/auth"
+	//	"golang.conradwood.net/apis/auth"
+	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/utils"
 	"time"
 )
@@ -17,15 +18,27 @@ func GetPrefix() []byte {
 }
 func Serialise(ctx context.Context) ([]byte, error) {
 	ls := GetLocalState(ctx)
-	u := ls.User()
+	ic := &ge.InContext{
+		ImCtx: &ge.ImmutableContext{
+			User:           ls.User(),
+			CreatorService: ls.CreatorService(),
+			RequestID:      ls.RequestID(),
+			Session:        ls.Session(),
+		},
+		MCtx: &ge.MutableContext{
+			CallingService: ls.CallingService(),
+			Debug:          ls.Debug(),
+			Trace:          ls.Trace(),
+			Tags:           ls.RoutingTags(),
+		},
+	}
 	var b []byte
 	var err error
-	if u != nil {
-		b, err = utils.MarshalBytes(u)
-		if err != nil {
-			return nil, err
-		}
+	b, err = utils.MarshalBytes(ic)
+	if err != nil {
+		return nil, err
 	}
+
 	prefix := ser_prefix
 	b = append(prefix, b...)
 	return b, nil
@@ -44,12 +57,13 @@ func DeserialiseWithTimeout(t time.Duration, buf []byte) (context.Context, error
 		}
 	}
 	ud := buf[len(ser_prefix):]
-	u := &auth.SignedUser{}
-	err := utils.UnmarshalBytes(ud, u)
+	ic := &ge.InContext{}
+	err := utils.UnmarshalBytes(ud, ic)
 	if err != nil {
 		return nil, err
 	}
 	cb := &v1ContextBuilder{}
-	cb.WithUser(u)
+	cb.WithUser(ic.ImCtx.User)
+	cb.WithCallingService(ic.MCtx.CallingService)
 	return cb.ContextWithAutoCancel(), nil
 }

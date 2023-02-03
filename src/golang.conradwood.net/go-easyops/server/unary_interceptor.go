@@ -23,11 +23,6 @@ import (
 /*******************************************************************************************
 * gRPC calls this interceptor for each call. Be fast and reliable
 *******************************************************************************************/
-type rpccall struct {
-	ServiceName string
-	MethodName  string
-	Started     time.Time
-}
 
 // we authenticate a client here
 func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -39,21 +34,25 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		Started:     time.Now(),
 	}
 	if *debug_rpc_serve {
-		fmt.Printf("[go-easyops] Debug-rpc inbound request to: \"%s\"\n", info.FullMethod)
+		fmt.Printf("[go-easyops] Debug-rpc called unary rpc \"%s\"\n", info.FullMethod)
 	}
 
 	started := time.Now()
 
-	// no v2, try V1
 	var outbound_ctx context.Context
 	var err error
+
+	// we try both types of context parsing (since we can be called by either, old or new service)
 	if cmdline.ContextWithBuilder() {
 		outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
 		if err != nil {
-			outbound_ctx, err = sd.buildCallStateV1(in_ctx, req, info, handler)
+			outbound_ctx, err = sd.buildCallStateV1(in_ctx, cs, req, info, handler)
 		}
 	} else {
-		outbound_ctx, err = sd.buildCallStateV1(in_ctx, req, info, handler)
+		outbound_ctx, err = sd.buildCallStateV1(in_ctx, cs, req, info, handler)
+		if err != nil {
+			outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
+		}
 	}
 	if err != nil {
 		return nil, err
@@ -75,6 +74,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		"servicename": cs.ServiceName,
 	}).Inc()
 
+	print_inbound_debug(cs, outbound_ctx)
 	/*************** now call the rpc implementation *****************/
 	i, err := handler(outbound_ctx, req)
 	if i == nil && err == nil {
@@ -139,7 +139,7 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 	if err != nil {
 		if *debug_rpc_serve {
 			fmt.Printf("[go-easyops] checkaccess error: %s\n", err)
-			fmt.Printf("[go-easyops] Context: %#v\n", octx)
+			fmt.Printf("[go-easyops] Context: %#v\n", ctx.Context2String(octx))
 		}
 		return nil, nil, err
 	}
@@ -147,7 +147,7 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 }
 
 // method "pre builder"
-func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (context.Context, error) {
+func (sd *serverDef) buildCallStateV1(in_ctx context.Context, rc *rpccall, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (context.Context, error) {
 	cs := &rpc.CallState{
 		Started:     time.Now(),
 		ServiceName: ServiceNameFromUnaryInfo(info),
@@ -192,7 +192,11 @@ func (sd *serverDef) buildCallStateV1(in_ctx context.Context, req interface{}, i
 	if *debug_rpc_serve {
 		user := auth.GetUser(cs.Context)
 		svc := auth.GetService(cs.Context)
-		fancyPrintf("Debug-rpc Request: \"%s/%s\" invoked by user \"%s\" from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.UserIDString(user), auth.UserIDString(svc))
+		fancyPrintf("Debug-RPC Request \"%s/%s\", converted context to user \"%s\" from service \"%s\"\n", cs.ServiceName, cs.MethodName, auth.UserIDString(user), auth.UserIDString(svc))
+	}
+	err := sd.checkAccess(cs.Context, rc)
+	if err != nil {
+		return nil, err
 	}
 	return cs.Context, nil
 }

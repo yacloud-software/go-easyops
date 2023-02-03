@@ -9,7 +9,9 @@ import (
 	"math/rand"
 	"os"
 	"sync"
+	"syscall"
 	"time"
+	"unsafe"
 )
 
 var (
@@ -138,4 +140,41 @@ func MaxInt64(x, y int64) int64 {
 
 func PrettyNumber(number uint64) string {
 	return humanize.Bytes(number)
+}
+
+type TerminalDimensions struct {
+	width  int
+	height int
+}
+
+func (td *TerminalDimensions) Columns() int {
+	return td.width
+}
+func (td *TerminalDimensions) Rows() int {
+	return td.height
+}
+
+// get the size of the current xterm
+func TerminalSize() (*TerminalDimensions, error) {
+	type winsize struct {
+		Row    uint16
+		Col    uint16
+		Xpixel uint16
+		Ypixel uint16
+	}
+
+	ws := &winsize{}
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdout),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		return nil, fmt.Errorf("failed to get terminalsize: %d", errno)
+	}
+	ts := &TerminalDimensions{
+		width:  int(ws.Col),
+		height: int(ws.Row),
+	}
+	return ts, nil
 }

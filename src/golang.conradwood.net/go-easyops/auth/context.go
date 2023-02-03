@@ -58,6 +58,9 @@ func ForkContext(ictx context.Context) (context.Context, error) {
 		return nctx, nil
 	}
 	u := GetSignedUser(ictx)
+	if u == nil {
+		return DISContext(time.Duration(10) * time.Second), nil
+	}
 	return DISContextForSignedUser(u)
 }
 

@@ -37,6 +37,7 @@ func DisableUserToken() {
 // OUTBOUND metadata...
 func buildMeta() metadata.MD {
 	user := GetUserTokenParameter()
+	//	utils.PrintStack("")
 	im := &rc.InMetadata{ServiceToken: cmdline.OptEnvString(*token, "GE_TOKEN"), UserToken: user, FooBar: "moo_none"}
 	ims, err := utils.Marshal(im)
 	if err != nil {

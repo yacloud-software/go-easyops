@@ -5,14 +5,18 @@ import (
 	ge "golang.conradwood.net/apis/goeasyops"
 )
 
-type EmptyLocalState struct {
+type emptyLocalState struct {
+	THIS_IS_EMPTY_LOCAL_STATE string // marker
 }
 
-func (e *EmptyLocalState) CreatorService() *auth.SignedUser { return nil }
-func (e *EmptyLocalState) CallingService() *auth.SignedUser { return nil }
-func (e *EmptyLocalState) Debug() bool                      { return false }
-func (e *EmptyLocalState) Trace() bool                      { return false }
-func (e *EmptyLocalState) User() *auth.SignedUser           { return nil }
-func (e *EmptyLocalState) Session() *auth.SignedSession     { return nil }
-func (e *EmptyLocalState) RequestID() string                { return "" }
-func (e *EmptyLocalState) RoutingTags() *ge.CTXRoutingTags  { return nil }
+func newEmptyLocalState() *emptyLocalState {
+	return &emptyLocalState{THIS_IS_EMPTY_LOCAL_STATE: "this is empty local state"}
+}
+func (e *emptyLocalState) CreatorService() *auth.SignedUser { return nil }
+func (e *emptyLocalState) CallingService() *auth.SignedUser { return nil }
+func (e *emptyLocalState) Debug() bool                      { return false }
+func (e *emptyLocalState) Trace() bool                      { return false }
+func (e *emptyLocalState) User() *auth.SignedUser           { return nil }
+func (e *emptyLocalState) Session() *auth.SignedSession     { return nil }
+func (e *emptyLocalState) RequestID() string                { return "" }
+func (e *emptyLocalState) RoutingTags() *ge.CTXRoutingTags  { return nil }

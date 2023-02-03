@@ -12,6 +12,7 @@ type Table struct {
 	rows      []*Row
 	headerRow *Row
 	hidden    map[int]bool
+	maxlenCol map[int]int // for each column(0..n) there _might_ be a maximum length set
 }
 
 type Row struct {
@@ -211,4 +212,104 @@ func (t *Table) idx2col(idx int) int {
 		}
 	}
 	return idx + off
+}
+func (t *Table) GetMaxLen(col int) int {
+	if t.maxlenCol == nil {
+		t.maxlenCol = make(map[int]int)
+	}
+	f, found := t.maxlenCol[col]
+	if !found {
+		return 0xFFFFFFFF
+	}
+	return f
+
+}
+func (t *Table) SetMaxLen(col, width int) {
+	if t.maxlenCol == nil {
+		t.maxlenCol = make(map[int]int)
+	}
+	t.maxlenCol[col] = width
+}
+
+// gets "printing" rows. Multi-line text or text that is wrapped will create an extra row
+func (t *Table) GetPrintingRows() []*Row {
+	var res []*Row
+	for _, r := range t.rows {
+		res = append(res, r.toPrintingRows()...)
+	}
+	return res
+}
+
+// wrap text and return multiple rows
+func (r *Row) toPrintingRows() []*Row {
+	var res []*Row
+	for cn, c := range r.Cells() {
+		if c.typ != 1 {
+			// it's not a string, insert cell as is to row
+			if len(res) == 0 {
+				res = append(res, &Row{t: r.t})
+			}
+			r := res[0]
+			for len(r.cells) <= cn {
+				r.cells = append(r.cells, &Cell{})
+			}
+			r.cells[cn] = c
+			continue
+		}
+
+		// it's a string.. wrap text
+		ml := r.t.GetMaxLen(cn)
+		s := c.String()
+		lines := strings.Split(s, "\n")
+		var tlines []string
+		for _, l := range lines {
+			for {
+				if len(l) <= ml {
+					tlines = append(tlines, l)
+					break
+				}
+				splitAt := findBetterSplitAt(l, ml)
+				nl := l[:splitAt]
+				tlines = append(tlines, nl)
+				l = l[splitAt:]
+			}
+		}
+		for len(res) < len(tlines) {
+			res = append(res, &Row{t: r.t})
+		}
+		for i, l := range tlines {
+			r := res[i]
+			for len(r.cells) <= cn {
+				r.cells = append(r.cells, &Cell{})
+			}
+			r.cells[cn] = &Cell{typ: c.typ, txt: l}
+
+		}
+	}
+	return res
+}
+func findBetterSplitAt(line string, proposed int) int {
+	splits := []byte{' ', ':'}
+	i := proposed
+	j := 0
+	for {
+		j++
+		if j > 20 {
+			return proposed
+		}
+		i--
+		if i < 0 {
+			return proposed
+		}
+		for _, sp := range splits {
+			if line[i] == sp {
+				if i < proposed {
+					return i + 1
+				}
+				return i
+			}
+		}
+
+	}
+	return proposed
 }

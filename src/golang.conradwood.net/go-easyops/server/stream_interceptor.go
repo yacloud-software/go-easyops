@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	fw "golang.conradwood.net/apis/framework"
-	"golang.conradwood.net/go-easyops/auth"
+	//	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
+	//	"golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -36,7 +37,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	}).Dec()
 
 	if *debug_rpc_serve {
-		fmt.Printf("[go-easyops] debug: called streaming service %s/%s\n", name, method)
+		fmt.Printf("[go-easyops] Debug-rpc: called streaming rpc %s/%s\n", name, method)
 	}
 	//fmt.Printf("Method: \"%s\"\n", method)
 	if isInternalService(name) {
@@ -71,13 +72,6 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		if err != nil {
 			return err
 		}
-		if *debug_rpc_serve {
-			fmt.Printf("[go-easyops] (with_builder) Invoked by user %s\n", auth.UserIDString(auth.GetUser(out_ctx)))
-			if auth.GetUser(out_ctx) == nil {
-				fmt.Printf("[go-easyops] Context: %#v\n", out_ctx)
-			}
-		}
-
 	} else {
 		cs = &rpc.CallState{
 			Started:     time.Now(),
@@ -105,10 +99,9 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		cs.UpdateContextFromResponse()
 		cs.DebugPrintContext()
 		out_ctx = cs.Context
-		if *debug_rpc_serve {
-			fmt.Printf("[go-easyops] (without_builder) Invoked by user %s\n", auth.UserIDString(auth.GetUser(out_ctx)))
-		}
 	}
+	print_inbound_debug(rc, out_ctx)
+
 	nstream := newServerStream(stream, out_ctx)
 	err = handler(srv, nstream)
 	if err == nil {

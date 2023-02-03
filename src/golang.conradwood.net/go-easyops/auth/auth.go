@@ -5,7 +5,7 @@ import (
 	apb "golang.conradwood.net/apis/auth"
 	//	"golang.conradwood.net/go-easyops/client"
 	"context"
-	"golang.conradwood.net/go-easyops/cmdline"
+	//	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/rpc"
@@ -15,9 +15,6 @@ import (
 func GetUser(uctx context.Context) *apb.User {
 	u := ctx.GetLocalState(uctx).User()
 	us := common.VerifySignedUser(u)
-	if cmdline.ContextWithBuilder() {
-		return us
-	}
 	if us != nil {
 		// new path succeeded
 		return us
@@ -33,9 +30,6 @@ func GetUser(uctx context.Context) *apb.User {
 // get the user in this context
 func GetSignedUser(uctx context.Context) *apb.SignedUser {
 	u := ctx.GetLocalState(uctx).User()
-	if cmdline.ContextWithBuilder() {
-		return u
-	}
 	if u != nil {
 		// new path succeeded
 		return u
@@ -45,44 +39,34 @@ func GetSignedUser(uctx context.Context) *apb.SignedUser {
 	if cs == nil {
 		return nil
 	}
-	return cs.SignedUser()
+	su := cs.SignedUser()
+	if su == nil && cs.User() != nil {
+		panic("mismatched old style context, no signed user, but unsigned user present")
+	}
+	return su
 }
 
 // get the user in this context
 func GetSignedService(uctx context.Context) *apb.SignedUser {
 	u := ctx.GetLocalState(uctx).CallingService()
-	if cmdline.ContextWithBuilder() {
-		return u
-	}
 	if u != nil {
-		// new path succeeded
 		return u
 	}
-	// code below to be removed:
+	// code below to be removed, obsolete path...:
 	cs := rpc.CallStateFromContext(uctx)
 	if cs == nil {
 		return nil
 	}
-	return cs.SignedService()
+	res := cs.SignedService()
+	if res == nil && cs.CallerService() != nil {
+		panic("invalid callstate (no signed service, but unsignedservice)")
+	}
+	return res
 }
 
 // get the service which directly called us
 func GetService(uctx context.Context) *apb.User {
-	u := ctx.GetLocalState(uctx).CallingService()
-	us := common.VerifySignedUser(u)
-	if cmdline.ContextWithBuilder() {
-		return us
-	}
-	if us != nil {
-		// new path succeeded
-		return us
-	}
-	// code below to be removed:
-	cs := rpc.CallStateFromContext(uctx)
-	if cs == nil {
-		return nil
-	}
-	return cs.CallerService()
+	return common.VerifySignedUser(GetSignedService(uctx))
 }
 
 // get the service which created this context
