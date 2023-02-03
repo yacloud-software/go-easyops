@@ -36,6 +36,16 @@ func start_server() {
 
 type geServer struct{}
 
+func (g *geServer) Sleep(ctx context.Context, req *ge.SleepRequest) (*common.Void, error) {
+	t := time.Duration(req.Seconds) * time.Second
+	fmt.Printf("Sleeping for %0.2f seconds\n", t.Seconds())
+	time.Sleep(t)
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+	return &common.Void{}, nil
+}
+
 func (g *geServer) TestFork(ctx context.Context, req *ge.RequiredContext) (*common.Void, error) {
 	err := AssertRequiredContext(ctx, req)
 	if err != nil {
