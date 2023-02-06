@@ -152,6 +152,7 @@ func run_tests() {
 	run_all_tests()
 	cmdline.SetDatacenter(true)
 	run_all_tests()
+	sleepTests()
 	fmt.Printf("Done\n")
 	PrintResult()
 	os.Exit(0)
