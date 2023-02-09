@@ -25,7 +25,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
@@ -40,11 +39,11 @@ import (
 )
 
 const (
-	SER_PREFIX_STR = "CTX_SER"
+	SER_PREFIX_STR = "CTX_SER_STRING"
 )
 
 var (
-	debug = flag.Bool("ge_debug_context", false, "if true print context debug stuff")
+	SER_PREFIX_BYT = []byte("CTX_SER_BYTE")
 )
 
 // get a new contextbuilder
@@ -57,10 +56,7 @@ func GetLocalState(ctx context.Context) shared.LocalState {
 	res := ctxv1.GetLocalState(ctx)
 	if res == nil {
 		if cmdline.ContextWithBuilder() {
-			if *debug {
-				utils.PrintStack("Localstate missing")
-			}
-			Debugf("could not get localstate from context (caller: %s)\n", utils.CallingFunction())
+			shared.Debugf(ctx, "could not get localstate from context (caller: %s)\n", utils.CallingFunction())
 		}
 		return newEmptyLocalState()
 	}
@@ -80,11 +76,11 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 		if svc != nil {
 			svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
 		}
-		Debugf("converted inbound to outbound context (me.service=%s)\n", svs)
-		Debugf("New Context: %s\n", Context2String(octx))
+		shared.Debugf(in_ctx, "converted inbound to outbound context (me.service=%s)\n", svs)
+		shared.Debugf(in_ctx, "New Context: %s\n", Context2String(octx))
 		return octx
 	}
-	fmt.Printf("[go-easyops] could not parse inbound context!\n")
+	shared.Debugf(in_ctx, "[go-easyops] could not parse inbound context!\n")
 	return in_ctx
 }
 
@@ -102,14 +98,6 @@ func add_context_to_builder(cb shared.ContextBuilder, ctx context.Context) {
 	cb.WithSession(ls.Session())
 }
 
-func Debugf(format string, args ...interface{}) {
-	if !*debug {
-		return
-	}
-	s1 := fmt.Sprintf("[go-easyops] CONTEXT: ")
-	s2 := fmt.Sprintf(format, args...)
-	fmt.Printf("%s%s", s1, s2)
-}
 func isEmptyLocalState(ls shared.LocalState) bool {
 	_, f := ls.(*emptyLocalState)
 	return f
@@ -153,34 +141,44 @@ func IsSerialisedByBuilder(buf []byte) bool {
 		// it was serialised by context_builder - as a string
 		return true
 	}
-	version := buf[0]
-	buf = buf[1:]
-	var b []byte
-	if version == 1 {
-		b = ctxv1.GetPrefix()
-	} else {
-		return false
-	}
-
-	if bytes.HasPrefix(buf, b) {
+	if bytes.HasPrefix(buf, SER_PREFIX_BYT) {
 		return true
 	}
+	/*
+		version := buf[0]
+		buf = buf[1:]
+		var b []byte
+		if version == 1 {
+			b = ctxv1.GetPrefix()
+		} else {
+			return false
+		}
 
-	fmt.Printf("[go-easyops] Not a valid context (%s/%s)\n", string(ctxv1.GetPrefix()), string(buf))
-	//	fmt.Printf("a: %s\n", utils.HexStr(b))
-	//	fmt.Printf("b: %s\n", utils.HexStr(buf[:20]))
+		if bytes.HasPrefix(buf, b) {
+			return true
+		}
+	*/
+	shared.Debugf(context.Background(), "[go-easyops] Not a ctxbuilder context (%s)\n", utils.HexStr(buf))
+	//	shared.Debugf(ctx,"a: %s\n", utils.HexStr(b))
+	//	shared.Debugf(ctx,"b: %s\n", utils.HexStr(buf[:20]))
 	return false
 }
 
 // serialise a context to bunch of bytes
 func SerialiseContext(ctx context.Context) ([]byte, error) {
+	if !IsContextFromBuilder(ctx) {
+		utils.PrintStack("incompatible context")
+		return nil, fmt.Errorf("cannot serialise a context which was not built by builder")
+	}
 	version := byte(1) // to de-serialise later
 	b, err := ctxv1.Serialise(ctx)
 
 	if err != nil {
 		return nil, err
 	}
-	b = append([]byte{version}, b...)
+	chk := shared.Checksum(b)
+	b = append([]byte{version, chk}, b...)
+	b = append(SER_PREFIX_BYT, b...)
 	return b, nil
 }
 
@@ -195,8 +193,18 @@ func SerialiseContextToString(ctx context.Context) (string, error) {
 	return s, nil
 }
 
-// this unmarshals a context from a string into a context
+// this unmarshals a context from a string into a context. Short for DeserialiseContextFromStringWithTimeout()
 func DeserialiseContextFromString(s string) (context.Context, error) {
+	return DeserialiseContextFromStringWithTimeout(time.Duration(10)*time.Second, s)
+}
+
+// this unmarshals a context from a binary blob into a context. Short for DeserialiseContextWithTimeout()
+func DeserialiseContext(buf []byte) (context.Context, error) {
+	return DeserialiseContextWithTimeout(time.Duration(10)*time.Second, buf)
+}
+
+// this unmarshals a context from a string into a context
+func DeserialiseContextFromStringWithTimeout(t time.Duration, s string) (context.Context, error) {
 	if !strings.HasPrefix(s, SER_PREFIX_STR) {
 		return nil, fmt.Errorf("not a valid string to deserialise into a context")
 	}
@@ -205,44 +213,52 @@ func DeserialiseContextFromString(s string) (context.Context, error) {
 	if err != nil {
 		return nil, err
 	}
-	return DeserialiseContext(userdata)
-}
-
-// this unmarshals a context from a binary blob into a context
-func DeserialiseContext(buf []byte) (context.Context, error) {
-	if len(buf) < 2 {
-		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
-	}
-	s := string(buf)
-	if strings.HasPrefix(s, SER_PREFIX_STR) {
-		// it's a string...
-		return DeserialiseContextFromString(s)
-	}
-	version := buf[0]
-	buf = buf[1:]
-	var err error
-	var res context.Context
-	if version == 1 {
-		res, err = ctxv1.DeserialiseWithTimeout(time.Duration(10)*time.Second, buf)
-	} else {
-		return nil, fmt.Errorf("attempt to deserialise incompatible version (%d) to context", version)
-	}
-	return res, err
+	return DeserialiseContextWithTimeout(t, userdata)
 }
 
 // this unmarshals a context from a binary blob into a context
 func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context, error) {
+	if !IsSerialisedByBuilder(buf) {
+		panic("context not serialised by builder")
+	}
 	if len(buf) < 2 {
 		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
 	}
-	version := buf[0]
-	buf = buf[1:]
+	shared.Debugf(context.Background(), "Deserialising %s\n", utils.HexStr(buf))
+	tbuf := buf[len(SER_PREFIX_BYT):]
+	s := string(buf)
+	if strings.HasPrefix(s, SER_PREFIX_STR) {
+		// it's a string...
+		return DeserialiseContextFromStringWithTimeout(t, s)
+	}
+	if !bytes.HasPrefix(buf, SER_PREFIX_BYT) {
+		// it's not a byte
+		return nil, fmt.Errorf("context does not have ser_prefix_byt (%s)", utils.HexStr(buf))
+	}
+
+	version := tbuf[0]
+	chk := tbuf[1]
+	tbuf = tbuf[2:]
+	c := shared.Checksum(tbuf)
+	if c != chk {
+		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)\n", c, chk)
+	}
 	var err error
 	var res context.Context
 	if version == 1 {
-		res, err = ctxv1.DeserialiseWithTimeout(t, buf)
+		res, err = ctxv1.DeserialiseWithTimeout(t, tbuf)
 	} else {
-		return nil, fmt.Errorf("attempt to deserialise incompatible version (%d) to context", version)
+		shared.Debugf(context.Background(), "a: %s\n", utils.HexStr(buf))
+		utils.PrintStack("foo")
+		return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
 	}
 	return res, err
+}
+
+// returns true if this context was build by the builder
+func IsContextFromBuilder(ctx context.Context) bool {
+	if ctx.Value(shared.LOCALSTATENAME) != nil {
+		return true
+	}
+	return false
 }

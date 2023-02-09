@@ -120,7 +120,7 @@ func serialiseContextRaw(ctx context.Context) ([]byte, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("Cannot serialise 'nil' context")
 	}
-	if cmdline.ContextWithBuilder() {
+	if cmdline.ContextWithBuilder() && pctx.IsContextFromBuilder(ctx) {
 		return pctx.SerialiseContext(ctx)
 	}
 
@@ -182,7 +182,7 @@ func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, er
 }
 
 func SerialiseContextToString(ctx context.Context) (string, error) {
-	if cmdline.ContextWithBuilder() {
+	if cmdline.ContextWithBuilder() && pctx.IsContextFromBuilder(ctx) {
 		return pctx.SerialiseContextToString(ctx)
 	}
 	b, err := serialiseContextRaw(ctx)
@@ -200,7 +200,7 @@ func SerialiseContextToString(ctx context.Context) (string, error) {
 }
 
 func SerialiseContext(ctx context.Context) ([]byte, error) {
-	if cmdline.ContextWithBuilder() {
+	if cmdline.ContextWithBuilder() && pctx.IsContextFromBuilder(ctx) {
 		return pctx.SerialiseContext(ctx)
 	}
 	b, err := serialiseContextRaw(ctx)

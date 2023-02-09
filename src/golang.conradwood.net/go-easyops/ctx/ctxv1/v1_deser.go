@@ -5,6 +5,7 @@ import (
 	"fmt"
 	//	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
 	"time"
 )
@@ -13,7 +14,7 @@ var (
 	ser_prefix = []byte("SER-CTX-V1")
 )
 
-func GetPrefix() []byte {
+func getPrefix() []byte {
 	return ser_prefix
 }
 func Serialise(ctx context.Context) ([]byte, error) {
@@ -57,13 +58,22 @@ func DeserialiseWithTimeout(t time.Duration, buf []byte) (context.Context, error
 		}
 	}
 	ud := buf[len(ser_prefix):]
+	ctx := context.Background()
+	shared.Debugf(ctx, "a v1deserialise: %s\n", utils.HexStr(buf))
+	shared.Debugf(ctx, "b v1deserialise: %s\n", utils.HexStr(ud))
 	ic := &ge.InContext{}
 	err := utils.UnmarshalBytes(ud, ic)
 	if err != nil {
 		return nil, err
 	}
 	cb := &v1ContextBuilder{}
-	cb.WithUser(ic.ImCtx.User)
-	cb.WithCallingService(ic.MCtx.CallingService)
+	if ic.ImCtx != nil {
+		cb.WithUser(ic.ImCtx.User)
+	} else {
+		panic("no imctx")
+	}
+	if ic.MCtx != nil {
+		cb.WithCallingService(ic.MCtx.CallingService)
+	}
 	return cb.ContextWithAutoCancel(), nil
 }

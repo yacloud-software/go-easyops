@@ -8,11 +8,24 @@ import (
 
 // return a mini hexdump as single line string
 func HexStr(buf []byte) string {
+	maxlen := 24
+	if len(buf) > maxlen {
+		buf = buf[:maxlen]
+	}
 	s := ""
 	deli := ""
 	for _, b := range buf {
 		s = s + deli + fmt.Sprintf("%02X", b)
 		deli = " "
+	}
+	s = s + " "
+	x := string(buf)
+	for _, r := range x {
+		if unicode.IsPrint(r) {
+			s = s + string(r)
+		} else {
+			s = s + "."
+		}
 	}
 	return s
 }

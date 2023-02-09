@@ -81,3 +81,11 @@ func PrettyUser(su *auth.SignedUser) string {
 	}
 	return u.Email
 }
+
+func Checksum(buf []byte) byte {
+	f := byte(0x37)
+	for _, b := range buf {
+		f = f + b
+	}
+	return f
+}

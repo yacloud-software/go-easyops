@@ -18,8 +18,22 @@ var (
 
 func client() {
 	fmt.Printf("testing context...\n")
-	checkFile("/tmp/context.env")
+
+	// check simple, new functions.
+	cmdline.SetContextWithBuilder(true)
 	ctx1 := authremote.Context()
+	s, err := ctx.SerialiseContextToString(ctx1)
+	utils.Bail("(1) failed to serialise context to string", err)
+	fmt.Printf("Serialised to: %s\n", utils.HexStr([]byte(s)))
+	_, err = ctx.DeserialiseContextFromString(s)
+	utils.Bail("(1) failed to deserialise context to string", err)
+	_, err = ctx.DeserialiseContext([]byte(s))
+	utils.Bail("(2) failed to deserialise context to string", err)
+	_, err = auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, []byte(s))
+	utils.Bail("(3) failed to deserialise context to string", err)
+
+	checkFile("/tmp/context.env")
+	ctx1 = authremote.Context()
 	fmt.Printf("Default context:\n")
 	printContext(ctx1)
 	b, err := auth.SerialiseContext(ctx1)
@@ -66,6 +80,7 @@ func checkSer(ctx1 context.Context) {
 	cmdline.SetEnvContext("")
 	b, err := auth.SerialiseContext(ctx1)
 	utils.Bail("failed to serialise", err)
+	fmt.Printf("Serialised to: %s\n", utils.HexStr(b))
 	ctx2, err := auth.RecreateContextWithTimeout(timeout, b)
 	utils.Bail("failed to deserialise", err)
 	mustBeSame(ctx1, ctx2)
@@ -81,6 +96,11 @@ func checkSer(ctx1 context.Context) {
 	ctx2 = authremote.Context()
 	mustBeSame(ctx1, ctx2)
 
+	_, err = auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, []byte(s))
+	if err != nil {
+		utils.PrintStack("deser string fail")
+	}
+	utils.Bail("failed to deserialise string", err)
 	cmdline.SetEnvContext("")
 
 }
@@ -95,7 +115,7 @@ func mustBeSame(ctx1, ctx2 context.Context) {
 	u1 := auth.GetUser(ctx1)
 	u2 := auth.GetUser(ctx2)
 	if auth.UserIDString(u1) != auth.UserIDString(u2) {
-		panic("users do not match")
+		panic(fmt.Sprintf("users do not match (%s vs %s)", auth.UserIDString(u1), auth.UserIDString(u2)))
 	}
 	s1 := auth.GetService(ctx1)
 	s2 := auth.GetService(ctx2)

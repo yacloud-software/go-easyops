@@ -59,9 +59,6 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 		if s == nil {
 			s = auth.GetSignedService(cv)
 		}
-		if s == nil {
-			panic("no service to derive from")
-		}
 		cb := ctx.NewContextBuilder()
 		cb.WithUser(auth.GetSignedUser(cv))
 		cb.WithCreatorService(s)
@@ -70,9 +67,9 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 		//	cb.WithTimeout(t)
 		cb.WithParentContext(cv)
 		nctx := cb.ContextWithAutoCancel()
-		if auth.GetSignedService(nctx) == nil {
+		if auth.GetSignedService(nctx) == nil && s != nil {
 			fmt.Printf("[go-easyops] Localstate: %#v\n", ctx.GetLocalState(nctx))
-			fmt.Printf("[go-easyops] WARNING derived context includes no service, but should")
+			fmt.Printf("[go-easyops] WARNING derived context includes no service, but should\n")
 			return nil
 		}
 		return nctx

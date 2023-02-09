@@ -116,6 +116,20 @@ func (g *geServer) TestDeSer(ctx context.Context, req *ge.RequiredContext) (*ge.
 		return nil, err
 	}
 
+	sctx, err := auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, []byte(s))
+	if err != nil {
+		return nil, err
+	}
+	err = AssertRequiredContext(sctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = AssertEqualContexts(ctx, sctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if cmdline.ContextWithBuilder() {
 		ictx, err = pctx.DeserialiseContextFromString(s)
 		if err != nil {

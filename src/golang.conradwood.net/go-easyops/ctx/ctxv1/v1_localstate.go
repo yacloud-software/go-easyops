@@ -18,7 +18,13 @@ type v1LocalState struct {
 }
 
 func GetLocalState(ctx context.Context) *v1LocalState {
+	if ctx == nil {
+		panic("cannot get localstate from nil context")
+	}
 	v := ctx.Value(shared.LOCALSTATENAME)
+	if v == nil {
+		shared.Debugf(ctx, "[go-easyops] ctxv1 warning, tried to extract localstate from context which is not a v1 context\n")
+	}
 	res, ok := v.(*v1LocalState)
 	if !ok {
 		return nil
