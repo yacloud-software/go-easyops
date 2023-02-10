@@ -26,7 +26,7 @@ var (
 	print_easyops          = false
 	manreg                 = ""
 	stdalone               = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
-	context_with_builder   = flag.Bool("ge_context_with_builder", false, "a new (experimental) context messaging method")
+	context_with_builder   = flag.Bool("ge_context_with_builder", true, "a new (experimental) context messaging method")
 	overridden_env_context = ""
 )
 
