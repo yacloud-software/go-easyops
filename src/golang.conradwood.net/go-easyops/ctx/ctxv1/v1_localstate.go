@@ -14,6 +14,7 @@ type v1LocalState struct {
 	callstate              *rpc.CallState
 	builder                *v1ContextBuilder
 	callingservice         *auth.SignedUser
+	routingtags            *ge.CTXRoutingTags
 	started                time.Time
 }
 
@@ -32,6 +33,7 @@ func GetLocalState(ctx context.Context) *v1LocalState {
 	return res
 }
 func (ls *v1LocalState) CreatorService() *auth.SignedUser {
+	//v1 does not have a creator service
 	return nil
 }
 func (ls *v1LocalState) CallingService() *auth.SignedUser {
@@ -59,5 +61,8 @@ func (ls *v1LocalState) RequestID() string {
 	return "v1reqid"
 }
 func (ls *v1LocalState) RoutingTags() *ge.CTXRoutingTags {
-	return nil
+	if ls == nil {
+		return nil
+	}
+	return ls.routingtags
 }

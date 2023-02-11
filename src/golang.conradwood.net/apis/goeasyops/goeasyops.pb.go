@@ -150,7 +150,23 @@ func (m *MutableContext) GetTags() *CTXRoutingTags {
 	return nil
 }
 
-// within the context, routing tags are transported
+//
+// Routing tags are part of a context. Rules to match tags when looking for a suitable target service instance are as follows:
+//
+// If FallbackToPlain == false then:
+//
+// - if context has no tags - use any instance
+//
+// - if context has tags - only use instance that matches exactly (with all tags)
+//
+// If FallbackToPlain == true then:
+//
+// - if context has no tags - use any instance
+//
+// - if context has tags - if at least one instance matches exactly (with all tags), use only that. if none matches, but at least one instance has no tags, use that.
+//
+// Propagate: If it is true, the routing tags are kept as-is, otherwise the first target service will strip routing tags out
+//
 type CTXRoutingTags struct {
 	Tags            map[string]string `protobuf:"bytes,1,rep,name=Tags" json:"Tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	FallbackToPlain bool              `protobuf:"varint,2,opt,name=FallbackToPlain" json:"FallbackToPlain,omitempty"`

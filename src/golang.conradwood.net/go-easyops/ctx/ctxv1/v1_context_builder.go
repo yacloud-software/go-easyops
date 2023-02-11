@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	debug = flag.Bool("debug_context_v1", false, "if true debug v1 context builder in more detail")
+	debug = flag.Bool("ge_debug_context_v1", false, "if true debug v1 context builder in more detail")
 )
 
 // build V2 Contexts. That is, a context with metadata serialised into an rpc InContext struct
@@ -149,6 +149,7 @@ func (c *v1ContextBuilder) newLocalState(cs *rpc.CallState) *v1LocalState {
 	return &v1LocalState{this_is_v1_local_state: "v1localstate",
 		callstate:      cs,
 		builder:        c,
+		routingtags:    c.routing_tags,
 		callingservice: cs.Metadata.SignedService,
 	}
 }

@@ -63,7 +63,9 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 	lf := f.addresslist
 
 	cri := tags_from_context(info.Ctx)
-	if cri != nil {
+	if cri == nil {
+		fancyPrintf(f, "picking for tag-less context\n")
+	} else {
 		fancyPrintf(f, "Picking by tags (%v)\n", cri.Tags)
 		// convert tags to map[string]string, returning empty if invalid type assertion
 		adrs := lf.ByMatchingTags(cri.Tags)

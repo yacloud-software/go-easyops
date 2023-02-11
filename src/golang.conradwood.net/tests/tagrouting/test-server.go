@@ -5,16 +5,14 @@ import (
 	"flag"
 	"fmt"
 	pb "golang.conradwood.net/apis/getestservice"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
-	"golang.conradwood.net/go-easyops/authremote"
+	//	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 	"os"
 	"strings"
-	"time"
 )
 
 var (
@@ -22,7 +20,9 @@ var (
 	ping          = flag.Bool("ping", false, "ping continously")
 	ping_once     = flag.Bool("ping_once", false, "ping once")
 	tag           = flag.String("tag", "", "key=value tag optional")
+	fallback      = flag.Bool("fallback", true, "if true, fallback allowed (for client)")
 	inject_errors = flag.Bool("inject_errors", false, "if true inject some errors in the rpc")
+	ttl           = flag.Int("ttl", 0, "if >0 the server will ping itself until ttl is 0")
 	ctr           = 0
 )
 
@@ -34,26 +34,8 @@ func main() {
 	flag.Parse()
 	fmt.Printf("GO-EASYOPS Echo test server/client\n")
 	if *ping || *ping_once {
-		c := pb.GetEchoClient()
-		seq := uint32(0)
-		for {
-			now := time.Now()
-			ctx := clientContext()
-			u := auth.GetUser(ctx)
-			fmt.Printf("   pinging as %s\n", auth.Description(u))
-			seq++
-			_, err := c.Ping(ctx, &pb.PingRequest{SequenceNumber: seq, TTL: 1})
-			if err != nil {
-				fmt.Printf("Error :%s\n", utils.ErrorString(err))
-			}
-			dur := time.Since(now).Milliseconds()
-			fmt.Printf("%d Pinged (%d milliseconds)\n", ctr, dur)
-			ctr++
-			if !*ping {
-				return
-			}
-			time.Sleep(time.Duration(300) * time.Millisecond)
-		}
+		utils.Bail("failed", do_client())
+		os.Exit(0)
 	}
 
 	sd := server.NewServerDef()
@@ -85,7 +67,7 @@ func main() {
 
 func (e *echoServer) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
 	u := auth.GetUser(ctx)
-	fmt.Printf("    %d Pinged SEQ=%d, by %s (TTL:%d)\n", ctr, req.SequenceNumber, auth.Description(u), req.TTL)
+	fmt.Printf("    tagserver %s: %d Pinged SEQ=%d, by %s (TTL:%d)\n", printTags(), ctr, req.SequenceNumber, auth.Description(u), req.TTL)
 	if req.TTL > 0 {
 		req.TTL--
 		_, err := pb.GetEchoClient().Ping(ctx, req)
@@ -101,20 +83,7 @@ func (e *echoServer) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingRes
 			return nil, errors.Unavailable(ctx, "Ping()")
 		}
 	}
-	return &pb.PingResponse{}, nil
-}
-
-func clientContext() context.Context {
-	if *tag == "" {
-		return authremote.Context()
-	}
-	rt := &rc.CTXRoutingTags{
-		Tags:            parse_tags(),
-		FallbackToPlain: true,
-		Propagate:       false,
-	}
-	ctx := authremote.ContextWithTimeoutAndTags(time.Duration(2)*time.Second, rt)
-	return ctx
+	return &pb.PingResponse{ServerTags: parse_tags()}, nil
 }
 
 func parse_tags() map[string]string {
@@ -128,6 +97,6 @@ func parse_tags() map[string]string {
 		os.Exit(10)
 	}
 	res[kv[0]] = kv[1]
-	fmt.Printf("Added tag \"%s\" with value \"%s\"\n", kv[0], kv[1])
+	//	fmt.Printf("Added tag \"%s\" with value \"%s\"\n", kv[0], kv[1])
 	return res
 }
