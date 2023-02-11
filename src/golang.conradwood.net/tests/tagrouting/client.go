@@ -13,12 +13,14 @@ import (
 
 func do_client() error {
 	c := pb.GetEchoClient()
+
 	/*
 		ctx := clientContext()
 		c.Ping(ctx, &pb.PingRequest{SequenceNumber: 0, TTL: 0})
 		time.Sleep(time.Duration(1) * time.Second)
 		fmt.Printf("--------------------------------------------------\n")
 	*/
+
 	seq := uint32(0)
 	my_tags := parse_tags()
 	for {
