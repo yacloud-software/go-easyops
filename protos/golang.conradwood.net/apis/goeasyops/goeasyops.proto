@@ -36,7 +36,25 @@ message MutableContext {
   bool Trace=3; // if trace is enabled for this call
   CTXRoutingTags Tags=4;
 }
-// within the context, routing tags are transported
+
+/*
+Routing tags are part of a context. Rules to match tags when looking for a suitable target service instance are as follows:
+
+If FallbackToPlain == false then:
+
+- if context has no tags - use any instance
+
+- if context has tags - only use instance that matches exactly (with all tags)
+
+If FallbackToPlain == true then:
+
+- if context has no tags - use any instance
+
+- if context has tags - if at least one instance matches exactly (with all tags), use only that. if none matches, but at least one instance has no tags, use that.
+
+Propagate: If it is true, the routing tags are kept as-is, otherwise the first target service will strip routing tags out
+
+ */
 message CTXRoutingTags {
   map<string,string> Tags=1;
   bool FallbackToPlain=2; // if true, fallback to any service with NO tags, if no service with MATCHING tags is found

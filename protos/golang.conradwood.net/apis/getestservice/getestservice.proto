@@ -27,6 +27,7 @@ message PingRequest {
 
 message PingResponse {
   PingRequest Response = 1;
+  map<string,string> ServerTags=2; // the tags on the server which is replying
 }
 
 service EchoService {
