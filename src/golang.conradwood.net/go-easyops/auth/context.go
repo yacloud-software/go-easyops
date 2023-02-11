@@ -52,8 +52,10 @@ func DISContext(t time.Duration) context.Context {
 func ForkContext(ictx context.Context) (context.Context, error) {
 	if cmdline.ContextWithBuilder() {
 		u := GetSignedUser(ictx)
+		s := GetSignedService(ictx)
 		cb := pctx.NewContextBuilder()
 		cb.WithUser(u)
+		cb.WithCallingService(s)
 		nctx := cb.ContextWithAutoCancel()
 		return nctx, nil
 	}

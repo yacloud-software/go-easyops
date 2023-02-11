@@ -7,13 +7,15 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx"
+	pctx "golang.conradwood.net/go-easyops/ctx"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/rpc"
+	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	//	"reflect"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
+	//	"google.golang.org/grpc/metadata"
 	"time"
 )
 
@@ -38,14 +40,21 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 		fmt.Printf("[go-easyops] invalid fqdn method: \"%s\": %s\n", method, err)
 	}
 	if !isKnownNotAuthRPCs(s, m) {
-		_, ex := metadata.FromOutgoingContext(ctx)
-		if !ex {
-			if *debug_rpc_client {
-				fmt.Printf("Context: %#v\n", ctx)
-				utils.PrintStack("No metadata:")
-			}
-			fmt.Printf("[go-easyops] WARNING - calling external method %s.%s without metadata (authentication)\n", s, m)
+		ls := pctx.GetLocalState(ctx)
+		if ls.CallingService() == nil && tokens.GetServiceTokenParameter() != "" {
+			utils.PrintStack("[go-easyops] outbound context issue")
+			fmt.Printf("[go-easyops] WARNING calling another service (%s.%s) with a context without calling service information", s, m)
 		}
+		/*
+			_, ex := metadata.FromOutgoingContext(ctx)
+			if !ex {
+				if *debug_rpc_client {
+					fmt.Printf("Context: %#v\n", ctx)
+					utils.PrintStack("No metadata:")
+				}
+				fmt.Printf("[go-easyops] WARNING - calling external method %s.%s without metadata (authentication)\n", s, m)
+			}
+		*/
 	}
 
 	print_debug_client(ctx, fmt.Sprintf("%s.%s()", s, m))

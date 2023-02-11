@@ -21,6 +21,9 @@ var (
 	known_not_auth_rpcs = []string{
 		"rpcinterceptor.RPCInterceptorService.InterceptRPC",
 		"registry.Registry.V2GetTarget",
+		"auth.AuthenticationService.GetPublicSigningKey",
+		"auth.AuthenticationService.SignedGetByToken",
+		"registry.Registry.V2RegisterService",
 	}
 	// I think part of a refactoring, the metrics below
 	// should move into a metrics package, together with
