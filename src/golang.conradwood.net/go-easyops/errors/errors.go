@@ -57,7 +57,7 @@ func NeedServiceOrRoot(ctx context.Context, serviceids []string) error {
 	svc := auth.GetService(ctx)
 	if svc == nil {
 		if u == nil {
-			return Unauthenticated(ctx, "please log in")
+			return Unauthenticated(ctx, "goeasyops found no user and no service but NeedServiceOrRoot")
 		} else {
 			return AccessDenied(ctx, "not allowed")
 		}
@@ -68,7 +68,7 @@ func NeedServiceOrRoot(ctx context.Context, serviceids []string) error {
 		}
 	}
 	if u == nil {
-		return Unauthenticated(ctx, "please log in")
+		return Unauthenticated(ctx, "goeasyops found no user but NeedServiceOrRoot")
 	} else {
 		return AccessDenied(ctx, "not allowed")
 	}
