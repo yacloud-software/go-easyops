@@ -112,7 +112,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		MethodName:  cs.MethodName,
 		ServiceName: cs.ServiceName,
 	}
-	calling_svc := auth.GetService(outbound_ctx)
+	calling_svc := auth.GetService(in_ctx)
 	if calling_svc != nil {
 		gerr.CallingServiceID = calling_svc.ID
 		gerr.CallingServiceEmail = calling_svc.Email
