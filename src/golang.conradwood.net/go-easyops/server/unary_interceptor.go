@@ -94,7 +94,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, dur, err)
 	}
 	if *debug_rpc_serve {
-		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" failed: %s\n", cs.ServiceName, cs.MethodName, err)
+		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" (called from %s) failed: %s\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), err)
 	}
 	incFailure(cs.ServiceName, cs.MethodName, err)
 	//stdMetrics.grpc_failed_requests.With(prometheus.Labels{"method": method, "servicename": def.name}).Inc()
