@@ -14,7 +14,7 @@ var (
 )
 
 func sleepTests() {
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest1(time.Duration(11) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -23,7 +23,7 @@ func sleepTests() {
 	go sleepTest1(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	sleep_wg.Add(1)
 	go sleepTest1(time.Duration(11) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -32,7 +32,7 @@ func sleepTests() {
 	go sleepTest1(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	sleep_wg.Add(1)
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -41,7 +41,7 @@ func sleepTests() {
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -50,12 +50,12 @@ func sleepTests() {
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest3()
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	sleep_wg.Add(1)
 	go sleepTest3()
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters

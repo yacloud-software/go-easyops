@@ -10,14 +10,24 @@ import (
 	"io"
 )
 
+// return current and alternative
+func cur_versions() (int, int) {
+	cur := cmdline.GetContextBuilderVersion()
+	alt := 0
+	if cur == 0 {
+		alt = CONTEXT_VERSION
+	}
+	return cur, alt
+}
+
 func (g *geServer) CallUnaryFromStream(req *ge.RequiredContext, srv ge.CtxTest_CallUnaryFromStreamServer) error {
-	b := cmdline.ContextWithBuilder()
-	cmdline.SetContextWithBuilder(!b)
+	cur, alt := cur_versions()
+	cmdline.SetContextBuilderVersion(alt)
 	_, err := ge.GetCtxTestClient().TestDeSer(srv.Context(), req)
 	if err != nil {
 		return err
 	}
-	cmdline.SetContextWithBuilder(b)
+	cmdline.SetContextBuilderVersion(cur)
 	_, err = ge.GetCtxTestClient().TestDeSer(srv.Context(), req)
 	if err != nil {
 		return err
@@ -26,14 +36,14 @@ func (g *geServer) CallUnaryFromStream(req *ge.RequiredContext, srv ge.CtxTest_C
 }
 
 func (g *geServer) CallUnaryFromUnary(ctx context.Context, req *ge.RequiredContext) (*common.Void, error) {
-	b := cmdline.ContextWithBuilder()
-	cmdline.SetContextWithBuilder(!b)
+	cur, alt := cur_versions()
+	cmdline.SetContextBuilderVersion(alt)
 	_, err := ge.GetCtxTestClient().TestDeSer(ctx, req)
 	if err != nil {
 		fmt.Printf("ufu: %s\n", err)
 		return nil, err
 	}
-	cmdline.SetContextWithBuilder(b)
+	cmdline.SetContextBuilderVersion(cur)
 	_, err = ge.GetCtxTestClient().TestDeSer(ctx, req)
 	if err != nil {
 		fmt.Printf("ufu: %s\n", err)
@@ -65,8 +75,8 @@ func (g *geServer) CallStreamFromStream(req *ge.RequiredContext, srv ge.CtxTest_
 func (g *geServer) CallStreamFromUnary(ctx context.Context, req *ge.RequiredContext) (*common.Void, error) {
 	m := map[string]string{"provides": "default"}
 
-	b := cmdline.ContextWithBuilder()
-	cmdline.SetContextWithBuilder(!b)
+	cur, alt := cur_versions()
+	cmdline.SetContextBuilderVersion(alt)
 
 	srv2, err := ge.GetCtxTestClient().TestStream(ctx, req)
 	if err != nil {
@@ -77,7 +87,7 @@ func (g *geServer) CallStreamFromUnary(ctx context.Context, req *ge.RequiredCont
 		return nil, err
 	}
 
-	cmdline.SetContextWithBuilder(b)
+	cmdline.SetContextBuilderVersion(cur)
 	srv2, err = ge.GetCtxTestClient().TestStream(ctx, req)
 	if err != nil {
 		return nil, err
@@ -87,7 +97,7 @@ func (g *geServer) CallStreamFromUnary(ctx context.Context, req *ge.RequiredCont
 		return nil, err
 	}
 
-	cmdline.SetContextWithBuilder(!b)
+	cmdline.SetContextBuilderVersion(alt)
 	nctx := authremote.DerivedContextWithRouting(ctx, m, true)
 	srv2, err = ge.GetCtxTestClient().TestStream(nctx, req)
 	if err != nil {
@@ -98,7 +108,7 @@ func (g *geServer) CallStreamFromUnary(ctx context.Context, req *ge.RequiredCont
 		return nil, err
 	}
 
-	cmdline.SetContextWithBuilder(b)
+	cmdline.SetContextBuilderVersion(cur)
 	nctx = authremote.DerivedContextWithRouting(ctx, m, true)
 	srv2, err = ge.GetCtxTestClient().TestStream(nctx, req)
 	if err != nil {

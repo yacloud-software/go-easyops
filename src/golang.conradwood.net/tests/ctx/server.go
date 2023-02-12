@@ -175,7 +175,7 @@ func run_tests() {
 func run_all_tests() {
 	fmt.Printf("Running tests...\n")
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t := NewTest("stream test")
 	ctx := authremote.Context()
 	srv, err := ge.GetCtxTestClient().TestStream(ctx, CreateContextObject(ctx))
@@ -183,7 +183,7 @@ func run_all_tests() {
 	t.Error(checkSrv(srv))
 	t.Done()
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t = NewTest("stream test")
 	ctx = authremote.Context()
 	srv, err = ge.GetCtxTestClient().TestStream(ctx, CreateContextObject(ctx))
@@ -207,28 +207,28 @@ func run_all_tests() {
 		return err
 	})
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("fork test")
 	ctx = authremote.Context()
 	_, err = ge.GetCtxTestClient().TestFork(ctx, CreateContextObject(ctx))
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t = NewTest("fork test")
 	ctx = authremote.Context()
 	_, err = ge.GetCtxTestClient().TestFork(ctx, CreateContextObject(ctx))
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("(de)serialise")
 	ctx = authremote.Context()
 	_, err = ge.GetCtxTestClient().TestDeSer(ctx, CreateContextObject(ctx))
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t = NewTest("(de)serialise")
 	ctx = authremote.Context()
 	dctx, err := ge.GetCtxTestClient().TestDeSer(ctx, CreateContextObject(ctx))
@@ -236,7 +236,7 @@ func run_all_tests() {
 	t.Done()
 
 	if dctx != nil {
-		cmdline.SetContextWithBuilder(true)
+		cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 		t = NewTest("use serialised context to access service")
 		if !pctx.IsSerialisedByBuilder(dctx.Data) {
 			t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
@@ -252,7 +252,7 @@ func run_all_tests() {
 	t.Done()
 
 	if dctx != nil {
-		cmdline.SetContextWithBuilder(false)
+		cmdline.SetContextBuilderVersion(0)
 		t = NewTest("use serialised context to access service")
 		if !pctx.IsSerialisedByBuilder(dctx.Data) {
 			t.Error(fmt.Errorf("ctx failed to recognise it as a context"))
@@ -267,13 +267,13 @@ func run_all_tests() {
 	}
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("serialise old, deserialise new")
 	ctx = authremote.Context()
 	r, err := ge.GetCtxTestClient().TestDeSer(ctx, CreateContextObject(ctx))
 	t.Error(err)
 	if err == nil {
-		cmdline.SetContextWithBuilder(true)
+		cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 		nctx, err := auth.RecreateContextWithTimeout(time.Duration(10)*time.Second, r.Data)
 		t.Error(err)
 		if err != nil {
@@ -284,10 +284,10 @@ func run_all_tests() {
 	t.Done()
 
 	//	fmt.Printf("a\n")
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("old context, call new service")
 	ctx = authremote.Context()
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	//	fmt.Printf("c\n")
 	_, err = ge.GetCtxTestClient().TestDeSer(ctx, CreateContextObject(ctx))
 	t.Error(err)
@@ -343,7 +343,7 @@ func checkSrv(r recv) error {
 }
 
 func checkStream(name string, f func(ctx context.Context) (recv, error)) {
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t := NewTest("stream-bouncer %s test", name)
 	ctx := authremote.Context()
 	srv, err := f(ctx)
@@ -351,7 +351,7 @@ func checkStream(name string, f func(ctx context.Context) (recv, error)) {
 	t.Error(checkSrv(srv))
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("stream-bouncer %s test", name)
 	ctx = authremote.Context()
 	srv, err = f(ctx)
@@ -359,18 +359,18 @@ func checkStream(name string, f func(ctx context.Context) (recv, error)) {
 	t.Error(checkSrv(srv))
 	t.Done()
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	ctx = authremote.Context()
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("stream-bouncer %s test", name)
 	srv, err = f(ctx)
 	t.Error(err)
 	t.Error(checkSrv(srv))
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	ctx = authremote.Context()
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t = NewTest("stream-bouncer %s test", name)
 	srv, err = f(ctx)
 	t.Error(err)
@@ -379,32 +379,32 @@ func checkStream(name string, f func(ctx context.Context) (recv, error)) {
 
 }
 func checkUnary(name string, f func(ctx context.Context) error) {
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t := NewTest("unary-bouncer with_cb %s test", name)
 	ctx := authremote.Context()
 	err := f(ctx)
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("unary-bouncer wo_cb %s test", name)
 	ctx = authremote.Context()
 	err = f(ctx)
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	t = NewTest("unary-bouncer %s cb_tf test", name)
 	ctx = authremote.Context()
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	err = f(ctx)
 	t.Error(err)
 	t.Done()
 
-	cmdline.SetContextWithBuilder(false)
+	cmdline.SetContextBuilderVersion(0)
 	t = NewTest("unary-bouncer %s cb_ft test", name)
 	ctx = authremote.Context()
-	cmdline.SetContextWithBuilder(true)
+	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
 	err = f(ctx)
 	t.Error(err)
 	t.Done()
