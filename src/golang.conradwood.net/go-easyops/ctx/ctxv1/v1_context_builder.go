@@ -151,6 +151,7 @@ func (c *v1ContextBuilder) newLocalState(cs *rpc.CallState) *v1LocalState {
 		builder:        c,
 		routingtags:    c.routing_tags,
 		callingservice: cs.Metadata.SignedService,
+		session:        c.session,
 	}
 }
 func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool) {

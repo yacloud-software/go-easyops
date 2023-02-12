@@ -16,6 +16,7 @@ type v1LocalState struct {
 	callingservice         *auth.SignedUser
 	routingtags            *ge.CTXRoutingTags
 	started                time.Time
+	session                *auth.SignedSession
 }
 
 func GetLocalState(ctx context.Context) *v1LocalState {
@@ -55,7 +56,10 @@ func (ls *v1LocalState) User() *auth.SignedUser {
 	return ls.callstate.Metadata.SignedUser
 }
 func (ls *v1LocalState) Session() *auth.SignedSession {
-	return nil
+	if ls == nil {
+		return nil
+	}
+	return ls.session
 }
 func (ls *v1LocalState) RequestID() string {
 	return "v1reqid"
