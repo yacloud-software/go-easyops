@@ -80,7 +80,10 @@ func sleepTest2(dur time.Duration) {
 	ctx := authremote.ContextWithTimeout(dur)
 	ctx = authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
 	if ctx == nil {
-		panic(fmt.Sprintf("no context (builderversion=%d)", cmdline.GetContextBuilderVersion()))
+		t.Error(fmt.Errorf("no context"))
+		sleep_wg.Done()
+		t.Done()
+		return
 	}
 	_, err := ge.GetCtxTestClient().Sleep(ctx, &ge.SleepRequest{Seconds: sl_seecs})
 	t.Error(err)
@@ -95,6 +98,12 @@ func sleepTest3() {
 	ctxdur := time.Duration(5) * time.Second
 	ctx := authremote.ContextWithTimeout(ctxdur)
 	ctx = authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
+	if ctx == nil {
+		t.Error(fmt.Errorf("no context"))
+		sleep_wg.Done()
+		t.Done()
+		return
+	}
 	started := time.Now()
 	_, err := ge.GetCtxTestClient().Sleep(ctx, &ge.SleepRequest{Seconds: sl_seecs})
 	if err == nil {

@@ -25,8 +25,8 @@ type test struct {
 	prefix        string
 	dc_start      bool
 	dc_error      bool
-	builder_start bool
-	builder_error bool
+	builder_start int
+	builder_error int
 	stdout_writer io.Writer
 	stdout_buf    *bytes.Buffer
 }
@@ -36,7 +36,7 @@ func NewTest(format string, args ...interface{}) *test {
 		id:            newid(),
 		prefix:        fmt.Sprintf(format, args...),
 		dc_start:      cmdline.Datacenter(),
-		builder_start: cmdline.ContextWithBuilder(),
+		builder_start: cmdline.GetContextBuilderVersion(),
 		stdout_buf:    &bytes.Buffer{},
 	}
 	if old_stdout == nil {
@@ -76,7 +76,7 @@ func (t *test) Error(err error) {
 		return
 	}
 	t.dc_error = cmdline.Datacenter()
-	t.builder_error = cmdline.ContextWithBuilder()
+	t.builder_error = cmdline.GetContextBuilderVersion()
 
 	t.err = err
 	fmt.Printf("%s Failed (%s)\n", t.Prefix(), err)
@@ -123,8 +123,8 @@ func PrintResult() {
 			ta.AddString(t.prefix)
 			ta.AddBool(t.dc_start)
 			ta.AddBool(t.dc_error)
-			ta.AddBool(t.builder_start)
-			ta.AddBool(t.builder_error)
+			ta.AddInt(t.builder_start)
+			ta.AddInt(t.builder_error)
 			ta.AddString(se)
 			ta.AddString(s)
 			ta.NewRow()
@@ -136,9 +136,34 @@ func PrintResult() {
 	if failed > 0 {
 		fmt.Printf("TESTS FAILED\n")
 	}
+
+	b, err := render_tests_to_html(tests)
+	if err != nil {
+		fmt.Printf("failed to render to html: %s", err)
+	} else {
+		fname := "/tmp/tests.html"
+		err = utils.WriteFile(fname, b)
+		utils.Bail("failed to write file", err)
+		fmt.Printf("HTML written to %s\n", fname)
+	}
 }
 
 func (t *test) pipe_reader(r *os.File) {
 	io.Copy(t.stdout_writer, r)
 
+}
+func (t *test) BuilderStart() int {
+	return t.builder_start
+}
+func (t *test) BuilderError() int {
+	return t.builder_error
+}
+func (t *test) GetError() error {
+	return t.err
+}
+func (t *test) ID() int {
+	return t.id
+}
+func (t *test) Name() string {
+	return t.prefix
 }
