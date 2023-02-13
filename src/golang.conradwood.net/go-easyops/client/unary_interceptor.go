@@ -43,7 +43,7 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 		ls := pctx.GetLocalState(ctx)
 		if ls.CallingService() == nil && tokens.GetServiceTokenParameter() != "" {
 			utils.PrintStack("[go-easyops] outbound context issue")
-			fmt.Printf("[go-easyops] WARNING calling another service (%s.%s) with a context without calling service information", s, m)
+			fmt.Printf("[go-easyops] WARNING calling another service (%s.%s) with a context without calling service information\n", s, m)
 		}
 		/*
 			_, ex := metadata.FromOutgoingContext(ctx)

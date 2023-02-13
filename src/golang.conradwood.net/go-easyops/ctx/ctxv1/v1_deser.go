@@ -18,7 +18,7 @@ func getPrefix() []byte {
 	return ser_prefix
 }
 func Serialise(ctx context.Context) ([]byte, error) {
-	ls := GetLocalState(ctx)
+	ls := shared.GetLocalState(ctx)
 	ic := &ge.InContext{
 		ImCtx: &ge.ImmutableContext{
 			User:           ls.User(),
@@ -59,8 +59,8 @@ func DeserialiseWithTimeout(t time.Duration, buf []byte) (context.Context, error
 	}
 	ud := buf[len(ser_prefix):]
 	ctx := context.Background()
-	shared.Debugf(ctx, "a v1deserialise: %s\n", utils.HexStr(buf))
-	shared.Debugf(ctx, "b v1deserialise: %s\n", utils.HexStr(ud))
+	shared.Debugf(ctx, "a v1deserialise: %s", utils.HexStr(buf))
+	shared.Debugf(ctx, "b v1deserialise: %s", utils.HexStr(ud))
 	ic := &ge.InContext{}
 	err := utils.UnmarshalBytes(ud, ic)
 	if err != nil {

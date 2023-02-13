@@ -162,6 +162,23 @@ func (g *geServer) TestDeSer(ctx context.Context, req *ge.RequiredContext) (*ge.
 	return res, nil
 }
 func run_tests() {
+	// first run a couple of very quick tests..
+	svc := authremote.GetLocalServiceAccount()
+	ctx := authremote.Context()
+	if ctx == nil {
+		panic("no context")
+	}
+	if svc != nil && auth.GetSignedService(ctx) == nil {
+		panic("missing service")
+	}
+	ctx = authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
+	if ctx == nil {
+		panic("no context")
+	}
+	if svc != nil && auth.GetSignedService(ctx) == nil {
+		panic("missing service")
+	}
+
 	cmdline.SetDatacenter(false)
 	run_all_tests()
 	cmdline.SetDatacenter(true)

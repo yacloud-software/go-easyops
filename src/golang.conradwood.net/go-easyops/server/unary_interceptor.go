@@ -42,22 +42,29 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	var outbound_ctx context.Context
 	var err error
 
+	ctx_build_by := 0
 	// we try both types of context parsing (since we can be called by either, old or new service)
 	if cmdline.ContextWithBuilder() {
+		ctx_build_by = 1
 		outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
 		if err != nil {
+			ctx_build_by = 2
 			outbound_ctx, err = sd.buildCallStateV1(in_ctx, cs, req, info, handler)
 		}
 	} else {
+		ctx_build_by = 3
 		outbound_ctx, err = sd.buildCallStateV1(in_ctx, cs, req, info, handler)
 		if err != nil {
+			ctx_build_by = 4
 			outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
 		}
 	}
 	if err != nil {
 		return nil, err
 	}
-
+	if *debug_rpc_serve {
+		fmt.Printf("[go-easyops] context created through path %d\n", ctx_build_by)
+	}
 	//fmt.Printf("LS: %#v\n", ls)
 	//fmt.Printf("Method: \"%s\"\n", method)
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{
@@ -142,6 +149,9 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 			fmt.Printf("[go-easyops] Context: %#v\n", ctx.Context2String(octx))
 		}
 		return nil, nil, err
+	}
+	if ls == nil {
+		panic("no localstate in newly converted inbound context")
 	}
 	return octx, ls, nil
 }

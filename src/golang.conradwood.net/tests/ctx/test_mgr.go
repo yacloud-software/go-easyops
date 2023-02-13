@@ -9,46 +9,60 @@ import (
 	"io"
 	"os"
 	"sort"
+	"sync"
 )
 
 var (
 	old_stdout *os.File
+	testctr    = 0
 	tests      []*test
+	newidlock  sync.Mutex
 )
 
 type test struct {
 	err           error
+	id            int
 	prefix        string
 	dc_start      bool
 	dc_error      bool
 	builder_start bool
 	builder_error bool
-	stdout        *bytes.Buffer
+	stdout_writer io.Writer
+	stdout_buf    *bytes.Buffer
 }
 
 func NewTest(format string, args ...interface{}) *test {
 	t := &test{
+		id:            newid(),
 		prefix:        fmt.Sprintf(format, args...),
 		dc_start:      cmdline.Datacenter(),
 		builder_start: cmdline.ContextWithBuilder(),
-		stdout:        &bytes.Buffer{},
+		stdout_buf:    &bytes.Buffer{},
 	}
 	if old_stdout == nil {
 		old_stdout = os.Stdout
 	}
 	r, w, err := os.Pipe()
 	utils.Bail("failed to open pipe for stdout", err)
+	wrprefix := fmt.Sprintf("TEST %s ", t.Prefix())
+	t.stdout_writer = NewTee(t.stdout_buf, old_stdout, wrprefix)
 	os.Stdout = w
 	go t.pipe_reader(r)
 	fmt.Printf("%s -------- STARTING\n", t.Prefix())
 	tests = append(tests, t)
 	return t
 }
-
+func newid() int {
+	newidlock.Lock()
+	testctr++
+	newid := testctr
+	newidlock.Unlock()
+	return newid
+}
 func (t *test) Prefix() string {
 	v := fmt.Sprintf("%v", t.builder_start)
 	d := fmt.Sprintf("%v", t.dc_start)
-	return fmt.Sprintf("[dc=%5s %s (builder=%5s)]", d, t.prefix, v)
+	return fmt.Sprintf("[#%02d dc=%5s %s (builder=%5s)]", t.id, d, t.prefix, v)
 }
 
 func (t *test) Printf(format string, args ...interface{}) {
@@ -68,7 +82,7 @@ func (t *test) Error(err error) {
 	fmt.Printf("%s Failed (%s)\n", t.Prefix(), err)
 }
 func (t *test) getstdout() string {
-	return t.stdout.String()
+	return t.stdout_buf.String()
 }
 func (t *test) Done() {
 	if t.err != nil {
@@ -125,6 +139,6 @@ func PrintResult() {
 }
 
 func (t *test) pipe_reader(r *os.File) {
-	io.Copy(t.stdout, r)
+	io.Copy(t.stdout_writer, r)
 
 }

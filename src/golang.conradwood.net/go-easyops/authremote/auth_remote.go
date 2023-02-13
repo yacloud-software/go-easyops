@@ -51,6 +51,9 @@ derive  a context with routing tags (routing criteria to route to specific insta
 if fallback is true, fallback to any service without tags if none is found (default was false)
 */
 func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallback bool) context.Context {
+	if cv == nil {
+		panic("cannot derive context from nil context")
+	}
 	t := time.Duration(10) * time.Second
 	cri := &rc.CTXRoutingTags{Tags: kv, FallbackToPlain: fallback}
 
@@ -68,9 +71,13 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 		cb.WithParentContext(cv)
 		nctx := cb.ContextWithAutoCancel()
 		if auth.GetSignedService(nctx) == nil && s != nil {
+			fmt.Printf("[go-easyops] context: %s\n", ctx.Context2String(nctx))
 			fmt.Printf("[go-easyops] Localstate: %#v\n", ctx.GetLocalState(nctx))
 			fmt.Printf("[go-easyops] WARNING derived context includes no service, but should\n")
 			return nil
+		}
+		if nctx == nil {
+			panic("no context")
 		}
 		return nctx
 
@@ -85,7 +92,11 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 	if err != nil {
 		panic(fmt.Sprintf("bad context: %s", err))
 	}
-	return cs.Context
+	nctx := cs.Context
+	if nctx == nil {
+		panic("no context")
+	}
+	return nctx
 }
 
 /*

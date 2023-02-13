@@ -5,6 +5,7 @@ import (
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/utils"
 	"time"
 )
 
@@ -12,7 +13,7 @@ const (
 	LOCALSTATENAME = "goeasysops_localstate"
 )
 
-// the local state, this is not transmitted across grpc boundaries.
+// the local state, this is not transmitted across grpc boundaries. The Localstate is queried by functions like GetUser(ctx) etc to determine the user who called us. The context metadata is not used for this purpose. In fact, metadata != localstate: localstate includes the services which called us as CallingService(). The metadata sets "us" to the CallingService()
 type LocalState interface {
 	CreatorService() *auth.SignedUser
 	CallingService() *auth.SignedUser
@@ -88,4 +89,25 @@ func Checksum(buf []byte) byte {
 		f = f + b
 	}
 	return f
+}
+
+// return "localstate" from a context. This is never "nil", but it is not guaranteed that the LocalState interface actually resolves details
+func GetLocalState(ctx context.Context) LocalState {
+	if ctx == nil {
+		panic("cannot get localstate from nil context")
+	}
+	v := ctx.Value(LOCALSTATENAME)
+	if v == nil {
+		if *debug {
+			utils.PrintStack("no localstate")
+		}
+		Debugf(ctx, "[go-easyops] context-builder warning, tried to extract localstate from context which is not a contextbuilder context")
+	}
+	res, ok := v.(LocalState)
+	if ok {
+		return res
+	}
+	Debugf(ctx, "could not get localstate from context (caller: %s)", utils.CallingFunction())
+	return newEmptyLocalState()
+
 }

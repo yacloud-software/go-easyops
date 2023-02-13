@@ -15,7 +15,7 @@ This package supports the following usecases:
 Furthermore, go-easyops in general will parse "latest" context version and "latest-1" context versions. That is so that functions such as auth.User(context) return the right thing wether or not called from a service that has been updated or from a service that is not yet on latest. The context version it generates is selected via cmdline switches.
 
 The context returned is ready to be used for outbound calls as-is.
-The context also includes a "value" which is only available locally (does not cross gRPC boundaries) but is used to cache stuff.
+The context also includes a "value" which is only available locally (does not cross gRPC boundaries) but is used to provide information from the context.
 
 Definition of CallingService: the LocalValue contains the service who called us. The context metadata contains this service definition (which in then is transmitted to downstream services)
 */
@@ -31,6 +31,7 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx/ctxv1"
+	"golang.conradwood.net/go-easyops/ctx/ctxv2"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/metadata"
@@ -48,39 +49,52 @@ var (
 
 // get a new contextbuilder
 func NewContextBuilder() shared.ContextBuilder {
-	return ctxv1.NewContextBuilder()
+	i := cmdline.GetContextBuilderVersion()
+	if i == 1 {
+		return ctxv1.NewContextBuilder()
+	} else if i == 2 {
+		return ctxv2.NewContextBuilder()
+	} else {
+		// hm....
+		return ctxv1.NewContextBuilder()
+	}
 }
 
 // return "localstate" from a context. This is never "nil", but it is not guaranteed that the LocalState interface actually resolves details
 func GetLocalState(ctx context.Context) shared.LocalState {
-	res := ctxv1.GetLocalState(ctx)
-	if res == nil {
-		if cmdline.ContextWithBuilder() {
-			shared.Debugf(ctx, "could not get localstate from context (caller: %s)\n", utils.CallingFunction())
-		}
-		return newEmptyLocalState()
+	return shared.GetLocalState(ctx)
+}
+
+// returns all "known" contextbuilders. we use this for received contexts to figure out which version it is
+func getAllContextBuilders() []shared.ContextBuilder {
+	return []shared.ContextBuilder{
+		ctxv1.NewContextBuilder(),
+		ctxv2.NewContextBuilder(),
 	}
-	return res
 }
 
 /*
-we receive a context from gRPC (e.g. in a unary interceptor). To use this context for outbount calls we need to copy the metadata, we also need to add a local callstate for the fancy_picker/balancer/dialer. This is what this function does.
+we receive a context from gRPC (e.g. in a unary interceptor). To use this context for outbound calls we need to copy the metadata, we also need to add a local callstate for the fancy_picker/balancer/dialer. This is what this function does.
 It is intented to convert any (supported) version of context into the current version of this package
 */
 func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) context.Context {
-	cb := NewContextBuilder()
-	octx, found := cb.Inbound2Outbound(in_ctx, local_service)
-	if found {
-		svc := common.VerifySignedUser(local_service)
-		svs := "[none]"
-		if svc != nil {
-			svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
+	for _, cb := range getAllContextBuilders() {
+		octx, found := cb.Inbound2Outbound(in_ctx, local_service)
+		if found {
+			svc := common.VerifySignedUser(local_service)
+			svs := "[none]"
+			if svc != nil {
+				svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
+			}
+			shared.Debugf(in_ctx, "converted inbound to outbound context (me.service=%s)", svs)
+			shared.Debugf(in_ctx, "New Context: %s", Context2String(octx))
+			if GetLocalState(octx) == nil {
+				panic("[go-easyops] no localstate for newly created context")
+			}
+			return octx
 		}
-		shared.Debugf(in_ctx, "converted inbound to outbound context (me.service=%s)\n", svs)
-		shared.Debugf(in_ctx, "New Context: %s\n", Context2String(octx))
-		return octx
 	}
-	shared.Debugf(in_ctx, "[go-easyops] could not parse inbound context!\n")
+	shared.Debugf(in_ctx, "[go-easyops] could not parse inbound context!")
 	return in_ctx
 }
 
@@ -98,15 +112,10 @@ func add_context_to_builder(cb shared.ContextBuilder, ctx context.Context) {
 	cb.WithSession(ls.Session())
 }
 
-func isEmptyLocalState(ls shared.LocalState) bool {
-	_, f := ls.(*emptyLocalState)
-	return f
-}
-
 // for debugging purposes we can convert a context to a human readable string
 func Context2String(ctx context.Context) string {
 	ls := GetLocalState(ctx)
-	if ls == nil || isEmptyLocalState(ls) {
+	if ls == nil || shared.IsEmptyLocalState(ls) {
 		return "[no localstate]"
 	}
 	if ls.User() != nil || ls.CallingService() != nil {
@@ -115,13 +124,16 @@ func Context2String(ctx context.Context) string {
 
 	md, ex := metadata.FromIncomingContext(ctx)
 	if !ex {
-		// no metadata at all
-		return fmt.Sprintf("no user, no service and no metadata")
+		md, ex = metadata.FromOutgoingContext(ctx)
+		if !ex {
+			// no metadata at all
+			return fmt.Sprintf("no localstate, no user, no service and no metadata (%#v)", ctx)
+		}
 	}
 	mdas, fd := md[ctxv1.METANAME]
 	if !fd || mdas == nil || len(mdas) != 1 {
 		// got metadata, but not our key
-		return fmt.Sprintf("no user, no service and metadata has not got our key")
+		return fmt.Sprintf("no user, no service and metadata has not got our key (%v)", mdas)
 	}
 	mds := mdas[0]
 	res := &rc.InMetadata{}
@@ -158,9 +170,9 @@ func IsSerialisedByBuilder(buf []byte) bool {
 			return true
 		}
 	*/
-	shared.Debugf(context.Background(), "[go-easyops] Not a ctxbuilder context (%s)\n", utils.HexStr(buf))
-	//	shared.Debugf(ctx,"a: %s\n", utils.HexStr(b))
-	//	shared.Debugf(ctx,"b: %s\n", utils.HexStr(buf[:20]))
+	shared.Debugf(context.Background(), "[go-easyops] Not a ctxbuilder context (%s)", utils.HexStr(buf))
+	//	shared.Debugf(ctx,"a: %s", utils.HexStr(b))
+	//	shared.Debugf(ctx,"b: %s", utils.HexStr(buf[:20]))
 	return false
 }
 
@@ -224,7 +236,7 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	if len(buf) < 2 {
 		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
 	}
-	shared.Debugf(context.Background(), "Deserialising %s\n", utils.HexStr(buf))
+	shared.Debugf(context.Background(), "Deserialising %s", utils.HexStr(buf))
 	tbuf := buf[len(SER_PREFIX_BYT):]
 	s := string(buf)
 	if strings.HasPrefix(s, SER_PREFIX_STR) {
@@ -241,14 +253,14 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	tbuf = tbuf[2:]
 	c := shared.Checksum(tbuf)
 	if c != chk {
-		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)\n", c, chk)
+		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)", c, chk)
 	}
 	var err error
 	var res context.Context
 	if version == 1 {
 		res, err = ctxv1.DeserialiseWithTimeout(t, tbuf)
 	} else {
-		shared.Debugf(context.Background(), "a: %s\n", utils.HexStr(buf))
+		shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
 		utils.PrintStack("foo")
 		return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
 	}

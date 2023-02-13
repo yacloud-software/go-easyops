@@ -6,6 +6,10 @@ import (
 	"os"
 )
 
+const (
+	CONTEXT_VERSION = 2
+)
+
 var (
 	run_server = flag.Bool("server", false, "if true run server, othwerise client")
 )

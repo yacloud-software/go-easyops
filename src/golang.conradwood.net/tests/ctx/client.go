@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	au "golang.conradwood.net/apis/auth"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/cmdline"
@@ -12,20 +13,27 @@ import (
 	"time"
 )
 
-const (
-	CONTEXT_VERSION = 1
-)
-
 var (
-	timeout = time.Duration(10) * time.Second
+	timeout    = time.Duration(10) * time.Second
+	me_user    *au.SignedUser
+	me_service *au.SignedUser
 )
 
 func client() {
 	fmt.Printf("testing context...\n")
+	ctx1 := authremote.Context()
+	fmt.Printf("Default context:\n")
+	printContext(ctx1)
+	me_user = auth.GetSignedUser(ctx1)
+	me_service = auth.GetSignedService(ctx1)
+	if me_user == nil && me_service == nil {
+		fmt.Printf("failed no service and no user in context. cannot proceed\n")
+		os.Exit(10)
+	}
 
 	// check simple, new functions.
 	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
-	ctx1 := authremote.Context()
+	ctx1 = authremote.Context()
 	s, err := ctx.SerialiseContextToString(ctx1)
 	utils.Bail("(1) failed to serialise context to string", err)
 	fmt.Printf("Serialised to: %s\n", utils.HexStr([]byte(s)))
@@ -37,9 +45,6 @@ func client() {
 	utils.Bail("(3) failed to deserialise context to string", err)
 
 	checkFile("/tmp/context.env")
-	ctx1 = authremote.Context()
-	fmt.Printf("Default context:\n")
-	printContext(ctx1)
 	b, err := auth.SerialiseContext(ctx1)
 	utils.Bail("failed to serialise", err)
 	//fmt.Println(utils.Hexdump("Context: ", b))

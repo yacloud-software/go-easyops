@@ -79,6 +79,9 @@ func sleepTest2(dur time.Duration) {
 	sl_seecs := dur.Seconds() - 2.0
 	ctx := authremote.ContextWithTimeout(dur)
 	ctx = authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
+	if ctx == nil {
+		panic(fmt.Sprintf("no context (builderversion=%d)", cmdline.GetContextBuilderVersion()))
+	}
 	_, err := ge.GetCtxTestClient().Sleep(ctx, &ge.SleepRequest{Seconds: sl_seecs})
 	t.Error(err)
 	t.Done()

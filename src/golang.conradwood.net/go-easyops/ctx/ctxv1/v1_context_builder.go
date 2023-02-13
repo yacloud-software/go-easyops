@@ -33,6 +33,7 @@ type v1ContextBuilder struct {
 	service      *auth.SignedUser
 	session      *auth.SignedSession
 	routing_tags *ge.CTXRoutingTags
+	ls           *v1LocalState
 }
 
 /*
@@ -74,8 +75,8 @@ func (c *v1ContextBuilder) Context() (context.Context, context.CancelFunc) {
 	} else {
 		ctx, cnc = context.WithCancel(octx)
 	}
-	ls := c.newLocalState(cs)
-	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, ls)
+	c.ls = c.newLocalState(cs)
+	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, c.ls)
 	newmd := metadata.Pairs(METANAME, cs.MetadataValue())
 	ctx = metadata.NewOutgoingContext(ctx, newmd)
 
@@ -152,6 +153,7 @@ func (c *v1ContextBuilder) newLocalState(cs *rpc.CallState) *v1LocalState {
 		routingtags:    c.routing_tags,
 		callingservice: cs.Metadata.SignedService,
 		session:        c.session,
+		requestid:      c.requestid,
 	}
 }
 func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool) {
@@ -193,7 +195,7 @@ func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.Signe
 	c.WithParentContext(ctx)
 	c.routing_tags = rpc.Tags_rpc_to_ge(res.RoutingTags)
 	out_ctx, _ := c.Context()
-	GetLocalState(out_ctx).callingservice = cservice
+	c.ls.callingservice = cservice
 
 	return out_ctx, true
 }

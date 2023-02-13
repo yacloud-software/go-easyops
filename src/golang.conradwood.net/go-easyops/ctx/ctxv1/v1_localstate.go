@@ -1,10 +1,8 @@
 package ctxv1
 
 import (
-	"context"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
-	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/rpc"
 	"time"
 )
@@ -17,22 +15,9 @@ type v1LocalState struct {
 	routingtags            *ge.CTXRoutingTags
 	started                time.Time
 	session                *auth.SignedSession
+	requestid              string
 }
 
-func GetLocalState(ctx context.Context) *v1LocalState {
-	if ctx == nil {
-		panic("cannot get localstate from nil context")
-	}
-	v := ctx.Value(shared.LOCALSTATENAME)
-	if v == nil {
-		shared.Debugf(ctx, "[go-easyops] ctxv1 warning, tried to extract localstate from context which is not a v1 context\n")
-	}
-	res, ok := v.(*v1LocalState)
-	if !ok {
-		return nil
-	}
-	return res
-}
 func (ls *v1LocalState) CreatorService() *auth.SignedUser {
 	//v1 does not have a creator service
 	return nil
@@ -62,7 +47,10 @@ func (ls *v1LocalState) Session() *auth.SignedSession {
 	return ls.session
 }
 func (ls *v1LocalState) RequestID() string {
-	return "v1reqid"
+	if ls == nil {
+		return ""
+	}
+	return ls.requestid
 }
 func (ls *v1LocalState) RoutingTags() *ge.CTXRoutingTags {
 	if ls == nil {
