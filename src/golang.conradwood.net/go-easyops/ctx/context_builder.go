@@ -27,6 +27,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
+	ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
@@ -66,10 +67,10 @@ func GetLocalState(ctx context.Context) shared.LocalState {
 }
 
 // returns all "known" contextbuilders. we use this for received contexts to figure out which version it is
-func getAllContextBuilders() []shared.ContextBuilder {
-	return []shared.ContextBuilder{
-		ctxv1.NewContextBuilder(),
-		ctxv2.NewContextBuilder(),
+func getAllContextBuilders() map[int]shared.ContextBuilder {
+	return map[int]shared.ContextBuilder{
+		1: ctxv1.NewContextBuilder(),
+		2: ctxv2.NewContextBuilder(),
 	}
 }
 
@@ -78,7 +79,7 @@ we receive a context from gRPC (e.g. in a unary interceptor). To use this contex
 It is intented to convert any (supported) version of context into the current version of this package
 */
 func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) context.Context {
-	for _, cb := range getAllContextBuilders() {
+	for version, cb := range getAllContextBuilders() {
 		octx, found := cb.Inbound2Outbound(in_ctx, local_service)
 		if found {
 			svc := common.VerifySignedUser(local_service)
@@ -86,10 +87,12 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 			if svc != nil {
 				svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
 			}
-			shared.Debugf(in_ctx, "converted inbound to outbound context (me.service=%s)", svs)
+			shared.Debugf(in_ctx, "converted inbound (version=%d) to outbound context (me.service=%s)", version, svs)
 			shared.Debugf(in_ctx, "New Context: %s", Context2String(octx))
-			if GetLocalState(octx) == nil {
-				panic("[go-easyops] no localstate for newly created context")
+			ls := GetLocalState(octx)
+			if ls == nil || shared.IsEmptyLocalState(ls) {
+				utils.PrintStack("[go-easyops] no localstate for newly created context")
+				return nil
 			}
 			return octx
 		}
@@ -112,36 +115,68 @@ func add_context_to_builder(cb shared.ContextBuilder, ctx context.Context) {
 	cb.WithSession(ls.Session())
 }
 
+// md,source,version -> metadata source: 0=none,1=inbound,2=outbound
+func getMetadataFromContext(ctx context.Context) (string, int, int) {
+	source := 1
+	md, ex := metadata.FromIncomingContext(ctx)
+	if !ex {
+		source = 2
+		md, ex = metadata.FromOutgoingContext(ctx)
+		if !ex {
+			// no metadata at all
+			return "", 0, 0
+		}
+	}
+
+	mdas, fd := md[ctxv2.METANAME]
+	if fd {
+		if len(mdas) != 1 {
+			return "", source, 2
+		}
+		return mdas[0], source, 2
+	}
+
+	mdas, fd = md[ctxv1.METANAME]
+	if fd {
+		if len(mdas) != 1 {
+			return "", source, 1
+		}
+		return mdas[0], source, 1
+	}
+	return "", 0, 0
+}
+
 // for debugging purposes we can convert a context to a human readable string
 func Context2String(ctx context.Context) string {
+	md, src, version := getMetadataFromContext(ctx)
+
 	ls := GetLocalState(ctx)
 	if ls == nil || shared.IsEmptyLocalState(ls) {
 		return "[no localstate]"
 	}
 	if ls.User() != nil || ls.CallingService() != nil {
-		return fmt.Sprintf("Localstate (userid=%s,callingservice=%s): %#v", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), ls)
+		return fmt.Sprintf("Localstate[userid=%s,callingservice=%s] md[src=%d,version=%d]", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), src, version)
 	}
-
-	md, ex := metadata.FromIncomingContext(ctx)
-	if !ex {
-		md, ex = metadata.FromOutgoingContext(ctx)
-		if !ex {
-			// no metadata at all
-			return fmt.Sprintf("no localstate, no user, no service and no metadata (%#v)", ctx)
+	if src == 0 {
+		return fmt.Sprintf("no localstate, no metadata (%v)\n", ctx)
+	}
+	if version == 2 {
+		res := &ge.InContext{}
+		err := utils.Unmarshal(md, res)
+		if err != nil {
+			return fmt.Sprintf("v2 %d metadata invalid (%s)", src, err)
 		}
+		return fmt.Sprintf("v2 (%d) metadata: %#v %#v\n,ls=[%s]", src, res.ImCtx, res.MCtx, shared.LocalState2String(ls))
+	} else if version == 1 {
+		res := &rc.InMetadata{}
+		err := utils.Unmarshal(md, res)
+		if err != nil {
+			return fmt.Sprintf("v1 %d metadata invalid (%s)", src, err)
+		}
+		return fmt.Sprintf("v1  metadata: %#v\n", res)
 	}
-	mdas, fd := md[ctxv1.METANAME]
-	if !fd || mdas == nil || len(mdas) != 1 {
-		// got metadata, but not our key
-		return fmt.Sprintf("no user, no service and metadata has not got our key (%v)", mdas)
-	}
-	mds := mdas[0]
-	res := &rc.InMetadata{}
-	err := utils.Unmarshal(mds, res)
-	if err != nil {
-		return fmt.Sprintf("no user, no service, metadata invalid (%s)", err)
-	}
-	return fmt.Sprintf("no user, no service, metadata: %#v\n", res)
+	return fmt.Sprintf("Unsupported metadata version %d\n", version)
+
 }
 
 // check if 'buf' contains a context, serialised by the builder. a 'true' result implies that it can be deserialised from this package

@@ -6,9 +6,11 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/utils"
+	"html/template"
 	"io"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -39,6 +41,8 @@ func NewTest(format string, args ...interface{}) *test {
 		builder_start: cmdline.GetContextBuilderVersion(),
 		stdout_buf:    &bytes.Buffer{},
 	}
+	t.builder_error = t.builder_start
+	t.dc_error = t.dc_start
 	if old_stdout == nil {
 		old_stdout = os.Stdout
 	}
@@ -97,7 +101,16 @@ func PrintResult() {
 	failed := 0
 	succeeded := 0
 	sort.Slice(tests, func(i, j int) bool {
-		return tests[i].prefix < tests[j].prefix
+		if tests[i].prefix != tests[j].prefix {
+			return tests[i].prefix < tests[j].prefix
+		}
+		if tests[i].builder_start != tests[j].builder_start {
+			return tests[i].builder_start < tests[j].builder_start
+		}
+		if tests[i].builder_error != tests[j].builder_error {
+			return tests[i].builder_error < tests[j].builder_error
+		}
+		return tests[i].id < tests[j].id
 	})
 	var failed_tests []*test
 	for _, t := range tests {
@@ -166,4 +179,18 @@ func (t *test) ID() int {
 }
 func (t *test) Name() string {
 	return t.prefix
+}
+func (t *test) HtmlErrorDetails() template.HTML {
+	lines := strings.Split(t.Getstdout(), "\n")
+	res := ""
+	for _, l := range lines {
+		res = res + l + "<br/>"
+	}
+	return template.HTML(res)
+}
+func (t *test) DCStart() bool {
+	return t.dc_start
+}
+func (t *test) DCError() bool {
+	return t.dc_error
 }

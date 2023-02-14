@@ -3,6 +3,7 @@ package ctxv1
 import (
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/rpc"
 	"time"
 )
@@ -18,6 +19,9 @@ type v1LocalState struct {
 	requestid              string
 }
 
+func assertV1LocalStateImplementsInterface() shared.LocalState {
+	return &v1LocalState{}
+}
 func (ls *v1LocalState) CreatorService() *auth.SignedUser {
 	//v1 does not have a creator service
 	return nil
@@ -57,4 +61,7 @@ func (ls *v1LocalState) RoutingTags() *ge.CTXRoutingTags {
 		return nil
 	}
 	return ls.routingtags
+}
+func (ls *v1LocalState) Info() string {
+	return "v1localstate"
 }

@@ -13,8 +13,8 @@ import (
 // return current and alternative
 func cur_versions() (int, int) {
 	cur := cmdline.GetContextBuilderVersion()
-	alt := 0
-	if cur == 0 {
+	alt := OLD_CONTEXT_VERSION
+	if cur == OLD_CONTEXT_VERSION {
 		alt = NEW_CONTEXT_VERSION
 	}
 	return cur, alt

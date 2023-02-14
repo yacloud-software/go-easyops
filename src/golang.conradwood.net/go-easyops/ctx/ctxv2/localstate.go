@@ -7,22 +7,32 @@ import (
 )
 
 type localState struct {
-	builder *contextBuilder
+	this_is_v2_local_state string
+	builder                *contextBuilder
+	callingservice         *auth.SignedUser // who called us (different from contextbuilder, which contains this service's id)
 }
 
 // this function only serves to assert that localState satisfies its interface (compile-error otherwise)
 func assert_localstate_interface() shared.LocalState {
-	return &localState{}
+	return &localState{this_is_v2_local_state: "v2_localstate"}
 }
 func (ls *localState) CreatorService() *auth.SignedUser {
-	//v1 does not have a creator service
-	return nil
+	if ls == nil {
+		return nil
+	}
+	return ls.builder.creatorservice
 }
 func (ls *localState) CallingService() *auth.SignedUser {
 	if ls == nil {
 		return nil
 	}
-	return ls.builder.creatorservice
+	return ls.callingservice
+}
+func (ls *localState) Info() string {
+	if ls.builder == nil {
+		return "nobuilder"
+	}
+	return "gotbuilder"
 }
 func (ls *localState) Debug() bool {
 	return false

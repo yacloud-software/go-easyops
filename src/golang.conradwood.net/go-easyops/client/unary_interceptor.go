@@ -22,7 +22,7 @@ import (
 // called for each outbound rpc
 func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 	if ctx == nil {
-		panic("missing context")
+		return fmt.Errorf("missing context, will not make outbound call without context")
 	}
 	pp.ClientRpcEntered()
 	defer pp.ClientRpcDone()
@@ -41,9 +41,13 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 	}
 	if !isKnownNotAuthRPCs(s, m) {
 		ls := pctx.GetLocalState(ctx)
-		if ls.CallingService() == nil && tokens.GetServiceTokenParameter() != "" {
+		// technically.. this is _wrong_. the CallingService() is the service which called us.
+		if ls.CallingService() == nil && ls.User() == nil {
 			utils.PrintStack("[go-easyops] outbound context issue")
-			fmt.Printf("[go-easyops] WARNING calling another service (%s.%s) with a context without calling service information\n", s, m)
+			fmt.Printf("[go-easyops] WARNING calling another service (%s.%s) with a context without authentication (%s)\n", s, m, pctx.Context2String(ctx))
+		} else if ls.CallingService() == nil && tokens.GetServiceTokenParameter() != "" {
+			utils.PrintStack("[go-easyops] outbound context issue")
+			fmt.Printf("[go-easyops] WARNING calling another service (%s.%s) with a context without calling service information (%s)\n", s, m, pctx.Context2String(ctx))
 		}
 		/*
 			_, ex := metadata.FromOutgoingContext(ctx)

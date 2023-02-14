@@ -21,19 +21,32 @@ var (
 
 func client() {
 	fmt.Printf("testing context...\n")
-	ctx1 := authremote.Context()
-	fmt.Printf("Default context:\n")
-	printContext(ctx1)
-	me_user = auth.GetSignedUser(ctx1)
-	me_service = auth.GetSignedService(ctx1)
+
+	// first check that new and old context carry the same user/service information once created.
+	ctx_def := authremote.Context()
+	fmt.Printf("context with version %d:\n", cmdline.GetContextBuilderVersion())
+	printContext(ctx_def)
+	me_user = auth.GetSignedUser(ctx_def)
+	me_service = auth.GetSignedService(ctx_def)
 	if me_user == nil && me_service == nil {
 		fmt.Printf("failed no service and no user in context. cannot proceed\n")
 		os.Exit(10)
 	}
 
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
+	nctx := authremote.Context()
+	fmt.Printf("context with version %d:\n", cmdline.GetContextBuilderVersion())
+	printContext(nctx)
+	utils.Bail("(1) ctx assertion", AssertEqualContexts(ctx_def, nctx))
+
+	m := map[string]string{"foo": "bar"}
+	nctx_derived := authremote.DerivedContextWithRouting(nctx, m, true)
+	//	printContext(nctx)
+	utils.Bail("(2) ctx assertion", AssertEqualContexts(nctx, nctx_derived))
+
 	// check simple, new functions.
 	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
-	ctx1 = authremote.Context()
+	ctx1 := authremote.Context()
 	s, err := ctx.SerialiseContextToString(ctx1)
 	utils.Bail("(1) failed to serialise context to string", err)
 	fmt.Printf("Serialised to: %s\n", utils.HexStr([]byte(s)))
@@ -119,6 +132,7 @@ func printContext(ictx context.Context) {
 	s := auth.GetService(ictx)
 	fmt.Printf("User   : %s\n", auth.UserIDString(u))
 	fmt.Printf("Service: %s\n", auth.UserIDString(s))
+	fmt.Printf("ctx2str: %s\n", ctx.Context2String(ictx))
 }
 func mustBeSame(ctx1, ctx2 context.Context) {
 	u1 := auth.GetUser(ctx1)

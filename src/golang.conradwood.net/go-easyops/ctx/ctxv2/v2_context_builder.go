@@ -70,7 +70,7 @@ func (c *contextBuilder) contextWithLocalState() (context.Context, context.Cance
 	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, ls)
 	newmd := metadata.Pairs(METANAME, b)
 	ctx = metadata.NewOutgoingContext(ctx, newmd)
-
+	ls.callingservice = c.service
 	return ctx, cf, ls
 }
 
@@ -193,7 +193,7 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	cb.WithParentContext(ctx)
 	ctx, _, ls := cb.contextWithLocalState() // always has a parent context, which means it needs no auto-cancel, uses parent cancelfunc
 	// localstate has a different calling service (the original one)
-	ls.builder.service = res.MCtx.CallingService
+	ls.callingservice = res.MCtx.CallingService
 	return ctx, true
 }
 func NewContextBuilder() *contextBuilder {

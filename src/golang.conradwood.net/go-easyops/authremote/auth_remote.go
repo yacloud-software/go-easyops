@@ -73,8 +73,8 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 		if auth.GetSignedService(nctx) == nil && s != nil {
 			fmt.Printf("[go-easyops] context: %s\n", ctx.Context2String(nctx))
 			fmt.Printf("[go-easyops] Localstate: %#v\n", ctx.GetLocalState(nctx))
-			fmt.Printf("[go-easyops] WARNING derived context includes no service, but should\n")
-			return nil
+			fmt.Printf("[go-easyops] WARNING derived context (v=%d) includes no service, but should\n", cmdline.GetContextBuilderVersion())
+			//return nil
 		}
 		if nctx == nil {
 			panic("no context")

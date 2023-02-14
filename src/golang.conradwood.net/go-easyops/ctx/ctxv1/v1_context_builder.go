@@ -189,7 +189,7 @@ func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.Signe
 	cservice := res.SignedService
 	// now create new "outbound" context
 	c.requestid = res.RequestID
-	c.service = svc
+	c.WithCallingService(svc)
 	c.WithUser(res.SignedUser)
 	c.WithSession(res.SignedSession)
 	c.WithParentContext(ctx)

@@ -25,3 +25,4 @@ func (e *emptyLocalState) User() *auth.SignedUser           { return nil }
 func (e *emptyLocalState) Session() *auth.SignedSession     { return nil }
 func (e *emptyLocalState) RequestID() string                { return "" }
 func (e *emptyLocalState) RoutingTags() *ge.CTXRoutingTags  { return nil }
+func (e *emptyLocalState) Info() string                     { return "EMPTY_LOCALSTATE" }

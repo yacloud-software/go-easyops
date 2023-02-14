@@ -2,10 +2,12 @@ package shared
 
 import (
 	"context"
+	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
+	"reflect"
 	"time"
 )
 
@@ -16,13 +18,14 @@ const (
 // the local state, this is not transmitted across grpc boundaries. The Localstate is queried by functions like GetUser(ctx) etc to determine the user who called us. The context metadata is not used for this purpose. In fact, metadata != localstate: localstate includes the services which called us as CallingService(). The metadata sets "us" to the CallingService()
 type LocalState interface {
 	CreatorService() *auth.SignedUser
-	CallingService() *auth.SignedUser
+	CallingService() *auth.SignedUser // this is the service that called us
 	Debug() bool
 	Trace() bool
 	User() *auth.SignedUser
 	Session() *auth.SignedSession
 	RequestID() string
 	RoutingTags() *ge.CTXRoutingTags
+	Info() string // return (debug) information about this localstate
 }
 
 type ContextBuilder interface {
@@ -110,4 +113,15 @@ func GetLocalState(ctx context.Context) LocalState {
 	Debugf(ctx, "could not get localstate from context (caller: %s)", utils.CallingFunction())
 	return newEmptyLocalState()
 
+}
+
+func isNil(v interface{}) bool {
+	return v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil())
+}
+func LocalState2String(ls LocalState) string {
+	if isNil(ls) {
+		return fmt.Sprintf("NIL")
+	}
+
+	return fmt.Sprintf("requestid=\"%s\",user=%s,callingservice=%s,creatingservice=%s,info=%s", ls.RequestID(), PrettyUser(ls.User()), PrettyUser(ls.CallingService()), PrettyUser(ls.CreatorService()), ls.Info())
 }
