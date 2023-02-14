@@ -32,7 +32,7 @@ func client() {
 	}
 
 	// check simple, new functions.
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	ctx1 = authremote.Context()
 	s, err := ctx.SerialiseContextToString(ctx1)
 	utils.Bail("(1) failed to serialise context to string", err)
@@ -52,34 +52,34 @@ func client() {
 	utils.Bail("failed to deserialise", err)
 	mustBeSame(ctx1, ctx2)
 
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	fmt.Printf("Checking 'derived' context with routing...\n")
 	ctx1 = authremote.Context()
 	ctx2 = authremote.DerivedContextWithRouting(ctx1, make(map[string]string), true)
 	mustBeSame(ctx1, ctx2)
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	fmt.Printf("Checking 'derived' context with routing...\n")
 	ctx1 = authremote.Context()
 	ctx2 = authremote.DerivedContextWithRouting(ctx1, make(map[string]string), true)
 	mustBeSame(ctx1, ctx2)
 
 	// now check all the various methods of deserialising
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	ctx1 = authremote.Context()
 	checkSer(ctx1)
 
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	ctx1 = authremote.Context()
 	checkSer(ctx1)
 
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	ctx1 = authremote.Context()
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	checkSer(ctx1)
 
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	ctx1 = authremote.Context()
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	checkSer(ctx1)
 
 }

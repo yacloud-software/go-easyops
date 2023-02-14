@@ -15,7 +15,7 @@ func cur_versions() (int, int) {
 	cur := cmdline.GetContextBuilderVersion()
 	alt := 0
 	if cur == 0 {
-		alt = CONTEXT_VERSION
+		alt = NEW_CONTEXT_VERSION
 	}
 	return cur, alt
 }

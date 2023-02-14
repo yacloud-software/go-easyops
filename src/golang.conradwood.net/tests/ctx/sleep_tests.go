@@ -14,7 +14,7 @@ var (
 )
 
 func sleepTests() {
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest1(time.Duration(11) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -23,7 +23,7 @@ func sleepTests() {
 	go sleepTest1(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest1(time.Duration(11) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -32,7 +32,7 @@ func sleepTests() {
 	go sleepTest1(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -41,7 +41,7 @@ func sleepTests() {
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
@@ -50,12 +50,12 @@ func sleepTests() {
 	go sleepTest2(time.Duration(20) * time.Second)
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextBuilderVersion(CONTEXT_VERSION)
+	cmdline.SetContextBuilderVersion(NEW_CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest3()
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters
 
-	cmdline.SetContextBuilderVersion(0)
+	cmdline.SetContextBuilderVersion(OLD_CONTEXT_VERSION)
 	sleep_wg.Add(1)
 	go sleepTest3()
 	time.Sleep(time.Duration(1) * time.Second) // give time to start test with global parameters

@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	CONTEXT_VERSION = 2
+	NEW_CONTEXT_VERSION = 2
+	OLD_CONTEXT_VERSION = 1
 )
 
 var (
