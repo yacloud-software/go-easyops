@@ -104,6 +104,7 @@ service CtxTest {
   rpc TestFork(RequiredContext) returns (common.Void);
   rpc TestDeSer(RequiredContext)returns(SerialisedContext);
   rpc TestStream(RequiredContext)returns(stream common.Void);
+  rpc TestUnary(RequiredContext)returns(common.Void);
   rpc CallUnaryFromStream(RequiredContext)returns(stream common.Void);
   rpc CallUnaryFromUnary(RequiredContext)returns(common.Void);
   rpc CallStreamFromStream(RequiredContext)returns(stream common.Void);
