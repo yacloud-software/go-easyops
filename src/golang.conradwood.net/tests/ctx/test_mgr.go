@@ -81,7 +81,7 @@ func (t *test) Error(err error) {
 	t.err = err
 	fmt.Printf("%s Failed (%s)\n", t.Prefix(), err)
 }
-func (t *test) getstdout() string {
+func (t *test) Getstdout() string {
 	return t.stdout_buf.String()
 }
 func (t *test) Done() {
@@ -111,13 +111,13 @@ func PrintResult() {
 	if failed > 0 {
 		fmt.Printf("List of failed tests:\n")
 		for _, t := range failed_tests {
-			fmt.Println(t.getstdout())
+			fmt.Println(t.Getstdout())
 		}
 		ta := utils.Table{}
 		//		ta.SetMaxLen(5, 30)
 		ta.AddHeaders("name", "dc (start)", "dc (error)", "builder (start)", "builder (error)", "error", "long")
 		for _, t := range failed_tests {
-			s := utils.ErrorString(t.err) + "\n" + t.getstdout()
+			s := utils.ErrorString(t.err) + "\n" + t.Getstdout()
 			ge := errors.UnmarshalError(t.err)
 			se := ge.MultilineError()
 			ta.AddString(t.prefix)

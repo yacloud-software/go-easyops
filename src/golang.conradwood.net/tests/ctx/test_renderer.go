@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	//	"fmt"
 	"golang.conradwood.net/go-easyops/utils"
 	"html/template"
+	"os"
 )
 
 const (
@@ -16,6 +18,9 @@ const (
 <td> {{ .BuilderStart }} </td>
 <td> {{ .BuilderError }} </td>
 <td> {{ .GetError }} </td>
+</tr>
+<tr>
+<td colspan="5"> {{ .Getstdout }}</td>
 </tr>
 {{ end }}
 </table>
@@ -46,4 +51,21 @@ func render_tests_to_html(tests []*test) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+func testrenderer_rendertest() {
+	ts := []*test{
+		NewTest("foo1"),
+	}
+	t := NewTest("foo2")
+	t.id = 10
+	t.stdout_buf = &bytes.Buffer{}
+	t.stdout_buf.Write([]byte(`there is some stuff to see here
+but not too much
+`))
+	ts = append(ts, t)
+	for _, t := range ts {
+		t.Done()
+	}
+	PrintResult()
+	os.Exit(0)
 }
