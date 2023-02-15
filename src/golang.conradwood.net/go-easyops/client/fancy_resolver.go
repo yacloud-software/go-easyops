@@ -81,7 +81,7 @@ func (f *FancyResolverBuilder) Build(target resolver.Target, cc resolver.ClientC
 	}
 	var registry string
 	if !strings.Contains(target.Endpoint(), "@") {
-		panic(fmt.Sprintf("Invalid url - no registry in resolver. is \"%s\", missing @host:ip", target.Endpoint))
+		panic(fmt.Sprintf("Invalid url - no registry in resolver. is \"%s\", missing @host:ip", target.Endpoint()))
 	}
 	rs := strings.Split(target.Endpoint(), "@")
 	registry = rs[len(rs)-1]
