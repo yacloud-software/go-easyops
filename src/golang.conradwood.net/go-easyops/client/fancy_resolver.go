@@ -80,10 +80,10 @@ func (f *FancyResolverBuilder) Build(target resolver.Target, cc resolver.ClientC
 		panic("no target")
 	}
 	var registry string
-	if !strings.Contains(target.Endpoint, "@") {
+	if !strings.Contains(target.Endpoint(), "@") {
 		panic(fmt.Sprintf("Invalid url - no registry in resolver. is \"%s\", missing @host:ip", target.Endpoint))
 	}
-	rs := strings.Split(target.Endpoint, "@")
+	rs := strings.Split(target.Endpoint(), "@")
 	registry = rs[len(rs)-1]
 	res := &FancyResolver{cc: cc, target: target.Authority, registry: registry}
 	fancyPrintf(res, "fancy_resolver(): Request to build resolver for %#v\n", target)
@@ -208,14 +208,14 @@ func (f *FancyResolver) queryForInstances() ([]*pb.Target, error) {
 }
 
 /*
-func hasGRPC(r *pb.Registration) bool {
-	for _, a := range r.Target.ApiType {
-		if a == pb.Apitype_grpc {
-			return true
+	func hasGRPC(r *pb.Registration) bool {
+		for _, a := range r.Target.ApiType {
+			if a == pb.Apitype_grpc {
+				return true
+			}
 		}
+		return false
 	}
-	return false
-}
 */
 func getRegistryClient(registryAddress string) (pb.RegistryClient, error) {
 	r := registryclients[registryAddress]

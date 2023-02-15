@@ -30,8 +30,8 @@ type FancyBuilder struct {
 
 // Build creates a new balancer for the (new) ClientConn.
 func (f *FancyBuilder) Build(cc balancer.ClientConn, opts balancer.BuildOptions) balancer.Balancer {
-	fancyPrintf(f, "Building Balancer for %s\n", opts.Target.Endpoint)
-	fal := &FancyAddressList{Name: opts.Target.Endpoint}
+	fancyPrintf(f, "Building Balancer for %s\n", opts.Target.Endpoint())
+	fal := &FancyAddressList{Name: opts.Target.Endpoint()}
 	cc.UpdateState(balancer.State{
 		ConnectivityState: connectivity.Ready,
 		Picker:            &FancyPicker{addresslist: fal}, // not failing - initially we wait
