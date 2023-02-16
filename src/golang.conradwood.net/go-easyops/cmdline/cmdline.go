@@ -27,7 +27,7 @@ var (
 	manreg            = ""
 	stdalone          = flag.Bool("ge_standalone", false, "if true, do not use a registry, just run stuff standlone")
 	//	context_with_builder   = flag.Bool("ge_context_with_builder", true, "a new (experimental) context messaging method")
-	context_build_version  = flag.Int("ge_context_builder_version", 1, "the version to create by the context builder (0=do not use context builder)")
+	context_build_version  = flag.Int("ge_context_builder_version", 2, "the version to create by the context builder (0=do not use context builder)")
 	overridden_env_context = ""
 )
 
