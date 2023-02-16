@@ -39,7 +39,7 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 	if err != nil {
 		fmt.Printf("[go-easyops] invalid fqdn method: \"%s\": %s\n", method, err)
 	}
-	if !isKnownNotAuthRPCs(s, m) {
+	if *debug_rpc_client && !isKnownNotAuthRPCs(s, m) {
 		ls := pctx.GetLocalState(ctx)
 		// technically.. this is _wrong_. the CallingService() is the service which called us.
 		if ls.CallingService() == nil && ls.User() == nil {
