@@ -17,6 +17,10 @@ import (
 	"time"
 )
 
+const (
+	add_serialised_context = false
+)
+
 var (
 	cmdLock    sync.Mutex
 	curCmd     string
@@ -28,6 +32,7 @@ type linux struct {
 	Runtime          time.Duration
 	AllowConcurrency bool
 	ctx              context.Context
+	context_set      bool // if user-supplied context
 	envs             []string
 }
 
@@ -43,17 +48,22 @@ type Linux interface {
 func NewWithContext(ctx context.Context) Linux {
 	l := New()
 	ln := l.(*linux)
+	ln.context_set = true
 	ln.ctx = ctx
 	return l
 }
 func New() Linux {
-	cb := ctx.NewContextBuilder()
 	res := &linux{
 		Runtime:          *maxRuntime,
 		AllowConcurrency: false,
-		ctx:              cb.ContextWithAutoCancel(),
 	}
+	res.recalc_context_from_timeout()
 	return res
+}
+func (l *linux) recalc_context_from_timeout() {
+	cb := ctx.NewContextBuilder()
+	cb.WithTimeout(l.Runtime)
+	l.ctx = cb.ContextWithAutoCancel()
 }
 
 // execute a command...
@@ -87,7 +97,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	}
 	// execute
 	if *LogExe {
-		fmt.Printf("Executing %s\n", curCmd)
+		fmt.Printf("[go-easyops] preparing to execute command %s\n", curCmd)
 	}
 	c := exec.CommandContext(l.ctx, cmd[0], cmd[1:]...)
 	if dir != "" {
@@ -120,18 +130,30 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) 
 		<-timer1.C
 		if running {
 			if c.Process == nil {
-				fmt.Printf("[go-easyops] no process to kill after %0.2fs", timeout.Seconds())
+				fmt.Printf("[go-easyops] no process to kill after %0.2fs\n", timeout.Seconds())
+				return
+			}
+			if !running {
 				return
 			}
 			c.Process.Kill()
 			killed = true
+			if *LogExe {
+				fmt.Printf("[go-easyops] process killed after %0.2fs\n", timeout.Seconds())
+			}
 		}
 	}()
 	// racecondition - timer might expire between
 	// setting flag and starting process.
 	// (if timer is really short)
 	running = true
+	if *LogExe {
+		fmt.Printf("[go-easyops] executing command %s (timeout=%0.2fs)\n", curCmd, timeout.Seconds())
+	}
 	b, err := c.CombinedOutput()
+	if *LogExe {
+		fmt.Printf("[go-easyops] process terminated\n")
+	}
 	running = false
 	if killed {
 		err = fmt.Errorf("Process killed after %0.2f seconds", timeout.Seconds())
@@ -149,6 +171,9 @@ func (l *linux) SetEnvironment(sx []string) {
 }
 func (l *linux) SetMaxRuntime(d time.Duration) {
 	l.Runtime = d
+	if !l.context_set {
+		l.recalc_context_from_timeout()
+	}
 }
 func (l *linux) SetAllowConcurrency(b bool) {
 	l.AllowConcurrency = b
@@ -156,19 +181,20 @@ func (l *linux) SetAllowConcurrency(b bool) {
 
 // add context to environment
 func (l *linux) env(c *exec.Cmd) error {
-	nc, err := auth.SerialiseContextToString(l.ctx)
-	if err != nil {
-		return err
-	}
-	ncs := fmt.Sprintf("GE_CTX=%s", nc)
-
-	for i, e := range c.Env {
-		if strings.HasPrefix(e, "GE_CTX=") {
-			c.Env[i] = ncs
-			return nil
+	if l.context_set {
+		nc, err := auth.SerialiseContextToString(l.ctx)
+		if err != nil {
+			return err
 		}
+		ncs := fmt.Sprintf("GE_CTX=%s", nc)
+		for i, e := range c.Env {
+			if strings.HasPrefix(e, "GE_CTX=") {
+				c.Env[i] = ncs
+				return nil
+			}
+		}
+		c.Env = append(c.Env, ncs)
 	}
-	c.Env = append(c.Env, ncs)
 	for _, e := range l.envs {
 		c.Env = append(c.Env, e)
 	}
