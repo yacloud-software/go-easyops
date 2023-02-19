@@ -22,8 +22,10 @@ func main() {
 	lin := linux.New()
 	fmt.Printf("My IP: %s\n", lin.MyIP())
 	run([]string{"/bin/true"})
-	run([]string{"sleep", "100"})
-	time.Sleep(time.Duration(6) * time.Second)
+	check_with_duration(time.Duration(6)*time.Second, []string{"sleep", "3"})
+	check_with_duration(time.Duration(6)*time.Second, []string{"sleep", "100"})
+
+	//time.Sleep(time.Duration(6) * time.Second)
 	//	TestExecuteContainer()
 }
 func run(com []string) {

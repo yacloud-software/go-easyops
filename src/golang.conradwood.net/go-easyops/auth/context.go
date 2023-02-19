@@ -237,6 +237,11 @@ func tryGetMetadata(ctx context.Context) *rc.InMetadata {
 
 // get signed session from context or nil if none
 func GetSignedSession(ctx context.Context) *auth.SignedSession {
+	ls := pctx.GetLocalState(ctx)
+	res := ls.Session()
+	if res != nil {
+		return res
+	}
 	cs := rpc.CallStateFromContext(ctx)
 	if cs == nil {
 		return nil

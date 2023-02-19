@@ -145,6 +145,23 @@ func getMetadataFromContext(ctx context.Context) (string, int, int) {
 	}
 	return "", 0, 0
 }
+func shortSessionText(ls shared.LocalState, maxlen int) string {
+	s := ls.Session()
+	if s == nil {
+		return "nosession"
+	}
+	sa := &auth.Session{}
+	err := utils.UnmarshalBytes(s.Session, sa)
+	if err != nil {
+		fmt.Printf("[go-easyops] invalid session (%s)\n", err)
+		return "invalidsession"
+	}
+	sl := sa.Token
+	if len(sl) > maxlen {
+		sl = sl[:maxlen]
+	}
+	return sl
+}
 
 // for debugging purposes we can convert a context to a human readable string
 func Context2String(ctx context.Context) string {
@@ -155,7 +172,8 @@ func Context2String(ctx context.Context) string {
 		return "[no localstate]"
 	}
 	if ls.User() != nil || ls.CallingService() != nil {
-		return fmt.Sprintf("Localstate[userid=%s,callingservice=%s] md[src=%d,version=%d]", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), src, version)
+		sesstxt := shortSessionText(ls, 20)
+		return fmt.Sprintf("Localstate[userid=%s,callingservice=%s,session=%s] md[src=%d,version=%d]", shared.PrettyUser(ls.User()), shared.PrettyUser(ls.CallingService()), sesstxt, src, version)
 	}
 	if src == 0 {
 		return fmt.Sprintf("no localstate, no metadata (%v)\n", ctx)
