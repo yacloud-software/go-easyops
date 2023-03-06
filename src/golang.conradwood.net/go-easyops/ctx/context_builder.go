@@ -35,6 +35,7 @@ import (
 	"golang.conradwood.net/go-easyops/ctx/ctxv2"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
+	//	"golang.yacloud.eu/apis/session"
 	"google.golang.org/grpc/metadata"
 	"strings"
 	"time"
@@ -150,13 +151,7 @@ func shortSessionText(ls shared.LocalState, maxlen int) string {
 	if s == nil {
 		return "nosession"
 	}
-	sa := &auth.Session{}
-	err := utils.UnmarshalBytes(s.Session, sa)
-	if err != nil {
-		fmt.Printf("[go-easyops] invalid session (%s)\n", err)
-		return "invalidsession"
-	}
-	sl := sa.Token
+	sl := s.SessionID
 	if len(sl) > maxlen {
 		sl = sl[:maxlen]
 	}

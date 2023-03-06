@@ -11,6 +11,7 @@ import (
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/utils"
+	"golang.yacloud.eu/apis/session"
 	"google.golang.org/grpc/metadata"
 	"time"
 )
@@ -31,7 +32,7 @@ type v1ContextBuilder struct {
 	got_parent   bool
 	user         *auth.SignedUser
 	service      *auth.SignedUser
-	session      *auth.SignedSession
+	session      *session.Session
 	routing_tags *ge.CTXRoutingTags
 	ls           *v1LocalState
 }
@@ -56,9 +57,9 @@ func (c *v1ContextBuilder) Context() (context.Context, context.CancelFunc) {
 			SignedService: c.service,
 			Service:       common.VerifySignedUser(c.service),
 			SignedUser:    c.user,
-			SignedSession: c.session,
-			RoutingTags:   rpc.Tags_ge_to_rpc(c.routing_tags),
-			User:          common.VerifySignedUser(c.user),
+			//			SignedSession: c.session,
+			RoutingTags: rpc.Tags_ge_to_rpc(c.routing_tags),
+			User:        common.VerifySignedUser(c.user),
 		},
 	}
 	//	fmt.Printf("Build with service: %s\n", describeUser(cs.Metadata.SignedService))
@@ -122,7 +123,7 @@ func (c *v1ContextBuilder) WithCallingService(user *auth.SignedUser) {
 /*
 add a session to the context - v1 does not have sessions
 */
-func (c *v1ContextBuilder) WithSession(sess *auth.SignedSession) {
+func (c *v1ContextBuilder) WithSession(sess *session.Session) {
 	c.session = sess
 }
 
@@ -191,7 +192,7 @@ func (c *v1ContextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.Signe
 	c.requestid = res.RequestID
 	c.WithCallingService(svc)
 	c.WithUser(res.SignedUser)
-	c.WithSession(res.SignedSession)
+	//	c.WithSession(res.SignedSession)
 	c.WithParentContext(ctx)
 	c.routing_tags = rpc.Tags_rpc_to_ge(res.RoutingTags)
 	out_ctx, _ := c.Context()

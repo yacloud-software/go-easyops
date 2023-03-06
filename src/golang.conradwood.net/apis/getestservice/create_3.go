@@ -1,8 +1,15 @@
 // client create: EasyOpsClient
+/*
+  Created by /home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+*/
+
 /* geninfo:
    filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_2
+   clientfunc: GetEasyOps
+   serverfunc: NewEasyOps
+   lookupfunc: EasyOpsLookupID
    varname   : client_EasyOpsClient_2
    clientname: EasyOpsClient
    servername: EasyOpsServer
@@ -33,8 +40,9 @@ func GetEasyOpsClient() EasyOpsClient {
        return client_EasyOpsClient_2
     }
 
-    client_EasyOpsClient_2 = NewEasyOpsClient(client.Connect("getestservice.EasyOps"))
+    client_EasyOpsClient_2 = NewEasyOpsClient(client.Connect(EasyOpsLookupID()))
     lock_EasyOpsClient_2.Unlock()
     return client_EasyOpsClient_2
 }
 
+func EasyOpsLookupID() string { return "getestservice.EasyOps" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.

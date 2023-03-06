@@ -4,6 +4,7 @@ import (
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/ctx/shared"
+	"golang.yacloud.eu/apis/session"
 )
 
 type localState struct {
@@ -43,7 +44,7 @@ func (ls *localState) Trace() bool {
 func (ls *localState) User() *auth.SignedUser {
 	return ls.builder.user
 }
-func (ls *localState) Session() *auth.SignedSession {
+func (ls *localState) Session() *session.Session {
 	if ls == nil {
 		return nil
 	}

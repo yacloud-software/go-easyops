@@ -12,6 +12,7 @@ import (
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
+	"golang.yacloud.eu/apis/session"
 	"google.golang.org/grpc/metadata"
 	"time"
 )
@@ -33,7 +34,7 @@ type contextBuilder struct {
 	user           *auth.SignedUser
 	service        *auth.SignedUser
 	creatorservice *auth.SignedUser
-	session        *auth.SignedSession
+	session        *session.Session
 	routing_tags   *ge.CTXRoutingTags
 	debug          bool
 	trace          bool
@@ -133,7 +134,7 @@ func (c *contextBuilder) WithCallingService(user *auth.SignedUser) {
 /*
 add a session to the context - v1 does not have sessions
 */
-func (c *contextBuilder) WithSession(sess *auth.SignedSession) {
+func (c *contextBuilder) WithSession(sess *session.Session) {
 	c.session = sess
 }
 

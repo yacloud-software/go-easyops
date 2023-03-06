@@ -5,6 +5,7 @@ import (
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/rpc"
+	"golang.yacloud.eu/apis/session"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type v1LocalState struct {
 	callingservice         *auth.SignedUser
 	routingtags            *ge.CTXRoutingTags
 	started                time.Time
-	session                *auth.SignedSession
+	session                *session.Session
 	requestid              string
 }
 
@@ -44,7 +45,7 @@ func (ls *v1LocalState) User() *auth.SignedUser {
 	}
 	return ls.callstate.Metadata.SignedUser
 }
-func (ls *v1LocalState) Session() *auth.SignedSession {
+func (ls *v1LocalState) Session() *session.Session {
 	if ls == nil {
 		return nil
 	}

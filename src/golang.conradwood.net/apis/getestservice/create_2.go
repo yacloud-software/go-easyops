@@ -1,8 +1,15 @@
 // client create: EchoStreamServiceClient
+/*
+  Created by /home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+*/
+
 /* geninfo:
    filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_1
+   clientfunc: GetEchoStreamService
+   serverfunc: NewEchoStreamService
+   lookupfunc: EchoStreamServiceLookupID
    varname   : client_EchoStreamServiceClient_1
    clientname: EchoStreamServiceClient
    servername: EchoStreamServiceServer
@@ -33,7 +40,7 @@ func GetEchoStreamClient() EchoStreamServiceClient {
        return client_EchoStreamServiceClient_1
     }
 
-    client_EchoStreamServiceClient_1 = NewEchoStreamServiceClient(client.Connect("getestservice.EchoStreamService"))
+    client_EchoStreamServiceClient_1 = NewEchoStreamServiceClient(client.Connect(EchoStreamServiceLookupID()))
     lock_EchoStreamServiceClient_1.Unlock()
     return client_EchoStreamServiceClient_1
 }
@@ -49,8 +56,9 @@ func GetEchoStreamServiceClient() EchoStreamServiceClient {
        return client_EchoStreamServiceClient_1
     }
 
-    client_EchoStreamServiceClient_1 = NewEchoStreamServiceClient(client.Connect("getestservice.EchoStreamService"))
+    client_EchoStreamServiceClient_1 = NewEchoStreamServiceClient(client.Connect(EchoStreamServiceLookupID()))
     lock_EchoStreamServiceClient_1.Unlock()
     return client_EchoStreamServiceClient_1
 }
 
+func EchoStreamServiceLookupID() string { return "getestservice.EchoStreamService" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.

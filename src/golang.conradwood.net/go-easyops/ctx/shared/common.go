@@ -7,6 +7,7 @@ import (
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
+	"golang.yacloud.eu/apis/session"
 	"reflect"
 	"time"
 )
@@ -22,7 +23,7 @@ type LocalState interface {
 	Debug() bool
 	Trace() bool
 	User() *auth.SignedUser
-	Session() *auth.SignedSession
+	Session() *session.Session
 	RequestID() string
 	RoutingTags() *ge.CTXRoutingTags
 	Info() string // return (debug) information about this localstate
@@ -61,7 +62,7 @@ type ContextBuilder interface {
 	/*
 	   add a session to the context
 	*/
-	WithSession(user *auth.SignedSession)
+	WithSession(session *session.Session)
 
 	// mark context as with debug
 	WithDebug()

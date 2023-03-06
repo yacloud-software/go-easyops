@@ -1,8 +1,15 @@
 // client create: EchoServiceClient
+/*
+  Created by /home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+*/
+
 /* geninfo:
    filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_0
+   clientfunc: GetEchoService
+   serverfunc: NewEchoService
+   lookupfunc: EchoServiceLookupID
    varname   : client_EchoServiceClient_0
    clientname: EchoServiceClient
    servername: EchoServiceServer
@@ -33,7 +40,7 @@ func GetEchoClient() EchoServiceClient {
        return client_EchoServiceClient_0
     }
 
-    client_EchoServiceClient_0 = NewEchoServiceClient(client.Connect("getestservice.EchoService"))
+    client_EchoServiceClient_0 = NewEchoServiceClient(client.Connect(EchoServiceLookupID()))
     lock_EchoServiceClient_0.Unlock()
     return client_EchoServiceClient_0
 }
@@ -49,8 +56,9 @@ func GetEchoServiceClient() EchoServiceClient {
        return client_EchoServiceClient_0
     }
 
-    client_EchoServiceClient_0 = NewEchoServiceClient(client.Connect("getestservice.EchoService"))
+    client_EchoServiceClient_0 = NewEchoServiceClient(client.Connect(EchoServiceLookupID()))
     lock_EchoServiceClient_0.Unlock()
     return client_EchoServiceClient_0
 }
 
+func EchoServiceLookupID() string { return "getestservice.EchoService" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.

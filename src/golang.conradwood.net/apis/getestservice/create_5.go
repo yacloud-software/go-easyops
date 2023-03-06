@@ -1,8 +1,15 @@
 // client create: CtxTestClient
+/*
+  Created by /home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+*/
+
 /* geninfo:
    filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_4
+   clientfunc: GetCtxTest
+   serverfunc: NewCtxTest
+   lookupfunc: CtxTestLookupID
    varname   : client_CtxTestClient_4
    clientname: CtxTestClient
    servername: CtxTestServer
@@ -33,8 +40,9 @@ func GetCtxTestClient() CtxTestClient {
        return client_CtxTestClient_4
     }
 
-    client_CtxTestClient_4 = NewCtxTestClient(client.Connect("getestservice.CtxTest"))
+    client_CtxTestClient_4 = NewCtxTestClient(client.Connect(CtxTestLookupID()))
     lock_CtxTestClient_4.Unlock()
     return client_CtxTestClient_4
 }
 
+func CtxTestLookupID() string { return "getestservice.CtxTest" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.

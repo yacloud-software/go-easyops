@@ -3,6 +3,7 @@ package shared
 import (
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.yacloud.eu/apis/session"
 )
 
 type emptyLocalState struct {
@@ -22,7 +23,7 @@ func (e *emptyLocalState) CallingService() *auth.SignedUser { return nil }
 func (e *emptyLocalState) Debug() bool                      { return false }
 func (e *emptyLocalState) Trace() bool                      { return false }
 func (e *emptyLocalState) User() *auth.SignedUser           { return nil }
-func (e *emptyLocalState) Session() *auth.SignedSession     { return nil }
+func (e *emptyLocalState) Session() *session.Session        { return nil }
 func (e *emptyLocalState) RequestID() string                { return "" }
 func (e *emptyLocalState) RoutingTags() *ge.CTXRoutingTags  { return nil }
 func (e *emptyLocalState) Info() string                     { return "EMPTY_LOCALSTATE" }

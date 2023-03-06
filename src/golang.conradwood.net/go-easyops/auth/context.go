@@ -236,39 +236,49 @@ func tryGetMetadata(ctx context.Context) *rc.InMetadata {
 }
 
 // get signed session from context or nil if none
-func GetSignedSession(ctx context.Context) *auth.SignedSession {
-	ls := pctx.GetLocalState(ctx)
-	res := ls.Session()
-	if res != nil {
-		return res
-	}
-	cs := rpc.CallStateFromContext(ctx)
-	if cs == nil {
-		return nil
-	}
+func DISGetSignedSession(ctx context.Context) *auth.SignedSession {
+	return nil
+	/*
+		ls := pctx.GetLocalState(ctx)
+		res := ls.Session()
+		if res != nil {
+			return res
+		}
+		cs := rpc.CallStateFromContext(ctx)
+		if cs == nil {
+			return nil
+		}
 
-	s := cs.SignedSession()
-	if s == nil {
-		return nil
-	}
-	if !common.VerifyBytes(s.Session, s.Signature) {
-		return nil
-	}
-	return s
+		s := cs.SignedSession()
+		if s == nil {
+			return nil
+		}
+		if !common.VerifyBytes(s.Session, s.Signature) {
+			return nil
+		}
+		return s
+	*/
 }
 
 // get session token from context or "" if none
 func GetSessionToken(ctx context.Context) string {
-	s := GetSignedSession(ctx)
-	if s == nil {
-		return ""
+	ls := pctx.GetLocalState(ctx)
+	res := ls.Session()
+	if res != nil {
+		return res.SessionID
 	}
-	sess := &auth.Session{}
-	err := utils.UnmarshalBytes(s.Session, sess)
-	if err != nil {
-		fmt.Printf("[go-easyops] invalid session (%s)\n", err)
-		return ""
-	}
-	return sess.Token
-
+	return ""
+	/*
+		s := GetSignedSession(ctx)
+		if s == nil {
+			return ""
+		}
+		sess := &auth.Session{}
+		err := utils.UnmarshalBytes(s.Session, sess)
+		if err != nil {
+			fmt.Printf("[go-easyops] invalid session (%s)\n", err)
+			return ""
+		}
+		return sess.Token
+	*/
 }
