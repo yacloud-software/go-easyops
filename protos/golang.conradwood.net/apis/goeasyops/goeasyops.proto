@@ -3,7 +3,7 @@ syntax = "proto3";
 package goeasyops;
 import "golang.conradwood.net/apis/auth/auth.proto";
 import "golang.conradwood.net/apis/common/common.proto";
-
+import "golang.yacloud.eu/apis/session/session.proto";
 option java_package = "golang.conradwood.net.goeasyops";
 
 /**************
@@ -27,7 +27,7 @@ message ImmutableContext {
   auth.SignedUser CreatorService=2; // which service created this context (nil if not created by a service)
   auth.SignedUser User=3; // the user making this RPC call
   auth.SignedUser SudoUser=4; // the permissions to use for this RPC call
-  auth.SignedSession Session=5; // this logins session
+  session.Session Session=5; // this session, may be nil if this is not a "session"
 }
 // this may change. fields are not guaranteed to be preserved
 message MutableContext {
