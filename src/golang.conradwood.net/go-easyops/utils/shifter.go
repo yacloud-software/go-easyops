@@ -36,6 +36,15 @@ func (sh *Shifter) Array8() []byte {
 	return res
 }
 
+func (sh *Shifter) Unshift_uint16() uint32 {
+	res := uint32(0)
+	for i := 0; i < 2; i++ {
+		b := uint32(sh.Unshift_uint8())
+		b = b << (8 * i)
+		res = res | b
+	}
+	return res
+}
 func (sh *Shifter) Unshift_uint32() uint32 {
 	res := uint32(0)
 	for i := 0; i < 4; i++ {
