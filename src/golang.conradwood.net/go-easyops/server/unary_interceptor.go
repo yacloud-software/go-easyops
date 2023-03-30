@@ -89,7 +89,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	}
 	if *debug_rpc_serve {
 		//		fmt.Printf("[go-easyops: result: %v %v\n", i, err)
-		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" timing: %v\n", cs.ServiceName, cs.MethodName, time.Since(started))
+		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" timing: %0.2fs\n", cs.ServiceName, cs.MethodName, time.Since(started).Seconds())
 	}
 	if err == nil {
 		grpc_server_req_durations.WithLabelValues(cs.ServiceName, cs.MethodName).Observe(time.Since(cs.Started).Seconds())
