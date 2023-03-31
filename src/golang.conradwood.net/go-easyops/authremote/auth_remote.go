@@ -20,7 +20,6 @@ import (
 )
 
 var (
-	userbyidcache    = cache.NewResolvingCache("userbyid", time.Duration(60)*time.Second, 9999)
 	userbyemailcache = cache.NewResolvingCache("userbyemail", time.Duration(60)*time.Second, 9999)
 	userbytokencache = cache.NewResolvingCache("userbytoken", time.Duration(60)*time.Second, 9999)
 	rpci             rc.RPCInterceptorServiceClient
@@ -427,27 +426,14 @@ func GetUserByID(ctx context.Context, userid string) (*apb.User, error) {
 	if userid == "" {
 		return nil, fmt.Errorf("[go-easyops] No userid provided")
 	}
-	o, err := userbyidcache.Retrieve(userid, func(k string) (interface{}, error) {
-		managerClient()
-		res, err := authManager.GetUserByID(ctx, &apb.ByIDRequest{UserID: k})
-		return res, err
-	})
-	if err != nil {
-		return nil, err
-	}
-	return o.(*apb.User), nil
+	return usercache_GetUserByID(ctx, userid)
 }
 
 func GetSignedUserByID(ctx context.Context, userid string) (*apb.SignedUser, error) {
 	if userid == "" {
 		return nil, fmt.Errorf("[go-easyops] No userid provided")
 	}
-	managerClient()
-	res, err := authManager.SignedGetUserByID(ctx, &apb.ByIDRequest{UserID: userid})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return usercache_GetSignedUserByID(ctx, userid)
 }
 
 func GetUserByEmail(ctx context.Context, email string) (*apb.User, error) {

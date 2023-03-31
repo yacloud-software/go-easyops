@@ -15,6 +15,8 @@ import (
 
 func main() {
 	flag.Parse()
+	test_speed("authremote.Context", func() { authremote.Context() })
+	test_speed("authremote.ContextForUser", func() { authremote.ContextForUserID("1") })
 
 	ctx := authremote.Context()
 	_, err := auth.SerialiseContext(ctx)
