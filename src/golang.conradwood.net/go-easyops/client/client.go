@@ -167,3 +167,12 @@ func DIS_OutboundContext(inbound context.Context) context.Context {
 	return metadata.NewOutgoingContext(inbound, md)
 
 }
+
+// get instances for a service currently being connected to (that is, it will return 0 for services which have not been dialled (yet)
+func GetConnectedInstanceCount(servicelookupid string) int {
+	for _, r := range resolvers {
+		fmt.Printf("lookup=%s, target=%s\n", servicelookupid, r.target)
+	}
+	return 0
+
+}

@@ -107,7 +107,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	if err == nil {
 		return nil
 	}
-	if *debug_rpc_serve {
+	if *debug_rpc_serve || *print_errs {
 		fmt.Printf("[go-easyops] Call %s.%s failed: %s\n", def.name, method, err)
 	}
 	incFailure(def.name, method, err)
