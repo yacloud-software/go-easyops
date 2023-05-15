@@ -16,13 +16,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	//	"google.golang.org/grpc/metadata"
-	"flag"
 	"google.golang.org/grpc/status"
 	"time"
-)
-
-var (
-	print_errs = flag.Bool("ge_grpc_print_errors", false, "if true print grpc errors before they propagate to the caller")
 )
 
 /*******************************************************************************************
@@ -105,7 +100,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if dur > 5 { // >5 seconds processing time? warn
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, dur, err)
 	}
-	if *debug_rpc_serve || *print_errs {
+	if *debug_rpc_serve {
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" (called from %s) failed: %s\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), err)
 	}
 	incFailure(cs.ServiceName, cs.MethodName, err)

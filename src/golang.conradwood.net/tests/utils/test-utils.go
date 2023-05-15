@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	TestTime()
 	td, err := utils.TerminalSize()
 	utils.Bail("failed to get terminal dimensions", err)
 	fmt.Printf("Terminal is %dx%d size\n", td.Columns(), td.Rows())
