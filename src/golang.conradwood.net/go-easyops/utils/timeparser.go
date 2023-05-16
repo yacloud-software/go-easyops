@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -23,6 +24,11 @@ var (
 
 // Parse a time in various (uk) formats and return a unix timestamp
 func ParseTime(ts string) (uint32, error) {
+	d, err := strconv.ParseUint(ts, 10, 64)
+	if err == nil {
+		// it's just a number, parse as timestamp
+		return uint32(d), nil
+	}
 	for _, tf := range time_formats {
 		t, err := time.Parse(tf, ts)
 		if err != nil {

@@ -13,6 +13,7 @@ func TestTime() {
 	test_one_time("14/05/2023", 1684022400)
 	test_one_time("2023-05-01 16:03:34", 1682957014)
 	test_one_time("2023-01-15 16:03:34", 1673798614)
+	test_one_time("1684234688", 1684234688)
 	test_one_time_loc("2023-05-15T14:35:00+00:00", "Europe/Paris", 1684161300)
 	test_one_time_loc("2023-05-15T14:35:00+01:00", "Europe/Paris", 1684157700)
 	test_one_time_loc("2023-05-15T14:35:00+00:00", "Europe/London", 1684161300)
