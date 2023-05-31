@@ -231,6 +231,7 @@ func getRegistryClient(registryAddress string) (pb.RegistryClient, error) {
 	// try to use tls first
 	conn := withTLS(registryAddress)
 	if conn == nil {
+		fmt.Printf("[go-easyops] Failed to connect to registry (%s) via TLS, falling back to non-tls\n", registryAddress)
 		conn, err = grpc.Dial(
 			registryAddress,
 			//grpc.WithTransportCredentials(GetClientCreds()),

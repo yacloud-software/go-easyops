@@ -177,20 +177,25 @@ func stopping() {
 	starterLock.Unlock()
 	pp.ProfilingStop()
 	fancyPrintf("Server shutdown - deregistering services\n")
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	rconn, err := grpc.Dial(cmdline.GetRegistryAddress(), opts...)
-	if err != nil {
-		fancyPrintf("failed to dial registry server: %v", err)
-		return
-	}
-	defer rconn.Close()
-	c := pb.NewRegistryClient(rconn)
 
+	c := client.GetRegistryClient()
+	/*
+		opts := []grpc.DialOption{grpc.WithInsecure()}
+		rconn, err := grpc.Dial(cmdline.GetRegistryAddress(), opts...)
+		if err != nil {
+			fancyPrintf("failed to dial registry server: %v", err)
+			return
+		}
+		defer rconn.Close()
+		c = pb.NewRegistryClient(rconn)
+	*/
 	// value is a serverdef
 	for _, sd := range knownServices {
 		fancyPrintf("Deregistering Service \"%s\"\n", sd.toString())
 		ctx := context_Background()
 		ctx, _ = context.WithTimeout(ctx, time.Duration(2)*time.Second) // don't hang on shutdown
+
+		//		ctx := authremote.Context()
 		_, err := c.V2DeregisterService(ctx, &pb.DeregisterServiceRequest{ProcessID: sd.registered_id})
 		if err != nil {
 			fancyPrintf("Failed to deregister Service \"%s\": %s\n", sd.toString(), err)
