@@ -479,7 +479,7 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 	})
 }
 
-func UnregisterPortRegistry(port []int) error {
+func DIS_UnregisterPortRegistry(port []int) error {
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	conn, err := grpc.Dial(cmdline.GetRegistryAddress(), opts...)
 	if err != nil {
