@@ -479,15 +479,20 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 	})
 }
 
-func DIS_UnregisterPortRegistry(port []int) error {
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	conn, err := grpc.Dial(cmdline.GetRegistryAddress(), opts...)
-	if err != nil {
-		fancyPrintf("failed to dial registry server: %v", err)
-		return err
-	}
-	defer conn.Close()
-	client := pb.NewRegistryClient(conn)
+// mostly for autodeployer
+func UnregisterPortRegistry(port []int) error {
+	var err error
+	client := client.GetRegistryClient()
+	/*
+		opts := []grpc.DialOption{grpc.WithInsecure()}
+		conn, err := grpc.Dial(cmdline.GetRegistryAddress(), opts...)
+		if err != nil {
+			fancyPrintf("failed to dial registry server: %v", err)
+			return err
+		}
+		defer conn.Close()
+		client := pb.NewRegistryClient(conn)
+	*/
 	var ps []int32
 	for _, p := range port {
 		ps = append(ps, int32(p))
@@ -536,7 +541,7 @@ func AddRegistry(sd *serverDef) (string, error) {
 		return standalone.RegisterService(rsr)
 	}
 	if rgclient == nil {
-		rgclient = pb.NewRegistryClient(client.ConnectAt(cmdline.GetRegistryAddress(), "registry.Registry"))
+		rgclient = client.GetRegistryClient()
 	}
 	resp, err := rgclient.V2RegisterService(context_Background(), rsr)
 	if err != nil {
