@@ -31,6 +31,8 @@ For example, a periodictimer, defined as NewPeriodicTimer([]uint32{20,15,5}) wil
 after 5 seconds, 10 seconds and 20 seconds.
 The callback will be retried every second if it returns an error until it returns no error
 callback will also be called each time "Start()" is called.
+
+Note: this code is 'experimental' (at best). it is neither optimised for efficiency nor intended to be used for high-performance requirements. it is intented to be used for small, simple periodic tasks. a typical secs array may contain 5 entries. anything over 10 is considered large and untested.
 */
 func NewPeriodicTimer(secs []time.Duration, cb func(pt *PeriodicTimer, secsLapsed time.Duration) error) *PeriodicTimer {
 	if len(secs) == 0 {
