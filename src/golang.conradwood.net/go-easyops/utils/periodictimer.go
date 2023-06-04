@@ -1,21 +1,25 @@
 package utils
 
 import (
+	"flag"
+	"fmt"
 	"sort"
 	"sync"
 	"time"
 )
 
-var ()
+var (
+	debug_pt = flag.Bool("ge_debug_periodictimer", false, "debug the periodic timer")
+)
 
 type PeriodicTimer struct {
-	secs                  []uint32 // sorted as Largest first
+	secs                  []time.Duration // sorted as Largest first
 	started               time.Time
-	callback              func(*PeriodicTimer, uint32) error
+	callback              func(*PeriodicTimer, time.Duration) error
 	thread_running        bool // true if thread is running
 	stop_request          bool // true if thread is meant to exit
 	wait_chan             chan bool
-	lastSuccessfulRunSecs uint32
+	lastSuccessfulRunSecs time.Duration
 	wasRunAtStart         bool // true if it was run at least once
 	lock                  sync.Mutex
 	runLock               sync.Mutex
@@ -28,9 +32,9 @@ after 5 seconds, 10 seconds and 20 seconds.
 The callback will be retried every second if it returns an error until it returns no error
 callback will also be called each time "Start()" is called.
 */
-func NewPeriodicTimer(secs []uint32, cb func(pt *PeriodicTimer, secsLapsed uint32) error) *PeriodicTimer {
+func NewPeriodicTimer(secs []time.Duration, cb func(pt *PeriodicTimer, secsLapsed time.Duration) error) *PeriodicTimer {
 	if len(secs) == 0 {
-		secs = []uint32{0}
+		secs = []time.Duration{time.Duration(0)}
 	}
 	sort.Slice(secs, func(i, j int) bool {
 		return secs[i] > secs[j]
@@ -68,18 +72,22 @@ func (pt *PeriodicTimer) Wait() {
 }
 
 func (pt *PeriodicTimer) timerLoop() {
+	pt.debugf("timerloop started")
 	for {
 		if pt.stop_request {
 			break
 		}
 		time.Sleep(time.Duration(1) * time.Second)
+		if pt.stop_request {
+			break
+		}
 		pt.checkTime()
 
 		if pt.is_running_for_as_long_as_need_be() {
 			break
 		}
-
 	}
+	//finish loop
 	pt.lock.Lock()
 	pt.wait_chan <- true
 	pt.stop_request = false
@@ -87,6 +95,7 @@ func (pt *PeriodicTimer) timerLoop() {
 		pt.thread_running = false
 	}
 	pt.lock.Unlock()
+	pt.debugf("timerloop finished")
 }
 func (pt *PeriodicTimer) is_running_for_as_long_as_need_be() bool {
 	rs := time.Since(pt.started)
@@ -98,16 +107,17 @@ func (pt *PeriodicTimer) is_running_for_as_long_as_need_be() bool {
 
 // periodically called by timer
 func (pt *PeriodicTimer) checkTime() {
-	secs := time.Since(pt.started).Seconds()
+	secs := time.Since(pt.started)
 	// work out which period we're in
-	period := uint32(0)
+	period := time.Duration(0)
 	for _, r := range pt.secs {
-		if float64(r) > secs {
+		if r > secs {
 			continue
 		}
 		period = r
 		break
 	}
+	pt.debugf("period=%0.1fs, lastSucc=%0.1fs, wasrun=%v", period.Seconds(), pt.lastSuccessfulRunSecs.Seconds(), pt.wasRunAtStart)
 	if period == pt.lastSuccessfulRunSecs && pt.wasRunAtStart {
 		return
 	}
@@ -118,15 +128,25 @@ func (pt *PeriodicTimer) checkTime() {
 		pt.wasRunAtStart = true
 	}
 }
-func (pt *PeriodicTimer) run_callback(period uint32) error {
+func (pt *PeriodicTimer) run_callback(period time.Duration) error {
 	pt.runLock.Lock()
 	defer pt.runLock.Unlock()
-	err := pt.callback(pt, uint32(period))
+	err := pt.callback(pt, period)
 	return err
 }
-func (pt *PeriodicTimer) Secs() []uint32 {
+func (pt *PeriodicTimer) Secs() []time.Duration {
 	return pt.secs
 }
 func (pt *PeriodicTimer) LastStarted() time.Time {
 	return pt.started
+}
+
+func (pt *PeriodicTimer) debugf(format string, args ...interface{}) {
+	if *debug_pt == false {
+		return
+	}
+	d := time.Since(pt.LastStarted()).Seconds()
+	prefix := fmt.Sprintf("[periodictimer %v, runsince=%0.1fs] ", pt.Secs(), d)
+	x := fmt.Sprintf(format, args...)
+	fmt.Println(prefix + x)
 }
