@@ -23,7 +23,7 @@ func TestTime() {
 }
 
 func test_one_time_loc(ts, loc string, exp uint32) {
-	t, err := utils.ParseTimeWithLocation(ts, loc)
+	t, err := utils.ParseTimestampWithLocation(ts, loc)
 	if err != nil {
 		fmt.Printf("Parsing \"%s\" failed: %s\n", ts, err)
 		os.Exit(10)
@@ -31,7 +31,7 @@ func test_one_time_loc(ts, loc string, exp uint32) {
 	comp_time(t, ts, exp)
 }
 func test_one_time(ts string, exp uint32) {
-	t, err := utils.ParseTime(ts)
+	t, err := utils.ParseTimestamp(ts)
 	if err != nil {
 		fmt.Printf("Parsing \"%s\" failed: %s\n", ts, err)
 		os.Exit(10)
