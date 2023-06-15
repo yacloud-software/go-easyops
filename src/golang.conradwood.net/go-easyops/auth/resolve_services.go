@@ -41,7 +41,6 @@ func GetServiceIDByName(servicename string) string {
 		return uid
 	}
 	panic(fmt.Sprintf("[go-easyops] Application requested service \"%s\", which is not mapped to a userid", servicename))
-	return ""
 }
 func svc_to_user_load_mapping() {
 	if service_mapping != nil {

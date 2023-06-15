@@ -38,6 +38,7 @@ require (
 	golang.yacloud.eu/apis/sessionmanager v1.1.2183 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
