@@ -44,6 +44,8 @@ golang.conradwood.net/apis/auth v1.1.2186 h1:iiPHxGSFaVO38be2Iq0nOHbai2x7ZyYxlEQ
 golang.conradwood.net/apis/auth v1.1.2186/go.mod h1:N0N2m+xFF6mOV1/1eAKerWmKVj4LMiVChaofWVf56AE=
 golang.conradwood.net/apis/auth v1.1.2289 h1:hTxBj7x2KRhOxB1C7kaBAMY0EhJwe2OOGIuCh8barnU=
 golang.conradwood.net/apis/auth v1.1.2289/go.mod h1:P5E9xpS6Gy2xdIAQP8xgf11v/YqU5j/dqpiZiiN3JU0=
+golang.conradwood.net/apis/auth v1.1.2296 h1:J7KJ0y+/4m0FdwdVHIGpKmC+Jdf1dZ2OZm+n5Jed03c=
+golang.conradwood.net/apis/auth v1.1.2296/go.mod h1:E83VJTPzrFrvpcniKZuq7utVOrm71725LBs96/4i8rE=
 golang.conradwood.net/apis/autodeployer v1.1.2136 h1:vBLeS+Og8J7XE193jkvdK4OCsALVcZG+0DFbA03C6X0=
 golang.conradwood.net/apis/autodeployer v1.1.2136/go.mod h1:bKp8jIIPJSi2DrkGBXdRyM23x+DHvuy8L/AlfbE15mY=
 golang.conradwood.net/apis/autodeployer v1.1.2147 h1:K7sqTXh7ssL7T+oJLpz4W5I2F/cM4siHZPLpD08TnX8=
@@ -54,6 +56,8 @@ golang.conradwood.net/apis/autodeployer v1.1.2186 h1:bfgwwNWUCiCCmp1eBiKaCWcrTip
 golang.conradwood.net/apis/autodeployer v1.1.2186/go.mod h1:kG4AWzdj36EIbYFgsuqZJt2O3pzw+pYRY3CvgvXUUzw=
 golang.conradwood.net/apis/autodeployer v1.1.2289 h1:luEz8AL3BfBZhr1D61mg7Zlb8w2KBwRrUW9vMEhzt6E=
 golang.conradwood.net/apis/autodeployer v1.1.2289/go.mod h1:CCMarwAJ1L1QEPo6gPS3CGb1T7wvUQapB8aEWoN7Td4=
+golang.conradwood.net/apis/autodeployer v1.1.2296 h1:vYWrZBP6kz0P+cYmc4lU/FKCRvMM77Inc5kfkfSV7r8=
+golang.conradwood.net/apis/autodeployer v1.1.2296/go.mod h1:q81XAOSStRlyVntguNQwd00qc2+JXZ98bVoWswDTuU4=
 golang.conradwood.net/apis/common v1.1.2136 h1:IqzjMTke/HO9XGlkIF0nVOGAnlC3VoMgWeDalUwtz9U=
 golang.conradwood.net/apis/common v1.1.2136/go.mod h1:/5HJvhoIroSYRmgSMQ0z2iniuoy/mTB2l7h+ACVwDJ0=
 golang.conradwood.net/apis/common v1.1.2147 h1:szAsTiyG3eqKtcyB+hPtgFyIDHM0y+9Xq5o4A49PER0=
@@ -64,6 +68,8 @@ golang.conradwood.net/apis/common v1.1.2186 h1:npJSu+IqTs97JaExF2G8rNqe5B7Z8UIYS
 golang.conradwood.net/apis/common v1.1.2186/go.mod h1:46aHIr/hOvH9LgtJ8m+vrXqMEztvDp/bCYGGCU0AD1A=
 golang.conradwood.net/apis/common v1.1.2289 h1:rTnV8+CnTum5XQCaTNwhpiq3Ia6NttuXsj3+4+vsBR0=
 golang.conradwood.net/apis/common v1.1.2289/go.mod h1:TWnoonw+28S0+qSyyPXbg7KmfPNEKILGLQT6yLVv/OE=
+golang.conradwood.net/apis/common v1.1.2296 h1:YB33pW6fHbAROZeZ3RzfVpf31GbobcEyI9ZckA0jOJg=
+golang.conradwood.net/apis/common v1.1.2296/go.mod h1:pRLl2MAewnbqmybyVUn+ZwVIk3WgDasadPEFZdO8NbQ=
 golang.conradwood.net/apis/deploymonkey v1.1.2136 h1:PMppWy9oLHqtMPbUMgD8nwJuJOAtCURuvDLmPF5UuRo=
 golang.conradwood.net/apis/deploymonkey v1.1.2136/go.mod h1:pc8QMicO61wHDDza/6mhvbUPzZr0cvHpLOFPExss6pE=
 golang.conradwood.net/apis/deploymonkey v1.1.2147 h1:dtw/cLectTPK9YwWHM9jt8JuZHshs5qzWwcb4yN6enU=
@@ -74,6 +80,8 @@ golang.conradwood.net/apis/deploymonkey v1.1.2186 h1:UzJYlmK9VwOegiiMpNAFLMfWWly
 golang.conradwood.net/apis/deploymonkey v1.1.2186/go.mod h1:z8/f6+JxxyB6ffeE9sFYpf/NCiVb9Ws8M+puZCxMCWo=
 golang.conradwood.net/apis/deploymonkey v1.1.2289 h1:AdKrR0ns8VL/XqR8pO10r5G3WdVYBHTeaZl+NE+Y97Y=
 golang.conradwood.net/apis/deploymonkey v1.1.2289/go.mod h1:xqGebVPba+xERoFlUHjRbpQJRl2NImclODMIcdfbuIA=
+golang.conradwood.net/apis/deploymonkey v1.1.2296 h1:uKfmtYTalR4BNGNh93s2rjTKLw3EQZv7zFiDkCeFN0Q=
+golang.conradwood.net/apis/deploymonkey v1.1.2296/go.mod h1:9S6B34eswS7m3qz0gDleXmJgkRID1nAPsv3FOtJnUQM=
 golang.conradwood.net/apis/echoservice v1.1.2125 h1:aH8KnG+qY3cXBQIGiv+UMx1MWhxY6mXr/n2oPxKLuqU=
 golang.conradwood.net/apis/echoservice v1.1.2125/go.mod h1:zHEAELQIQpArJQxFTI1okaHRABOalsKsjD7YOXot0ws=
 golang.conradwood.net/apis/echoservice v1.1.2147 h1:jGlHk5XKs+JbVIJ+y4/RH/BJLv9irgVr07HIJf+ZFk8=
@@ -144,6 +152,8 @@ golang.conradwood.net/apis/registry v1.1.2186 h1:1wB5PC11o7tPIWUlpcjiw1gs7EJUlZs
 golang.conradwood.net/apis/registry v1.1.2186/go.mod h1:j4IGkNQwDfiAoqXwuYwF0Y6TxtIe39xNp4sgtF0NsWg=
 golang.conradwood.net/apis/registry v1.1.2289 h1:wsDWFhmJzfANpMYhmGwYCaEdoM30kaBvEMr3yBeRL6o=
 golang.conradwood.net/apis/registry v1.1.2289/go.mod h1:w6625oMk3Rp3UCVAcpfVckwAMYpMjlssMen3LR1gJJs=
+golang.conradwood.net/apis/registry v1.1.2296 h1:ZHWQFK1wPXWotDTbyQkT41cBEYju/I0efqu58JAlDjk=
+golang.conradwood.net/apis/registry v1.1.2296/go.mod h1:l4VmOo5E3OV/FhQGR9c1LJBbg9W7ZwTVrKntxnqtQo4=
 golang.conradwood.net/apis/rpcinterceptor v1.1.2136 h1:jHnuBxxP9uF3cp65kj/dHYQCmow9JTovj/9m3Gh6YBw=
 golang.conradwood.net/apis/rpcinterceptor v1.1.2136/go.mod h1:9FlKt2kXc/W6k7D2lw7xcztDWuxBTVsYhkyRPZLTE8Y=
 golang.conradwood.net/apis/rpcinterceptor v1.1.2147 h1:1hkprGeL43xLoTKu4JEyKACUWva8jeYGTtKrAveFRWw=

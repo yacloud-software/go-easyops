@@ -9,13 +9,13 @@ replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
 replace golang.conradwood.net/apis/getestservice => ../apis/getestservice
 
 require (
-	golang.conradwood.net/apis/auth v1.1.2289
-	golang.conradwood.net/apis/common v1.1.2289
+	golang.conradwood.net/apis/auth v1.1.2296
+	golang.conradwood.net/apis/common v1.1.2296
 	golang.conradwood.net/apis/echoservice v1.1.2289
 	golang.conradwood.net/apis/getestservice v1.1.2099
 	golang.conradwood.net/apis/gitserver v1.1.2289
 	golang.conradwood.net/apis/helloworld v1.1.2289
-	golang.conradwood.net/apis/registry v1.1.2289
+	golang.conradwood.net/apis/registry v1.1.2296
 	golang.conradwood.net/apis/rpcinterceptor v1.1.2289
 	golang.conradwood.net/go-easyops v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.55.0
@@ -32,8 +32,8 @@ require (
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.43.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	golang.conradwood.net/apis/autodeployer v1.1.2289 // indirect
-	golang.conradwood.net/apis/deploymonkey v1.1.2289 // indirect
+	golang.conradwood.net/apis/autodeployer v1.1.2296 // indirect
+	golang.conradwood.net/apis/deploymonkey v1.1.2296 // indirect
 	golang.conradwood.net/apis/errorlogger v1.1.2289 // indirect
 	golang.conradwood.net/apis/framework v1.1.2289 // indirect
 	golang.conradwood.net/apis/goeasyops v1.1.2073 // indirect
