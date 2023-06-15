@@ -12,9 +12,7 @@ import (
 	cm "golang.conradwood.net/apis/common"
 	echo "golang.conradwood.net/apis/echoservice"
 	pb "golang.conradwood.net/apis/registry"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
-	"golang.conradwood.net/go-easyops/authremote"
 	ar "golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/certificates"
 	"golang.conradwood.net/go-easyops/client"
@@ -97,6 +95,7 @@ type serverDef struct {
 	tags            map[string]string
 	ErrorHandler    func(ctx context.Context, function_name string, err error)
 	local_service   *au.SignedUser // the local service account
+	service_user_id string         // the serviceaccount userid
 }
 
 func init() {
@@ -300,6 +299,7 @@ func ServerStartup(def *serverDef) error {
 	listenAddr := fmt.Sprintf(":%d", def.Port)
 	s := ""
 	if u != nil {
+		def.service_user_id = u.ID
 		s = fmt.Sprintf(" #%s [%s]", u.ID, auth.Description(u))
 	}
 	fancyPrintf("Starting server%s on %s\n", s, listenAddr)
@@ -351,7 +351,6 @@ func ServerStartup(def *serverDef) error {
 		return errors.New("Missing servername")
 	}
 	// we have a good service token, lookup our serviceid for future calls to rpcinterceptor:
-	go def.lookupServiceID(tkservice)
 	serverDefs[def.name] = def
 	common.AddExportedServiceName(def.name)
 
@@ -670,39 +669,4 @@ func incFailure(service string, method string, err error) {
 		code = status.Code()
 	}
 	grpc_failed_requests.With(prometheus.Labels{"method": method, "servicename": service, "grpccode": fmt.Sprintf("%d", code)}).Inc()
-}
-
-/*
-we have a good service token, lookup our serviceid for future calls to rpcinterceptor
-this will PANIC if the token is invalid
-*/
-func (sd *serverDef) lookupServiceID(token string) {
-	if cmdline.ContextWithBuilder() {
-		return
-	}
-	if token == "" {
-		return
-	}
-	_, s_svc := authremote.GetLocalUsers()
-	svc := common.VerifySignedUser(s_svc)
-	svcid := ""
-	if svc != nil {
-		svcid = fmt.Sprintf("%s", svc.ID)
-	}
-	if rpcclient == nil {
-		rpcclient = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
-	}
-	//ctx := ar.Context()
-	ctx := tokens.DISContextWithToken()
-
-	resp, err := rpcclient.GetMyServiceID(ctx, &rc.ServiceIDRequest{Token: token, MyName: sd.name})
-	if err != nil {
-		fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
-		fancyPrintf("Unable to get our serviceID from our servicetoken (%s)\n", err)
-		//	os.Exit(10)
-	}
-	if resp != nil {
-		fancyPrintf("Service UserID: %s (rpcinterceptor:ServiceID for service \"%s\" is %d)\n", svcid, sd.name, resp.ServiceID)
-		sd.serviceID = resp.ServiceID
-	}
 }
