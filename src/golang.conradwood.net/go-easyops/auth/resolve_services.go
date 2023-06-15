@@ -24,6 +24,11 @@ var (
 		"repobuilder.RepoBuilder":               "3539",
 		"weblogin.Weblogin":                     "43",
 		"artefact.ArtefactService":              "998",
+		"scweb.SCWebService":                    "145",
+		"gotools.GoTools":                       "42195",
+		"firmwaretracker.FirmwareTracker":       "60757",
+		"espota.ESPOtaService":                  "833",
+		// extend list here...
 	}
 )
 
