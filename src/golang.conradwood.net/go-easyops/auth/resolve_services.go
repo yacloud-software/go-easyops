@@ -16,8 +16,9 @@ const (
 )
 
 var (
-	service_mapping         *serviceToUserIDMap
-	svcmaplock              sync.Mutex
+	service_mapping *serviceToUserIDMap
+	svcmaplock      sync.Mutex
+	// this is the default service mapping and is valid ONLY for the yacloud
 	default_service_mapping = map[string]string{
 		"h2gproxy.H2GProxyService":              "37",
 		"jsonapimultiplexer.JSONApiMultiplexer": "59",
@@ -28,7 +29,7 @@ var (
 		"gotools.GoTools":                       "42195",
 		"firmwaretracker.FirmwareTracker":       "60757",
 		"espota.ESPOtaService":                  "833",
-		// extend list here...
+		// YACLOUD-DEVS only -  extend list here...
 	}
 )
 
