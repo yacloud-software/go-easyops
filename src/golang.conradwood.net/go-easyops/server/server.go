@@ -529,6 +529,7 @@ func AddRegistry(sd *serverDef) (string, error) {
 		ServiceName: sd.name,
 		Pid:         cmdline.GetPid(),
 		RoutingInfo: &pb.RoutingInfo{},
+		UserID:      sd.service_user_id,
 	}
 	if sd.asUser != nil {
 		rsr.RoutingInfo.RunningAs = common.VerifySignedUser(sd.asUser)
