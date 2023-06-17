@@ -17,8 +17,17 @@ var (
 		0xA0, 0xE8, 0x5C, 0x48, 0xF2, 0xE4, 0xE8, 0xC1, 0xF6, 0x69, 0xE3,
 		0x5A, 0x23, 0x2B, 0x90, 0x38, 0xF6, 0x36, 0xF8, 0xFE, 0x38,
 	}
-	got_pub_key = false
+	got_pub_key  = false
+	authresponse *pb.KeyResponse
 )
+
+// return the name of the cloud we are connected to
+func GetCloudName() string {
+	if authresponse == nil {
+		return ""
+	}
+	return authresponse.CloudName
+}
 
 // get the bytes from a proto that ought to be signed
 func signbytes(in *pb.User) []byte {
@@ -123,6 +132,7 @@ func signPublicKey() ed.PublicKey {
 func SetPublicSigningKey(k *pb.KeyResponse) {
 	got_pub_key = true
 	authpubkey = k.Key
+	authresponse = k
 }
 func GetPublicSigningKey() *pb.KeyResponse {
 	return &pb.KeyResponse{Key: signPublicKey()}
