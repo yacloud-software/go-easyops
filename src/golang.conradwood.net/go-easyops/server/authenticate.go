@@ -26,7 +26,6 @@ var (
 	rpcclient           rc.RPCInterceptorServiceClient
 	gettingrpc          = false
 	rpclock             sync.Mutex
-	debug_auth          = flag.Bool("ge_debug_auth", false, "debug grpc authentication")
 	disable_interceptor = flag.Bool("ge_disable_interceptor", false, "if true, will not use rpc interceptor for access checks (very experimental!)")
 	verify_interceptor  = flag.Bool("ge_verify_noninterceptor", true, "if true, will compare the non-interceptor with interceptor by doing the actual intercept call and comparing results")
 )
@@ -79,7 +78,7 @@ func initrpc() error {
 // authenticate a user (and authorise access to this method/service)
 func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 	var mss *apb.SignedUser // serviceuser we extra and (maybe) return later
-	if *debug_auth {
+	if cmdline.DebugAuth() {
 		cs.Debug = true
 	}
 	err := initrpc()
@@ -124,7 +123,7 @@ func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 	} else {
 		res, err = rpcclient.InterceptRPC(ictx, irr)
 	}
-	if *debug_auth {
+	if cmdline.DebugAuth() {
 		fmt.Printf("[go-easyops] rpcinterceptor response: %#v\n", res)
 		if res != nil {
 			fmt.Printf("[go-easyops] rpcinterceptor response (signed caller user): %#v\n", auth.UserIDString(common.VerifySignedUser(res.SignedCallerUser)))
@@ -132,14 +131,14 @@ func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 		}
 	}
 	if err != nil {
-		if *debug_auth {
+		if cmdline.DebugAuth() {
 			fmt.Printf("[go-easyops] RPCInterceptor.InterceptRPC() failed: %s\n", utils.ErrorString(err))
 		}
 		return err
 	}
 	// rpc interceptor needs a "servicetoken", but that is no longer transmitted with contextbuilder, so we fill it in here
 	if res.SignedCallerService == nil || res.CallerService == nil {
-		if *debug_auth {
+		if cmdline.DebugAuth() {
 			fmt.Printf("[go-easyops] rpcinterceptor did not return service, using localstate\n")
 		}
 		ls := ctx.GetLocalState(ictx)
@@ -148,13 +147,13 @@ func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 	}
 	// still nil? copy from inbound countext
 	if (res.SignedCallerService == nil || res.CallerService == nil) && cs.Metadata != nil {
-		if *debug_auth {
+		if cmdline.DebugAuth() {
 			fmt.Printf("[go-easyops] localstate did not return service, using metadata (%s)\n", auth.UserIDString(common.VerifySignedUser(mss)))
 		}
 		res.SignedCallerService = mss
 		res.CallerService = common.VerifySignedUser(res.SignedCallerService)
 	}
-	if *debug_auth {
+	if cmdline.DebugAuth() {
 		fmt.Printf("[go-easyops] service after fiddling:\n")
 		if res != nil {
 			fmt.Printf("[go-easyops] rpcinterceptor response (signed caller user): %#v\n", auth.UserIDString(common.VerifySignedUser(res.SignedCallerUser)))
@@ -174,7 +173,7 @@ func Authenticate(ictx context.Context, cs *rpc.CallState) error {
 		cs.Metadata.ServiceToken = tokens.GetServiceTokenParameter()
 		cs.Metadata.FooBar = "authmoo"
 	}
-	if *debug_auth {
+	if cmdline.DebugAuth() {
 		fmt.Printf("[go-easyops] metadata after rpc interceptor: %#v\n", cs.Metadata)
 		fmt.Printf("[go-easyops] RPC Interceptor (reject=%t) said: %v\n", cs.RPCIResponse.Reject, cs.RPCIResponse)
 	}
