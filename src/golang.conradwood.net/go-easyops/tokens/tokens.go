@@ -129,7 +129,7 @@ func readToken(token string) string {
 		return ""
 	}
 	if *debug {
-		fmt.Printf("[go-easyops] Reading file \"%s\", parsing as token\n")
+		fmt.Printf("[go-easyops] Reading file \"%s\", parsing as token\n", fname)
 	}
 	btok, err = ioutil.ReadFile(fname)
 	if err != nil {
