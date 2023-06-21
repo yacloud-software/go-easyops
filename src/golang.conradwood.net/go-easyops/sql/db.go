@@ -7,6 +7,7 @@ package sql
 // to postgres and provide some metrics for us
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/utils"
-	"golang.org/x/net/context"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +27,7 @@ const (
 )
 
 var (
+	failure_action = flag.String("ge_sql_failure_action", "report", "one of [report|quit|retry], report means to report it to the application (this is the default), quit means to quit the process, retry means to block until the connection is open")
 	/* eventually we'll look these up in the datacenter rather than passing
 	these as command line parameters.
 	this will increase security a little bit (at least obscure it a bit)
@@ -136,10 +138,23 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		metricsRegisterLock.Unlock()
 	}
 
-	dbcon, err := sql.Open("postgres", dbinfo)
-	if err != nil {
+	var dbcon *sql.DB
+	for {
+		dbcon, err = sql.Open("postgres", dbinfo)
+		if err == nil {
+			break
+		}
 		fmt.Printf("Failed to connect to %s on host \"%s\" as \"%s\"\n", dbdb, dbhost, dbuser)
-		return nil, err
+		if *failure_action == "quit" {
+			os.Exit(10)
+		} else if *failure_action == "report" {
+			return nil, err
+		} else if *failure_action == "retry" {
+			time.Sleep(time.Duration(2) * time.Second)
+		} else {
+			fmt.Printf("ge_sql_failure_action must be one of [report|retry|quit], not \"%s\"\n", *failure_action)
+			os.Exit(10)
+		}
 	}
 	dbcon.SetMaxIdleConns(maxIdle())
 	dbcon.SetMaxOpenConns(maxConnections()) // max connections per instance by default
