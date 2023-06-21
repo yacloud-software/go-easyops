@@ -120,7 +120,7 @@ func readToken(token string) string {
 	for _, fname = range fnames {
 		if _, err := os.Stat(fname); os.IsNotExist(err) {
 			if *debug {
-				fmt.Printf("File \"%s\" does not exist - ignoring.\n")
+				fmt.Printf("File \"%s\" does not exist - ignoring.\n", fname)
 			}
 			continue
 		}
