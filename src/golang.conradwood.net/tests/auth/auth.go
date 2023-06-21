@@ -22,6 +22,8 @@ func main() {
 	_, err := auth.SerialiseContext(ctx)
 	utils.Bail("failed to serialise context I just created", err)
 
+	u := auth.GetUser(ctx)
+	fmt.Printf("authremote.Context() got user %s\n", auth.Description(u))
 	am := authremote.GetAuthManagerClient()
 	ctx = authremote.Context()
 	me, err := am.WhoAmI(ctx, &common.Void{})

@@ -13,8 +13,8 @@ import (
 
 var (
 	// annoyingly, not all go-easyops flags start with ge_
-	internal_flag_names = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
-
+	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
+	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
 	mlock                 sync.Mutex
 	running_in_datacenter = flag.Bool("AD_started_by_auto_deployer", false, "the autodeployer sets this to true to modify the behaviour to make it suitable for general-availability services in the datacenter")
 
@@ -222,6 +222,9 @@ func GetEnvContext() string {
 		return overridden_env_context
 	}
 	return os.Getenv("GE_CTX")
+}
+func DebugAuth() bool {
+	return *debug_auth
 }
 
 // this is for testing purposes to mock the environment variable GE_CTX
