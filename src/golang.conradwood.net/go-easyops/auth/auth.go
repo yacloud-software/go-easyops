@@ -97,10 +97,6 @@ func PrintSignedUser(uu *apb.SignedUser) {
 }
 
 // one line description of the user/caller
-func SignedDescription(user *apb.SignedUser) string {
-	u := common.VerifySignedUser(user)
-	return Description(u)
-}
 func Description(user *apb.User) string {
 	if user == nil {
 		return "ANONYMOUS"

@@ -119,9 +119,6 @@ func ContextWithTimeout(t time.Duration) context.Context {
 
 // get the user and service we are running as
 func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
-	if cmdline.DebugAuth() {
-		fmt.Printf("[go-easyops] debugauth, contextretrieved=%v, localuser=%s\n", contextRetrieved, auth.SignedDescription(lastUser))
-	}
 	if !contextRetrieved {
 		utok := tokens.GetUserTokenParameter()
 		//		fmt.Printf("utok: \"%s\"\n", utok)
@@ -177,7 +174,6 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 		return cb.ContextWithAutoCancel()
 	}
 
-	fmt.Printf("[go-easyops] DEPRECATED CONTEXT creation!\n")
 	/*
 		if cmdline.Datacenter() {
 			return getContextWithTimeout(uint64(t.Seconds()))
@@ -477,36 +473,20 @@ func GetByToken(ctx context.Context, token string) *apb.User {
 }
 func SignedGetByToken(ctx context.Context, token string) *apb.SignedUser {
 	if token == "" {
-		//		utils.PrintStack("[go-easyops] attempt to get user for empty token\n")
 		return nil
 	}
 	su, err := userbytokencache.Retrieve(token, func(k string) (interface{}, error) {
 		authClient()
-		if cmdline.DebugAuth() {
-			fmt.Printf("[go-easyops] getting user for token \"%s\"...\n", k[:5])
-		}
 		ar, err := authServer.SignedGetByToken(ctx, &apb.AuthenticateTokenRequest{Token: k})
 		if err != nil {
-			if cmdline.DebugAuth() {
-				fmt.Printf("[go-easyops] getting user for token \"%s\" failed: %s\n", k, err)
-			}
 			return nil, err
 		}
 		if !ar.Valid {
-			if cmdline.DebugAuth() {
-				fmt.Printf("[go-easyops] getting user for token \"%s\" invalid", k[:5])
-			}
 			return nil, fmt.Errorf("user not valid")
 		}
 		u := common.VerifySignedUser(ar.User)
 		if !u.Active {
-			if cmdline.DebugAuth() {
-				fmt.Printf("[go-easyops] getting user for token \"%s\" inactive", k[:5])
-			}
 			return nil, fmt.Errorf("user not active")
-		}
-		if cmdline.DebugAuth() {
-			fmt.Printf("[go-easyops] getting user for token \"%s\" resulted in \"%s\"", k[:5], ar.User)
 		}
 		return ar.User, nil
 	})
