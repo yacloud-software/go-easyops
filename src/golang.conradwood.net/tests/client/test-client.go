@@ -15,13 +15,19 @@ import (
 	"time"
 )
 
+var (
+	uo = flag.Bool("users_only", false, "only print user accounts")
+)
+
 func main() {
 	flag.Parse()
 	fmt.Printf("go-easyops test client\n")
 	u, s := authremote.GetLocalUsers()
 	fmt.Printf("Local User account   : %s\n", user2string(u))
 	fmt.Printf("Local Service account: %s\n", user2string(s))
-
+	if *uo {
+		os.Exit(0)
+	}
 	pingAs("7")
 	pingLoop()
 	pingLookup()

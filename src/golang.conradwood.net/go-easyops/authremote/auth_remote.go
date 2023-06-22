@@ -119,6 +119,7 @@ func ContextWithTimeout(t time.Duration) context.Context {
 
 // get the user and service we are running as
 func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
+	client.GetSignatureFromAuth()
 	if cmdline.DebugAuth() {
 		fmt.Printf("[go-easyops] debugauth, contextretrieved=%v, localuser=%s\n", contextRetrieved, auth.SignedDescription(lastUser))
 	}

@@ -1,7 +1,7 @@
 package client
 
 import (
-	//	"context"
+	"context"
 	"flag"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
@@ -45,6 +45,9 @@ func GetSignatureFromAuth() {
 	if *no_retrieve {
 		return
 	}
+	if retrieving {
+		return
+	}
 	pubkeylock.Lock()
 	if retrieving {
 		pubkeylock.Unlock()
@@ -57,7 +60,7 @@ func GetSignatureFromAuth() {
 	}
 	cb := ctx.NewContextBuilder()
 	cctx := cb.ContextWithAutoCancel()
-	//ctx := context.Background()
+	cctx = context.Background()
 	cn := Connect("auth.AuthenticationService")
 	authServer := apb.NewAuthenticationServiceClient(cn)
 	pk, err := authServer.GetPublicSigningKey(cctx, &common.Void{})
