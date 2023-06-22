@@ -219,6 +219,9 @@ func SaveUserToken(token string) error {
 
 func SetCloudName(xcloudname string) {
 	if xcloudname != "" && xcloudname != cloudname {
+		if *debug {
+			fmt.Printf("setting cloud name to \"%s\"\n", xcloudname)
+		}
 		cloudname = xcloudname
 		tokenwasread = false // force re-read of token
 	}
