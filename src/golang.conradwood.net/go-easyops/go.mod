@@ -14,7 +14,6 @@ require (
 	golang.conradwood.net/apis/echoservice v1.1.2289
 	golang.conradwood.net/apis/errorlogger v1.1.2289
 	golang.conradwood.net/apis/framework v1.1.2289
-	golang.conradwood.net/apis/goeasyops v0.0.0-00010101000000-000000000000
 	golang.conradwood.net/apis/logservice v1.1.2289
 	golang.conradwood.net/apis/objectstore v1.1.2289
 	golang.conradwood.net/apis/registry v1.1.2296
@@ -41,4 +40,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
+#replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
