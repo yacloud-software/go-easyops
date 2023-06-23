@@ -291,10 +291,10 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	}
 	if version == 1 {
 		// trying to deser v1 as v2
-		res, err := ctxv2.DeserialiseContextWithTimeout(t, buf)
+		res, err := ctxv2.DeserialiseContextWithTimeout(t, tbuf)
 		return res, err
 	} else if version == 2 {
-		res, err := ctxv2.DeserialiseContextWithTimeout(t, buf)
+		res, err := ctxv2.DeserialiseContextWithTimeout(t, tbuf)
 		return res, err
 	}
 	shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))

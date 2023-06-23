@@ -283,10 +283,12 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	for i, b := range ser_prefix {
 		if buf[i] != b {
 			show := buf
-			if len(show) > 10 {
-				show = show[:10]
+			if len(show) > 18 {
+				show = show[:18]
 			}
-			return nil, fmt.Errorf("v1 context has invalid prefix at pos %d (first 10 bytes: %s)", i, utils.HexStr(show))
+			fmt.Printf("\nEXPECTED: %s\n", utils.HexStr(ser_prefix))
+			fmt.Printf("GOT     : %s\n", utils.HexStr(buf))
+			return nil, fmt.Errorf("v2 context has invalid prefix at pos %d (first 10 bytes: %s)", i, utils.HexStr(show))
 		}
 	}
 	ud := buf[len(ser_prefix):]
