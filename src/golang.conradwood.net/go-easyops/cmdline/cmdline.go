@@ -195,10 +195,8 @@ func LocalRegistrationDir() string {
 	return "/tmp/local_registry"
 }
 func ContextWithBuilder() bool {
-	if *context_build_version > 0 {
-		return true
-	}
-	return false
+	return true
+
 }
 
 // this is for testing purposes to mock the parameter -ge_context_with_builder

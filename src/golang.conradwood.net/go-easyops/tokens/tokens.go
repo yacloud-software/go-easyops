@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/metadata"
@@ -37,17 +36,7 @@ func DisableUserToken() {
 
 // OUTBOUND metadata...
 func buildMeta() metadata.MD {
-	user := GetUserTokenParameter()
-	//	utils.PrintStack("")
-	im := &rc.InMetadata{ServiceToken: cmdline.OptEnvString(*token, "GE_TOKEN"), UserToken: user, FooBar: "moo_none"}
-	ims, err := utils.Marshal(im)
-	if err != nil {
-		fmt.Printf("[go-easyops] WARNING - failed to marshal metadata (%s)\n", err)
-	}
-	res := metadata.Pairs(
-		METANAME, ims,
-	)
-	return res
+	panic("obsolete codepath")
 }
 
 // this builds a *NEW* token (detached from previous contexts)

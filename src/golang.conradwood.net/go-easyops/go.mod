@@ -18,7 +18,6 @@ require (
 	golang.conradwood.net/apis/logservice v1.1.2289
 	golang.conradwood.net/apis/objectstore v1.1.2289
 	golang.conradwood.net/apis/registry v1.1.2296
-	golang.conradwood.net/apis/rpcinterceptor v1.1.2289
 	golang.org/x/net v0.10.0
 	golang.org/x/sys v0.8.0
 	golang.yacloud.eu/apis/session v1.1.2289
@@ -36,6 +35,7 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	golang.conradwood.net/apis/autodeployer v1.1.2296 // indirect
 	golang.conradwood.net/apis/deploymonkey v1.1.2296 // indirect
+	golang.conradwood.net/apis/rpcinterceptor v1.1.2306 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect

@@ -12,7 +12,6 @@ import (
 	"golang.conradwood.net/go-easyops/client"
 	_ "golang.conradwood.net/go-easyops/http"
 	"golang.conradwood.net/go-easyops/linux"
-	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
 	"os"
@@ -78,10 +77,6 @@ func (t *testserver) Ping(ctx context.Context, req *ge.Chain) (*ge.Chain, error)
 		sn = s.ID
 	}
 	reqid := ""
-	cs := rpc.CallStateFromContext(ctx)
-	if cs != nil && cs.RPCIResponse != nil {
-		reqid = cs.RPCIResponse.RequestID
-	}
 	ctr++
 	fmt.Printf("%s %04d Pinged by user %s\n", utils.TimeString(time.Now()), ctr, u)
 	if u == nil {

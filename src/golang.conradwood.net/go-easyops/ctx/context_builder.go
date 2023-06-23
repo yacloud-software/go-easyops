@@ -28,10 +28,9 @@ import (
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
+	//	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
-	"golang.conradwood.net/go-easyops/ctx/ctxv1"
 	"golang.conradwood.net/go-easyops/ctx/ctxv2"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
@@ -53,12 +52,12 @@ var (
 func NewContextBuilder() shared.ContextBuilder {
 	i := cmdline.GetContextBuilderVersion()
 	if i == 1 {
-		return ctxv1.NewContextBuilder()
+		panic("obsolete codepath")
 	} else if i == 2 {
 		return ctxv2.NewContextBuilder()
 	} else {
 		// hm....
-		return ctxv1.NewContextBuilder()
+		return ctxv2.NewContextBuilder()
 	}
 }
 
@@ -70,7 +69,6 @@ func GetLocalState(ctx context.Context) shared.LocalState {
 // returns all "known" contextbuilders. we use this for received contexts to figure out which version it is
 func getAllContextBuilders() map[int]shared.ContextBuilder {
 	return map[int]shared.ContextBuilder{
-		1: ctxv1.NewContextBuilder(),
 		2: ctxv2.NewContextBuilder(),
 	}
 }
@@ -137,13 +135,6 @@ func getMetadataFromContext(ctx context.Context) (string, int, int) {
 		return mdas[0], source, 2
 	}
 
-	mdas, fd = md[ctxv1.METANAME]
-	if fd {
-		if len(mdas) != 1 {
-			return "", source, 1
-		}
-		return mdas[0], source, 1
-	}
 	return "", 0, 0
 }
 func shortSessionText(ls shared.LocalState, maxlen int) string {
@@ -181,12 +172,7 @@ func Context2String(ctx context.Context) string {
 		}
 		return fmt.Sprintf("v2 (%d) metadata: %#v %#v\n,ls=[%s]", src, res.ImCtx, res.MCtx, shared.LocalState2String(ls))
 	} else if version == 1 {
-		res := &rc.InMetadata{}
-		err := utils.Unmarshal(md, res)
-		if err != nil {
-			return fmt.Sprintf("v1 %d metadata invalid (%s)", src, err)
-		}
-		return fmt.Sprintf("v1  metadata: %#v\n", res)
+		panic("unsupported context version")
 	}
 	return fmt.Sprintf("Unsupported metadata version %d\n", version)
 
@@ -231,7 +217,7 @@ func SerialiseContext(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("cannot serialise a context which was not built by builder")
 	}
 	version := byte(1) // to de-serialise later
-	b, err := ctxv1.Serialise(ctx)
+	b, err := ctxv2.Serialise(ctx)
 
 	if err != nil {
 		return nil, err
@@ -306,7 +292,7 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	var err error
 	var res context.Context
 	if version == 1 {
-		res, err = ctxv1.DeserialiseWithTimeout(t, tbuf)
+		panic("obsolete context version")
 	} else {
 		shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
 		utils.PrintStack("foo")

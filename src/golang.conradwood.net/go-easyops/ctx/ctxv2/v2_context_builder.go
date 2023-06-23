@@ -204,3 +204,7 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 func NewContextBuilder() *contextBuilder {
 	return &contextBuilder{}
 }
+
+func Serialise(ctx context.Context) ([]byte, error) {
+	panic("cannot serialise v2 contexts yet")
+}

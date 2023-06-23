@@ -8,12 +8,12 @@ package errors
 // so instead of fmt.Errorf() or status.Error use
 // errors.Error() (this package)
 import (
+	"context"
 	"fmt"
 	"golang.conradwood.net/apis/common"
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
-	"golang.conradwood.net/go-easyops/rpc"
-	"golang.org/x/net/context"
+	gctx "golang.conradwood.net/go-easyops/ctx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -113,16 +113,15 @@ func InvalidArgs(ctx context.Context, publicmessage string, logmessage string, a
 func stdText(ctx context.Context) string {
 	user := auth.CurrentUserString(ctx)
 	svc := auth.GetService(ctx)
-	cs := rpc.CallStateFromContext(ctx)
+	ls := gctx.GetLocalState(ctx)
 	caller := "nil"
 	callee := "nil"
-	if cs != nil {
-		callee = cs.ServiceName + "." + cs.MethodName
-		if cs.RPCIResponse != nil && svc != nil {
-			caller = fmt.Sprintf("%s(%s).method-%d", svc.ID, svc.Email, cs.RPCIResponse.CallerMethodID)
-		}
+	callee = ls.Info()
+	if svc == nil {
+		caller = fmt.Sprintf("[noservice]")
+	} else {
+		caller = fmt.Sprintf("%s(%s)", svc.ID, svc.Email)
 	}
-
 	res := fmt.Sprintf("[%s called %s as user=%s", caller, callee, user)
 	if svc == nil {
 		res = res + ", noservice"

@@ -16,7 +16,6 @@ require (
 	golang.conradwood.net/apis/gitserver v1.1.2289
 	golang.conradwood.net/apis/helloworld v1.1.2289
 	golang.conradwood.net/apis/registry v1.1.2296
-	golang.conradwood.net/apis/rpcinterceptor v1.1.2289
 	golang.conradwood.net/go-easyops v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.55.0
 )
@@ -39,6 +38,7 @@ require (
 	golang.conradwood.net/apis/goeasyops v1.1.2305 // indirect
 	golang.conradwood.net/apis/logservice v1.1.2289 // indirect
 	golang.conradwood.net/apis/objectstore v1.1.2289 // indirect
+	golang.conradwood.net/apis/rpcinterceptor v1.1.2306 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect

@@ -7,14 +7,11 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
-	//ge "golang.conradwood.net/apis/goeasyops"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
+	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/tokens"
-	"golang.conradwood.net/go-easyops/utils"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc/metadata"
 	"time"
 )
 
@@ -46,17 +43,17 @@ type CallState struct {
 	// v1
 	Debug           bool
 	Started         time.Time
-	ServiceName     string // this is our servicename (the one this module exports)
-	MethodName      string // the method that was called (the one we are implementing)
-	CallingMethodID uint64 // who called us (maybe 0)
-	RPCIResponse    *rc.InterceptRPCResponse
-	Metadata        *rc.InMetadata
+	ServiceName     string          // this is our servicename (the one this module exports)
+	MethodName      string          // the method that was called (the one we are implementing)
+	CallingMethodID uint64          // who called us (maybe 0)
 	Context         context.Context // guaranteed to be the most "up-to-date" context.
 	MyServiceID     uint64          // that is us (our local serviceid)
 	userCounted     bool
 	// v2
-	v2   LocalCallState // might be nil for old stuff
-	isV2 bool
+	v2            LocalCallState // might be nil for old stuff
+	isV2          bool
+	signedUser    *auth.SignedUser
+	signedService *auth.SignedUser
 }
 
 // this now is a "V2" style callstate
@@ -79,27 +76,15 @@ func (cs *CallState) RequestID() string {
 	if cs.IsV2() {
 		return cs.v2.RequestID()
 	}
-
-	im := cs.Metadata
-	if im == nil {
-		return ""
-	}
-	return im.RequestID
+	panic("obsolete codepath")
 }
 
 func (cs *CallState) SignedUser() *auth.SignedUser {
-	if cs.Metadata != nil && cs.Metadata.SignedUser != nil {
-		cs.userbysource("signedv2")
-		return cs.Metadata.SignedUser
-	}
-	return nil
+	return cs.signedUser
+
 }
 func (cs *CallState) SignedService() *auth.SignedUser {
-	if cs.Metadata != nil && cs.Metadata.SignedService != nil {
-		cs.userbysource("signedv2")
-		return cs.Metadata.SignedService
-	}
-	return nil
+	return cs.signedService
 }
 
 // return the authenticated user
@@ -110,30 +95,7 @@ func (cs *CallState) User() *auth.User {
 	if cs.IsV2() {
 		return cs.v2.User()
 	}
-	// signedv2 user available? if so return
-	if cs.Metadata != nil && cs.Metadata.SignedUser != nil {
-		cs.userbysource("signedv2")
-		return common.VerifySignedUser(cs.Metadata.SignedUser)
-	}
-	// signed user available? if so return
-	if cs.Metadata != nil && common.VerifySignature(cs.Metadata.User) {
-		cs.userbysource("signed")
-		return cs.Metadata.User
-	}
-
-	if cs.RPCIResponse != nil && cs.RPCIResponse.CallerUser != nil {
-		cs.userbysource("rpcinterceptor")
-		return cs.RPCIResponse.CallerUser
-	}
-	if cs.Metadata != nil && cs.Metadata.UserID != "" {
-		cs.userbysource("bug")
-		fmt.Printf("[go-easyops] cs.RPCIResponse=%#v, cs.Metadata=#%v\n", cs.RPCIResponse, cs.Metadata)
-		// don't return UserID (we need user object)
-		fmt.Printf("[go-easyops] BUG BUG This should never happen (found a userid in metadata but no RPCResponse.CallerUser)\n")
-		return nil
-	}
-	cs.userbysource("none")
-	return nil
+	panic("obsolete codepath")
 }
 
 func (cs *CallState) userbysource(src string) {
@@ -160,13 +122,7 @@ func (cs *CallState) CallerService() *auth.User {
 	if cs.IsV2() {
 		return cs.v2.CallingService()
 	}
-	if cs.RPCIResponse == nil {
-		return nil
-	}
-	if cs.RPCIResponse.SignedCallerService != nil {
-		return common.VerifySignedUser(cs.RPCIResponse.SignedCallerService)
-	}
-	return cs.RPCIResponse.CallerService
+	panic("obsolete codepath")
 }
 func (cs *CallState) TargetString() string {
 	if cs == nil {
@@ -178,14 +134,12 @@ func (cs *CallState) CallerString() string {
 	if cs == nil {
 		return ""
 	}
-	if cs.RPCIResponse == nil {
-		return "{caller: no response from rpcinterceptor yet}"
+	u := common.VerifySignedUser(cs.SignedUser())
+	if u == nil {
+		return ""
 	}
-	au := cs.RPCIResponse.CallerUser
-	if au == nil {
-		return "{ no caller identified }"
-	}
-	return au.Abbrev
+	return u.Abbrev
+
 }
 
 // print context (if debug enabled)
@@ -195,71 +149,45 @@ func (cs *CallState) DebugPrintContext() {
 	}
 	cs.PrintContext()
 }
-func (cs *CallState) RoutingTags() *rc.CTXRoutingTags {
+func (cs *CallState) RoutingTags() *ge.CTXRoutingTags {
 	if cs == nil {
 		return nil
 	}
 	if cs.IsV2() {
-		return Tags_ge_to_rpc(cs.v2.RoutingTags())
+		return cs.v2.RoutingTags()
 	}
-	if cs.Metadata == nil {
-		return nil
-	}
-	if cs.Metadata.RoutingTags == nil {
-		return nil
-	}
-
-	return cs.Metadata.RoutingTags
+	panic("obsolete codepath")
 }
 func (cs *CallState) PrintContext() {
 	if cs == nil {
 		fmt.Printf("[go-easyops] Context has no Callstate\n")
 		return
 	}
-
-	lcv := CallStateFromContext(cs.Context)
-	ls := "missing"
-	if lcv != nil {
-		if lcv.Metadata == nil {
-			ls = "metadata missing"
-		} else {
-			ls = fmt.Sprintf("present (requestid: \"%s\")", lcv.Metadata.RequestID)
+	fmt.Printf("[go-easyops] printing old style context (%v)", cs.v2)
+	/*
+		lcv := CallStateFromContext(cs.Context)
+		ls := "missing"
+		if lcv != nil {
+			if lcv.Metadata == nil {
+				ls = "metadata missing"
+			} else {
+				ls = fmt.Sprintf("present (requestid: \"%s\")", lcv.Metadata.RequestID)
+			}
 		}
-	}
-	fmt.Printf("[go-easyops] Local Context value: %s\n", ls)
-	md, ex := metadata.FromIncomingContext(cs.Context)
-	if ex {
-		fmt.Printf("[go-easyops] InboundMeta: %v\n", metaToString(md))
-	} else {
-		fmt.Printf("[go-easyops] InboundMeta: NONE\n")
-	}
-	md, ex = metadata.FromOutgoingContext(cs.Context)
-	if ex {
-		fmt.Printf("[go-easyops] OutboundMeta: %v\n", metaToString(md))
-	} else {
-		fmt.Printf("[go-easyops] OutboundMeta: NONE\n")
-	}
-}
-func metaToString(md metadata.MD) string {
-	mdsa := md[tokens.METANAME]
-	if len(mdsa) > 1 {
-		return fmt.Sprintf("[manymeta(%d)]", len(mdsa))
-	}
-	if len(mdsa) == 0 {
-		return "[emptymeta]"
-	}
-	mds := mdsa[0]
-	if mds == "" {
-		return "[nometa]"
-	}
-	res := &rc.InMetadata{}
-	err := utils.Unmarshal(mds, res)
-	if err != nil {
-		return fmt.Sprintf("META: error %s\n", err)
-	}
-	sn := "UserID=" + res.UserID + ", Service=" + desc(res.Service) + ", User=" + desc(res.User)
-	sn = sn + ", " + fmt.Sprintf("Trace=%v, Debug=%v, RoutingTags=%#v", res.Trace, res.Debug, res.RoutingTags)
-	return sn
+		fmt.Printf("[go-easyops] Local Context value: %s\n", ls)
+		md, ex := metadata.FromIncomingContext(cs.Context)
+		if ex {
+			fmt.Printf("[go-easyops] InboundMeta: %v\n", metaToString(md))
+		} else {
+			fmt.Printf("[go-easyops] InboundMeta: NONE\n")
+		}
+		md, ex = metadata.FromOutgoingContext(cs.Context)
+		if ex {
+			fmt.Printf("[go-easyops] OutboundMeta: %v\n", metaToString(md))
+		} else {
+			fmt.Printf("[go-easyops] OutboundMeta: NONE\n")
+		}
+	*/
 }
 func desc(u *auth.User) string {
 	if u == nil {
@@ -267,21 +195,8 @@ func desc(u *auth.User) string {
 	}
 	return fmt.Sprintf("%s[%s]", u.ID, u.Email)
 }
-func (cs *CallState) MetadataValue() string {
-	if cs.Metadata == nil {
-		return ""
-	}
-	/*
-		if cs.RPCIResponse == nil && cs.User == nil {
-			return ""
-		}
-	*/
-	s, err := utils.Marshal(cs.Metadata)
-	if err != nil {
-		fmt.Printf("[go-easyops] Warning, unable to marshal metadata: %s\n", err)
-	}
-	return s
-
+func (cs *CallState) DISMetadataValue() string {
+	return ""
 }
 func CallStateFromContext(ctx context.Context) *CallState {
 	if ctx == nil {
@@ -303,24 +218,7 @@ func (cs *CallState) UpdateContextFromResponse() error {
 	return cs.UpdateContextFromResponseWithTimeout(time.Duration(*tokens.Deadline) * time.Second)
 }
 func (cs *CallState) UpdateContextFromResponseWithTimeout(t time.Duration) error {
-	if cs.Context == nil {
-		cs.Context, _ = context.WithTimeout(context.Background(), t)
-	}
-	v := cs.Context.Value(LOCALCONTEXTNAME)
-	if v == nil {
-		cs.Context = context.WithValue(cs.Context, LOCALCONTEXTNAME, cs)
-	}
-	newmd := metadata.Pairs(tokens.METANAME, cs.MetadataValue())
-	cs.Context = metadata.NewOutgoingContext(cs.Context, newmd)
-	/*
-		md, exists := metadata.FromOutgoingContext(cs.Context)
-		if !exists {
-			cs.Context = metadata.AppendToOutgoingContext(cs.Context, tokens.METANAME, cs.MetadataValue())
-		} else {
-			md.Set(tokens.METANAME, cs.MetadataValue())
-		}
-	*/
-	return nil
+	panic("obsolete codepath")
 }
 
 func ContextWithCallState(ctx context.Context) (context.Context, *CallState) {
@@ -332,8 +230,5 @@ func (cs *CallState) SignedSession() *auth.SignedSession {
 	if cs.IsV2() {
 		return cs.v2.SignedSession()
 	}
-	if cs.Metadata == nil {
-		return nil
-	}
-	return cs.Metadata.SignedSession
+	panic("obsolete codepath")
 }

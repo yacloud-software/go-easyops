@@ -26,7 +26,7 @@ Considerations:
 * Performance is quite important. We expect a goeasyops-server to run locally next to the caller, but all clusters share common userids etc.
 
 * Simple for developers. The go-easyops framework must, at most, depend on a single service which also provides a local mode, possibly with 'mock'. This
-means it must "proxy" services, such as auth-, registry-, and rpcinterceptor-
+means it must "proxy" services, such as auth-, registry-
 
 * A local service must be accessible by upstream services. (register with an upstream registry)
 
@@ -50,7 +50,7 @@ Design Idea:
 --- dc mode:
 1) return the 'cluster' registry
 --- dev mode:
-1) return localhost:5000 for registry, auth-service & rpcinterceptor (and any other required services)
+1) return localhost:5000 for registry, auth-service (and any other required services)
 2) expose grpc mock services on localhost:5000 for these services
 
 further Features:

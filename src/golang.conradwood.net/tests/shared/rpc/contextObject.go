@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/tokens"
-	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -49,13 +47,5 @@ func (co *contextObject) PrettyString() string {
 	)
 }
 func (co *contextObject) serialize() string {
-	// this is what we transport in grpc-headers. strict limits apply
-	id := &rc.InMetadata{
-		UserID:          co.user.ID,
-		CallerServiceID: 0, // INCOMPLETE IMPLEMENTATION OF CONTEXTOBJECT.GO
-		Version:         current_version,
-	}
-	res, err := utils.Marshal(id)
-	utils.Bail("Failed to marshal a proto", err)
-	return res
+	panic("THIS USED TO USE THE RPCINTERCEPTOR")
 }

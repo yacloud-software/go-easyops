@@ -39,6 +39,9 @@ func GetSignatureFromAuth() {
 		retrieving = false
 		return
 	}
+	if cmdline.DebugAuth() {
+		fmt.Printf("[go-easyops] Retrieving signature and cloudname...\n")
+	}
 	if retrieved_sig {
 		return
 	}

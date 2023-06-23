@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	pb "golang.conradwood.net/apis/getestservice"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
+	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/utils"
@@ -50,7 +50,7 @@ func clientContext() context.Context {
 	if *tag == "" {
 		return authremote.Context()
 	}
-	rt := &rc.CTXRoutingTags{
+	rt := &ge.CTXRoutingTags{
 		Tags:            parse_tags(),
 		FallbackToPlain: *fallback,
 		Propagate:       false,

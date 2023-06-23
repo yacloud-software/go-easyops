@@ -10,7 +10,6 @@ import (
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
-	"golang.conradwood.net/go-easyops/rpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -63,8 +62,6 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		"servicename": def.name,
 	}).Inc()
 
-	var cs *rpc.CallState // this variable is obsolete, only used if not context_with_builder
-
 	var out_ctx context.Context
 
 	if cmdline.ContextWithBuilder() {
@@ -73,32 +70,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 			return err
 		}
 	} else {
-		cs = &rpc.CallState{
-			Started:     time.Now(),
-			ServiceName: ServiceNameFromStreamInfo(info),
-			MethodName:  MethodNameFromStreamInfo(info),
-			Context:     stream.Context(),
-			MyServiceID: sd.serviceID,
-		}
-		ctx := context.WithValue(stream.Context(), rpc.LOCALCONTEXTNAME, cs)
-		cs.Context = ctx
-		out_ctx = ctx
-		// if we're a "noauth" service we MUST NOT call rpcinterceptor (due to the risk of loops)
-		if !def.NoAuth {
-			err := Authenticate(stream.Context(), cs)
-			if err != nil {
-				return err
-			}
-			if cs.RPCIResponse.Reject {
-				return errors.AccessDenied(out_ctx, "Access denied to %s for user %s", cs.TargetString(), cs.CallerString())
-			}
-		}
-		if cs.Metadata != nil {
-			cs.Metadata.FooBar = "nonmoo"
-		}
-		cs.UpdateContextFromResponse()
-		cs.DebugPrintContext()
-		out_ctx = cs.Context
+		panic("obsolete code path")
 	}
 	print_inbound_debug(rc, out_ctx)
 

@@ -45,7 +45,7 @@ userid may be "" (empty).
 func DIS_ContextV2WithTimeoutAndTagsForUser(t time.Duration, reqid string, user *apb.SignedUser, rt *ge.CTXRoutingTags) (context.Context, context.CancelFunc) {
 	if cmdline.IsStandalone() {
 		f := func() {}
-		return standalone_ContextWithTimeoutAndTags(t, rpc.Tags_ge_to_rpc(rt)), f
+		return standalone_ContextWithTimeoutAndTags(t, rt), f
 	}
 	ctx, cnc := context.WithTimeout(context.Background(), t)
 	inctx := DIS_build_new_ctx_meta_struct(reqid, user, nil)

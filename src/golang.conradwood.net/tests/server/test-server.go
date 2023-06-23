@@ -22,7 +22,8 @@ var (
 	port          = flag.Int("port", 4106, "The grpc server port")
 	ping          = flag.Bool("ping", false, "ping continously")
 	ping_once     = flag.Bool("ping_once", false, "ping once")
-	inject_errors = flag.Bool("inject_errors", true, "inject errors")
+	ping_self     = flag.Bool("ping_self", false, "start server and ping self")
+	inject_errors = flag.Bool("inject_errors", false, "inject errors")
 	tag           = flag.String("tag", "", "key=value tag optional")
 	ctr           = 0
 )
@@ -75,6 +76,9 @@ func main() {
 	if *rand_port {
 		p = p + utils.RandomInt(50)
 	}
+	if *ping_self {
+		go PingSelf()
+	}
 	sd.AddTag("foo", "bar")
 	sd.Port = p
 	sd.Register = server.Register(
@@ -87,10 +91,26 @@ func main() {
 	//	err := create.NewEchoServiceServer(&echoServer{}, p)
 	utils.Bail("Unable to start server", err)
 }
+func PingSelf() {
+	for {
+		time.Sleep(time.Duration(1) * time.Second)
+		ctx := authremote.Context()
+		u := auth.GetUser(ctx)
+		fmt.Printf("pinging as %s\n", auth.Description(u))
+		c := pb.GetEchoClient()
+		_, err := c.Ping(ctx, &common.Void{})
+		if err != nil {
+			fmt.Printf("Error :%s\n", utils.ErrorString(err))
+		} else {
+			fmt.Printf("Pinged\n")
+		}
 
+	}
+}
 func (e *echoServer) Ping(ctx context.Context, req *common.Void) (*pb.PingResponse, error) {
 	u := auth.GetUser(ctx)
-	fmt.Printf("    %d Pinged by %s\n", ctr, auth.Description(u))
+	s := auth.GetService(ctx)
+	fmt.Printf("   %03d Pinged by user %s, service %s\n", ctr, auth.Description(u), auth.Description(s))
 	ctr++
 	if *inject_errors {
 		i := utils.RandomInt(10)

@@ -132,13 +132,7 @@ func tags_from_context(ctx context.Context) *ge.CTXRoutingTags {
 	if cmdline.ContextWithBuilder() {
 		ls := gectx.GetLocalState(ctx)
 		lr := ls.RoutingTags()
-		if lr != nil {
-			return lr
-		}
+		return lr
 	}
-	cs := rpc.CallStateFromContext(ctx)
-	if cs != nil {
-		return rpc.Tags_rpc_to_ge(cs.RoutingTags())
-	}
-	return nil
+	panic("obsolete codepath")
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
+	ge "golang.conradwood.net/apis/goeasyops"
 	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cache"
@@ -11,10 +12,7 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx"
-	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
-	"golang.conradwood.net/go-easyops/utils"
-	"google.golang.org/grpc/metadata"
 	"sync"
 	"time"
 )
@@ -53,8 +51,7 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 	if cv == nil {
 		panic("cannot derive context from nil context")
 	}
-	t := time.Duration(10) * time.Second
-	cri := &rc.CTXRoutingTags{Tags: kv, FallbackToPlain: fallback}
+	cri := &ge.CTXRoutingTags{Tags: kv, FallbackToPlain: fallback}
 
 	if cmdline.ContextWithBuilder() {
 		_, s := GetLocalUsers()
@@ -65,7 +62,7 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 		cb.WithUser(auth.GetSignedUser(cv))
 		cb.WithCreatorService(s)
 		cb.WithCallingService(s)
-		cb.WithRoutingTags(rpc.Tags_rpc_to_ge(cri))
+		cb.WithRoutingTags(cri)
 		//	cb.WithTimeout(t)
 		cb.WithParentContext(cv)
 		nctx := cb.ContextWithAutoCancel()
@@ -81,27 +78,13 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 		return nctx
 
 	}
-
-	cs := rpc.CallStateFromContext(cv)
-	if cs == nil || cs.Metadata == nil {
-		return NewContextWithRoutingTags(cri)
-	}
-	cs.Metadata.RoutingTags = cri
-	err := cs.UpdateContextFromResponseWithTimeout(t)
-	if err != nil {
-		panic(fmt.Sprintf("bad context: %s", err))
-	}
-	nctx := cs.Context
-	if nctx == nil {
-		panic("no context")
-	}
-	return nctx
+	panic("deprecated codepath")
 }
 
 /*
 get a context with routing tags, specified by proto
 */
-func NewContextWithRoutingTags(rt *rc.CTXRoutingTags) context.Context {
+func NewContextWithRoutingTags(rt *ge.CTXRoutingTags) context.Context {
 	return ContextWithTimeoutAndTags(time.Duration(10)*time.Second, rt)
 }
 
@@ -123,7 +106,7 @@ func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
 	if cmdline.DebugAuth() {
 		fmt.Printf("[go-easyops] debugauth, contextretrieved=%v, localuser=%s\n", contextRetrieved, auth.SignedDescription(lastUser))
 	}
-	if !contextRetrieved {
+	if !contextRetrieved || !client.GotSig() {
 		utok := tokens.GetUserTokenParameter()
 		//		fmt.Printf("utok: \"%s\"\n", utok)
 		lastUser = SignedGetByToken(context_background(), utok)
@@ -144,7 +127,7 @@ func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
 /*
 create a new context with routing tags. This is an EXPERIMENTAL API and very likely to change in future
 */
-func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.Context {
+func ContextWithTimeoutAndTags(t time.Duration, rt *ge.CTXRoutingTags) context.Context {
 	if cmdline.IsStandalone() {
 		return standalone_ContextWithTimeoutAndTags(t, rt)
 	}
@@ -173,52 +156,12 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *rc.CTXRoutingTags) context.C
 		cb.WithUser(u)
 		cb.WithCreatorService(s)
 		cb.WithCallingService(s)
-		cb.WithRoutingTags(rpc.Tags_rpc_to_ge(rt))
+		cb.WithRoutingTags(rt) //rpc.Tags_rpc_to_ge(rt))
 		cb.WithTimeout(t)
 		return cb.ContextWithAutoCancel()
 	}
 
-	fmt.Printf("[go-easyops] DEPRECATED CONTEXT creation!\n")
-	/*
-		if cmdline.Datacenter() {
-			return getContextWithTimeout(uint64(t.Seconds()))
-		}
-	*/
-
-	// command line client...
-
-	if sctx != "" {
-		//		fmt.Printf("[go-easyops] restoring context from environment\n")
-		return auth.DISContext(t)
-	}
-
-	luid := ""
-	user, svc := GetLocalUsers()
-	if user != nil {
-		luid = common.VerifySignedUser(user).ID
-	}
-
-	cs := &rpc.CallState{
-		Metadata: &rc.InMetadata{
-			UserID:        luid,
-			Service:       common.VerifySignedUser(svc),
-			User:          common.VerifySignedUser(user),
-			SignedService: svc,
-			SignedUser:    user,
-			RoutingTags:   rt,
-		},
-		RPCIResponse: &rc.InterceptRPCResponse{
-			CallerUser:          common.VerifySignedUser(lastUser),
-			CallerService:       common.VerifySignedUser(lastService),
-			SignedCallerUser:    lastUser,
-			SignedCallerService: lastService,
-		},
-	}
-	err := cs.UpdateContextFromResponseWithTimeout(t)
-	if err != nil {
-		panic(fmt.Sprintf("bad context: %s", err))
-	}
-	return cs.Context
+	panic("[go-easyops] DEPRECATED CONTEXT creation!\n")
 }
 
 func GetAuthManagerClient() apb.AuthManagerServiceClient {
@@ -265,74 +208,7 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 		cb.WithCallingService(svc)
 		return cb.ContextWithAutoCancel(), nil
 	}
-
-	if rpci == nil {
-		rpci = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
-	}
-	token := tokens.GetServiceTokenParameter()
-	mt := &rc.InMetadata{
-		FooBar:       "local",
-		ServiceToken: token,
-		UserID:       user.ID,
-		User:         user,
-	}
-	mts, err := utils.Marshal(mt)
-	if err != nil {
-		return nil, err
-	}
-	cs := &rpc.CallState{
-		Started:  time.Now(),
-		Debug:    true,
-		Metadata: mt,
-	}
-	newmd := metadata.Pairs(tokens.METANAME, mts)
-	ctx := getContext()
-	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
-	res := metadata.NewOutgoingContext(ctx, newmd)
-	cs.Context = ctx
-	resp, err := rpci.InterceptRPC(ctx, &rc.InterceptRPCRequest{InMetadata: mt, Service: "local", Method: "local", Source: "go-easyops/auth/context.go"})
-	if err != nil {
-		return nil, err
-	}
-	cs.RPCIResponse = resp
-	//	cs.PrintContext()
-	if resp != nil {
-		if mt != nil && mt.User == nil {
-			mt.User = resp.CallerUser
-			mt.SignedUser = resp.SignedCallerUser
-		}
-		if mt != nil && mt.Service == nil {
-			mt.Service = resp.CallerService
-			mt.SignedService = resp.SignedCallerService
-		}
-		if mt != nil && mt.SignedUser == nil {
-			mt.SignedUser = resp.SignedCallerUser
-			if mt.User == nil {
-				mt.User = common.VerifySignedUser(mt.SignedUser)
-			}
-		}
-		if resp.CallerUser != nil && resp.SignedCallerUser == nil {
-			fmt.Printf("[go-easyops] WARNING: authremote.ContextForUser created incomplete context with user, but no signeduser\n")
-		}
-	}
-	// now rebuild metadata again to add to outbound context
-	// this must be the final step
-	mts, err = utils.Marshal(mt)
-	if err != nil {
-		return nil, err
-	}
-	newmd = metadata.Pairs(tokens.METANAME, mts)
-	if secs == 0 {
-		ctx = getContext()
-	} else {
-		ctx = getContextWithTimeout(secs)
-	}
-	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
-	res = metadata.NewOutgoingContext(ctx, newmd)
-	cs.Context = ctx
-
-	return res, nil
-
+	panic("obsolete codepath")
 }
 
 // create an outbound context for a given user by id (with current service token)
@@ -358,73 +234,7 @@ func ContextForUserIDWithTimeout(userid string, to time.Duration) (context.Conte
 		cb.WithCallingService(svc)
 		return cb.ContextWithAutoCancel(), nil
 	}
-
-	if rpci == nil {
-		rpci = rc.NewRPCInterceptorServiceClient(client.Connect("rpcinterceptor.RPCInterceptorService"))
-	}
-	token := tokens.GetServiceTokenParameter()
-	if token == "" {
-		return nil, fmt.Errorf("no service token parameter to generate contextforuser by id")
-	}
-	mt := &rc.InMetadata{
-		FooBar:       "local",
-		ServiceToken: token,
-		UserID:       userid,
-	}
-	mts, err := utils.Marshal(mt)
-	if err != nil {
-		return nil, err
-	}
-	cs := &rpc.CallState{
-		Started:  time.Now(),
-		Debug:    true,
-		Metadata: mt,
-	}
-	newmd := metadata.Pairs(tokens.METANAME, mts)
-	ctx := getContext()
-	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
-	res := metadata.NewOutgoingContext(ctx, newmd)
-	cs.Context = ctx
-	resp, err := rpci.InterceptRPC(ctx, &rc.InterceptRPCRequest{InMetadata: mt, Service: "local", Method: "local", Source: "go-easyops/auth/context.go"})
-	if err != nil {
-		return nil, err
-	}
-	cs.RPCIResponse = resp
-	//	cs.PrintContext()
-	if resp != nil && mt != nil && mt.User == nil {
-		mt.User = resp.CallerUser
-		mt.SignedUser = resp.SignedCallerUser
-	}
-	if resp != nil && mt != nil && mt.Service == nil {
-		mt.Service = resp.CallerService
-		mt.SignedService = resp.SignedCallerService
-	}
-	if mt.SignedUser == nil {
-		su, err := GetSignedUserByID(Context(), userid)
-		if err != nil {
-			return nil, err
-		}
-		mt.SignedUser = su
-		mt.User = common.VerifySignedUser(mt.SignedUser)
-	}
-
-	// now rebuild metadata again to add to outbound context
-	// this must be the final step
-	mts, err = utils.Marshal(mt)
-	if err != nil {
-		return nil, err
-	}
-	newmd = metadata.Pairs(tokens.METANAME, mts)
-	if to == 0 {
-		ctx = getContext()
-	} else {
-		ctx = getContextWithTimeout(uint64(to.Seconds()))
-	}
-	ctx = context.WithValue(ctx, rpc.LOCALCONTEXTNAME, cs)
-	res = metadata.NewOutgoingContext(ctx, newmd)
-	cs.Context = ctx
-
-	return res, nil
+	panic("obsolete codepath")
 
 }
 func GetUserByID(ctx context.Context, userid string) (*apb.User, error) {

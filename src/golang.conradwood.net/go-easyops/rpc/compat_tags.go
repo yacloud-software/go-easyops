@@ -1,10 +1,10 @@
 package rpc
 
 import (
-	ge "golang.conradwood.net/apis/goeasyops"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
+// ge "golang.conradwood.net/apis/goeasyops"
 )
 
+/*
 // helper to transition away from rpcinterceptor (old:rpcinterceptor,new:goeasyops)
 func Tags_rpc_to_ge(r *rc.CTXRoutingTags) *ge.CTXRoutingTags {
 	if r == nil {
@@ -30,3 +30,4 @@ func Tags_ge_to_rpc(r *ge.CTXRoutingTags) *rc.CTXRoutingTags {
 	}
 	return res
 }
+*/
