@@ -290,13 +290,15 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)", c, chk)
 	}
 	if version == 1 {
-		panic("obsolete context version")
+		// trying to deser v1 as v2
+		res, err := ctxv2.DeserialiseContextWithTimeout(t, buf)
+		return res, err
 	} else if version == 2 {
 		res, err := ctxv2.DeserialiseContextWithTimeout(t, buf)
 		return res, err
 	}
 	shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
-	utils.PrintStack("foo")
+	utils.PrintStack("incompatible version %d", version)
 	return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
 }
 
