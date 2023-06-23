@@ -39,9 +39,6 @@ func GetSignatureFromAuth() {
 		retrieving = false
 		return
 	}
-	if cmdline.DebugAuth() {
-		fmt.Printf("[go-easyops] Retrieving signature and cloudname...\n")
-	}
 	if retrieved_sig {
 		return
 	}
@@ -61,6 +58,9 @@ func GetSignatureFromAuth() {
 	if retrieved_sig {
 		return
 	}
+	if cmdline.DebugAuth() {
+		fmt.Printf("[go-easyops] Retrieving signature and cloudname...\n")
+	}
 	cb := ctx.NewContextBuilder()
 	cctx := cb.ContextWithAutoCancel()
 	cctx = context.Background()
@@ -79,4 +79,7 @@ func GetSignatureFromAuth() {
 	cn.Close()
 	retrieved_sig = true
 	retrieving = false
+	if cmdline.DebugAuth() {
+		fmt.Printf("[go-easyops] got Signature and cloudname (%s)\n", pk.CloudName)
+	}
 }

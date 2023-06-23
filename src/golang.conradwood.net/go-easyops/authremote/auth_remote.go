@@ -100,13 +100,19 @@ func ContextWithTimeout(t time.Duration) context.Context {
 	return ContextWithTimeoutAndTags(t, nil)
 }
 
-// get the user and service we are running as
+// get the user and service we are running as. Do not cache this result! (on boot the result may change once auth comes available)
 func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
 	client.GetSignatureFromAuth()
 	if cmdline.DebugAuth() {
-		fmt.Printf("[go-easyops] debugauth, contextretrieved=%v, localuser=%s\n", contextRetrieved, auth.SignedDescription(lastUser))
+		fmt.Printf("[go-easyops] debugauth, contextretrieved=%v, localuser=%s,gotsig=%v\n", contextRetrieved, auth.SignedDescription(lastUser), client.GotSig())
 	}
-	if !contextRetrieved || !client.GotSig() {
+	if !client.GotSig() {
+		if cmdline.DebugAuth() {
+			fmt.Printf("[go-easyops] debugauth no local users, we do not yet have a signature\n")
+		}
+		return nil, nil
+	}
+	if !contextRetrieved {
 		utok := tokens.GetUserTokenParameter()
 		//		fmt.Printf("utok: \"%s\"\n", utok)
 		lastUser = SignedGetByToken(context_background(), utok)
