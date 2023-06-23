@@ -15,6 +15,8 @@ import (
 
 func main() {
 	flag.Parse()
+	sname := "gotools.GoTools"
+	fmt.Printf("Lookup of service \"%s\" resulted in %s\n", sname, auth.GetServiceIDByName(sname))
 	test_speed("authremote.Context", func() { authremote.Context() })
 	test_speed("authremote.ContextForUser", func() { authremote.ContextForUserID("1") })
 

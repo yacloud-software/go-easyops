@@ -289,17 +289,20 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	if c != chk {
 		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)", c, chk)
 	}
+	var err error
+	var res context.Context
 	if version == 1 {
 		// trying to deser v1 as v2
-		res, err := ctxv2.DeserialiseContextWithTimeout(t, tbuf)
-		return res, err
+		res, err = ctxv2.DeserialiseContextWithTimeout(t, tbuf)
 	} else if version == 2 {
-		res, err := ctxv2.DeserialiseContextWithTimeout(t, tbuf)
-		return res, err
+		res, err = ctxv2.DeserialiseContextWithTimeout(t, tbuf)
+	} else {
+		shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
+		utils.PrintStack("incompatible version %d", version)
+		return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
 	}
-	shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
-	utils.PrintStack("incompatible version %d", version)
-	return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
+	shared.Debugf(res, "Deserialised context: %s\n", Context2String(res))
+	return res, err
 }
 
 // returns true if this context was build by the builder

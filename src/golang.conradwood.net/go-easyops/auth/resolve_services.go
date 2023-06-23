@@ -8,11 +8,11 @@ import (
 )
 
 type serviceToUserIDMap struct {
-	mapping map[string]string // servicename->userid
+	Mapping map[string]string // servicename->userid
 }
 
 const (
-	service_mapping_filename = "/opt/yacloud/config/service_map.yaml"
+	service_mapping_filename = "/etc/yacloud/config/service_map.yaml"
 )
 
 var (
@@ -42,7 +42,7 @@ The intention of this function is to provide a means to create a common method o
 */
 func GetServiceIDByName(servicename string) string {
 	svc_to_user_load_mapping()
-	uid, found := service_mapping.mapping[servicename]
+	uid, found := service_mapping.Mapping[servicename]
 	if found {
 		return uid
 	}
@@ -58,10 +58,11 @@ func svc_to_user_load_mapping() {
 		return
 	}
 	res := &serviceToUserIDMap{
-		mapping: default_service_mapping,
+		Mapping: default_service_mapping,
 	}
 	b, err := utils.ReadFile(service_mapping_filename)
 	if err == nil {
+		fmt.Printf("[go-easyops] mapping from file %s applied\n", service_mapping_filename)
 		res = &serviceToUserIDMap{}
 		err = yaml.Unmarshal(b, res)
 		if err != nil {
