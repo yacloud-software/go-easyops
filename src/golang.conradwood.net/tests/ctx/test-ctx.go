@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	NEW_CONTEXT_VERSION = 2
-	OLD_CONTEXT_VERSION = 1
+	NEW_CONTEXT_VERSION = 2 // if new context version,set this to new version
+	OLD_CONTEXT_VERSION = 2
 )
 
 var (

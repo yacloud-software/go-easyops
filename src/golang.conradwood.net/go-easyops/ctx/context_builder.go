@@ -216,7 +216,7 @@ func SerialiseContext(ctx context.Context) ([]byte, error) {
 		utils.PrintStack("incompatible context")
 		return nil, fmt.Errorf("cannot serialise a context which was not built by builder")
 	}
-	version := byte(1) // to de-serialise later
+	version := byte(2) // to de-serialise later
 	b, err := ctxv2.Serialise(ctx)
 
 	if err != nil {
@@ -291,11 +291,13 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	}
 	if version == 1 {
 		panic("obsolete context version")
+	} else if version == 2 {
+		res, err := ctxv2.DeserialiseContextWithTimeout(t, buf)
+		return res, err
 	}
 	shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
 	utils.PrintStack("foo")
 	return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
-
 }
 
 // returns true if this context was build by the builder

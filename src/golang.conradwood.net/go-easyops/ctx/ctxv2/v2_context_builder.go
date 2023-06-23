@@ -22,7 +22,8 @@ const (
 )
 
 var (
-	debug = flag.Bool("ge_debug_context_v2", false, "if true debug v2 context builder in more detail")
+	ser_prefix = []byte("SER-CTX-V2")
+	debug      = flag.Bool("ge_debug_context_v2", false, "if true debug v2 context builder in more detail")
 )
 
 // build V2 Contexts. That is, a context with metadata serialised into an rpc InContext struct
@@ -205,6 +206,107 @@ func NewContextBuilder() *contextBuilder {
 	return &contextBuilder{}
 }
 
+func metadata_to_ctx(md metadata.MD, found bool) (*ge.InContext, error) {
+	if !found {
+		return nil, nil
+	}
+	mdas, fd := md[METANAME]
+	if !fd || mdas == nil || len(mdas) != 1 {
+		// got metadata, but not our key
+		return nil, nil
+	}
+	mds := mdas[0]
+	res := &ge.InContext{}
+	err := utils.Unmarshal(mds, res)
+	if err != nil {
+		//		fmt.Printf("[go-easyops] warning invalid inbound v2 context (%s)\n", err)
+		return nil, err
+	}
+	return res, nil
+
+}
+func get_metadata(ctx context.Context) (*ge.InContext, error) {
+	ic, err := metadata_to_ctx(metadata.FromIncomingContext(ctx))
+	if err == nil && ic != nil {
+		return ic, nil
+	}
+	ic, err = metadata_to_ctx(metadata.FromOutgoingContext(ctx))
+	return ic, err
+}
 func Serialise(ctx context.Context) ([]byte, error) {
-	panic("cannot serialise v2 contexts yet")
+	ls := shared.GetLocalState(ctx)
+	ic := &ge.InContext{
+		ImCtx: &ge.ImmutableContext{
+			User:           ls.User(),
+			CreatorService: ls.CreatorService(),
+			RequestID:      ls.RequestID(),
+			Session:        ls.Session(),
+		},
+		MCtx: &ge.MutableContext{
+			CallingService: ls.CallingService(),
+			Debug:          ls.Debug(),
+			Trace:          ls.Trace(),
+			Tags:           ls.RoutingTags(),
+		},
+	}
+	var b []byte
+	var err error
+	b, err = utils.MarshalBytes(ic)
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := ser_prefix
+	b = append(prefix, b...)
+	return b, nil
+}
+
+/*
+		ge, err := get_metadata(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if ge == nil {
+			return nil, fmt.Errorf("[go-easyops] no metadata in context to serialise")
+		}
+		b, err := utils.MarshalBytes(ge)
+		if err != nil {
+			return nil, err
+		}
+		panic("cannot serialise v2 contexts yet")
+	}
+*/
+func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context, error) {
+	if len(buf) < len(ser_prefix) {
+		return nil, fmt.Errorf("v1 context too short to deserialise (len=%d)", len(buf))
+	}
+	for i, b := range ser_prefix {
+		if buf[i] != b {
+			show := buf
+			if len(show) > 10 {
+				show = show[:10]
+			}
+			return nil, fmt.Errorf("v1 context has invalid prefix at pos %d (first 10 bytes: %s)", i, utils.HexStr(show))
+		}
+	}
+	ud := buf[len(ser_prefix):]
+	ctx := context.Background()
+	shared.Debugf(ctx, "a v2deserialise: %s", utils.HexStr(buf))
+	shared.Debugf(ctx, "b v2deserialise: %s", utils.HexStr(ud))
+	ic := &ge.InContext{}
+	err := utils.UnmarshalBytes(ud, ic)
+	if err != nil {
+		return nil, err
+	}
+	cb := &contextBuilder{}
+	if ic.ImCtx != nil {
+		cb.WithUser(ic.ImCtx.User)
+	} else {
+		panic("no imctx")
+	}
+	if ic.MCtx != nil {
+		cb.WithCallingService(ic.MCtx.CallingService)
+	}
+	cb.WithTimeout(t)
+	return cb.ContextWithAutoCancel(), nil
 }

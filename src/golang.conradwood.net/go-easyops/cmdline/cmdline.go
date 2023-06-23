@@ -201,11 +201,18 @@ func ContextWithBuilder() bool {
 
 // this is for testing purposes to mock the parameter -ge_context_with_builder
 func GetContextBuilderVersion() int {
-	return *context_build_version
+	version := *context_build_version
+	if version != 2 {
+		panic(fmt.Sprintf("Unsupported context version (%d)", version))
+	}
+	return version
 }
 
 // this is for testing purposes to mock the parameter -ge_context_with_builder
 func SetContextBuilderVersion(version int) {
+	if version != 2 {
+		panic(fmt.Sprintf("Unsupported context version (%d)", version))
+	}
 	*context_build_version = version
 }
 
