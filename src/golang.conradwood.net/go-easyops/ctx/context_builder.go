@@ -289,6 +289,7 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	if c != chk {
 		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)", c, chk)
 	}
+	shared.Debugf(context.Background(), "deserialising from version %d\n", version)
 	var err error
 	var res context.Context
 	if version == 1 {
@@ -300,6 +301,16 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 		shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
 		utils.PrintStack("incompatible version %d", version)
 		return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
+	}
+	if err != nil {
+		shared.Debugf(context.Background(), "unable to create context (%s)\n", err)
+		return nil, err
+	}
+	cerr := res.Err()
+	if cerr != nil {
+		if cerr != nil {
+			fmt.Printf("[go-easyops] created faulty context\n")
+		}
 	}
 	shared.Debugf(res, "Deserialised context: %s\n", Context2String(res))
 	return res, err
