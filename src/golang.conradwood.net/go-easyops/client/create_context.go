@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
-	"golang.conradwood.net/go-easyops/tokens"
+	"golang.conradwood.net/go-easyops/ctx"
 )
 
 func getContext() context.Context {
-	return tokens.DISContextWithToken()
+	cb := ctx.NewContextBuilder()
+	return cb.ContextWithAutoCancel()
 }
