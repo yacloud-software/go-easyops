@@ -20,15 +20,20 @@ var (
 	svcmaplock      sync.Mutex
 	// this is the default service mapping and is valid ONLY for the yacloud
 	default_service_mapping = map[string]string{
-		"h2gproxy.H2GProxyService":              "37",
-		"jsonapimultiplexer.JSONApiMultiplexer": "59",
-		"repobuilder.RepoBuilder":               "3539",
-		"weblogin.Weblogin":                     "43",
-		"artefact.ArtefactService":              "998",
-		"scweb.SCWebService":                    "145",
-		"gotools.GoTools":                       "42195",
-		"firmwaretracker.FirmwareTracker":       "60757",
-		"espota.ESPOtaService":                  "833",
+		"h2gproxy.H2GProxyService":               "37",
+		"jsonapimultiplexer.JSONApiMultiplexer":  "59",
+		"repobuilder.RepoBuilder":                "3539",
+		"weblogin.Weblogin":                      "43",
+		"artefact.ArtefactService":               "998",
+		"scweb.SCWebService":                     "145",
+		"gotools.GoTools":                        "42195",
+		"firmwaretracker.FirmwareTracker":        "60757",
+		"espota.ESPOtaService":                   "833",
+		"heatingschedule.HeatingScheduleService": "1018",
+		"moduleprober.ModuleProber":              "5754",
+		"scrouter.SCRouter":                      "5303",
+		"scapply.Apply":                          "6139",
+		"userappcontroller.UserAppController":    "10292",
 		// YACLOUD-DEVS only -  extend list here...
 	}
 )
