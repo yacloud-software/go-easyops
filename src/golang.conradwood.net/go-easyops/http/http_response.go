@@ -22,6 +22,20 @@ type HTTPResponse struct {
 	resp             *http.Response
 }
 
+// if no error and http code indicates success, return true
+func (h *HTTPResponse) IsSuccess() bool {
+	if h.Error() != nil {
+		return false
+	}
+	if h.HTTPCode() < 200 {
+		return false
+	}
+	if h.HTTPCode() >= 299 {
+		return false
+	}
+	return true
+}
+
 func (h *HTTPResponse) HTTPCode() int {
 	return h.httpCode
 }
