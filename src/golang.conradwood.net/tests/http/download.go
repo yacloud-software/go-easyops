@@ -31,6 +31,21 @@ func main() {
 		os.Exit(0)
 	}
 	url := flag.Args()[0]
+
+	started := time.Now()
+	h := getClient()
+	hr := h.Head(url)
+	hs := hr.Header("content-length")
+	fmt.Printf("Content-Length: %s\n", hs)
+
+	h = getClient()
+	hr = h.Get(url)
+	err := hr.Error()
+	utils.Bail("failed to get url", err)
+	dur := time.Since(started)
+	fmt.Printf("Duration: %0.2fs\n", dur.Seconds())
+}
+func getClient() http.HTTPIF {
 	var h http.HTTPIF
 	if *direct {
 		h = http.NewDirectClient()
@@ -38,14 +53,8 @@ func main() {
 		ctx := authremote.ContextWithTimeout(*dur)
 		h = http.NewCachingClient(ctx)
 	}
-	started := time.Now()
-	hr := h.Get(url)
-	err := hr.Error()
-	utils.Bail("failed to get url", err)
-	dur := time.Since(started)
-	fmt.Printf("Duration: %0.2fs\n", dur.Seconds())
+	return h
 }
-
 func TestFile() error {
 	b, err := utils.ReadFile(*testfile)
 	if err != nil {
