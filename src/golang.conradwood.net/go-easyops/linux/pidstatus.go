@@ -25,6 +25,7 @@ type ProcessState struct {
 	parentpid       int
 	direct_children []*ProcessState
 	stat            string
+	cgroup          string
 }
 
 func AllPids() ([]*ProcessState, error) {
@@ -156,6 +157,19 @@ func PidStatus(pid int) *ProcessState {
 		return ps
 	}
 	ps.stat = string(st)
+
+	st, err = readProc(fmt.Sprintf("%d/cgroup", pid))
+	if err != nil {
+		ps.fail(err)
+		return ps
+	}
+	xs := strings.Trim(string(st), "\n")
+	lxs := strings.SplitN(xs, ":", 3)
+	if len(lxs) == 3 {
+		xs = lxs[2]
+	}
+	ps.cgroup = xs
+
 	return ps
 }
 func (ps *ProcessState) fail(err error) {
@@ -182,6 +196,9 @@ func (ps *ProcessState) getStatusField(num int) string {
 	return sx[num]
 }
 
+func (ps *ProcessState) Cgroup() string {
+	return ps.cgroup
+}
 func (ps *ProcessState) Binary() string {
 	return ps.binary
 }

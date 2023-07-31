@@ -13,7 +13,7 @@ func main() {
 	utils.Bail("failed to get pids", err)
 	fmt.Printf("Got %d pids\n", len(allps))
 	for _, ps := range allps {
-		fmt.Printf("Pid: %s, Parent: %d\n", ps, ps.ParentPid())
+		fmt.Printf("Pid: %s, Parent: %d, Cgroup: %s\n", ps, ps.ParentPid(), ps.Cgroup())
 	}
 
 	ps := linux.PidStatus(1)
@@ -51,7 +51,7 @@ func printTreeOf(ps *linux.ProcessState) {
 	printTree(ps, " ")
 }
 func printTree(ps *linux.ProcessState, prefix string) {
-	fmt.Printf("%s%s\n", prefix, ps)
+	fmt.Printf("%s%s (Cgroup: \"%s\")\n", prefix, ps, ps.Cgroup())
 	children, err := ps.Children()
 	utils.Bail("failed to get children", err)
 	prefix = prefix + "   "
