@@ -34,6 +34,7 @@ type linux struct {
 	ctx              context.Context
 	context_set      bool // if user-supplied context
 	envs             []string
+	runforever       bool
 }
 
 type Linux interface {
@@ -41,6 +42,7 @@ type Linux interface {
 	SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) (string, error)
 	MyIP() string
 	SetMaxRuntime(time.Duration)
+	SetRunForever() // incompatible with setmaxruntime
 	SetAllowConcurrency(bool)
 	SetEnvironment([]string)
 }
@@ -60,6 +62,9 @@ func New() Linux {
 	res.recalc_context_from_timeout()
 	return res
 }
+func (l *linux) SetRunForever() {
+	l.runforever = true
+}
 func (l *linux) recalc_context_from_timeout() {
 	cb := ctx.NewContextBuilder()
 	cb.WithTimeout(l.Runtime)
@@ -74,6 +79,10 @@ func (l *linux) recalc_context_from_timeout() {
 func (l *linux) SafelyExecute(cmd []string, stdin io.Reader) (string, error) {
 	return l.SafelyExecuteWithDir(cmd, "", stdin)
 }
+
+/*
+execute a command within a working directory
+*/
 func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) (string, error) {
 	// avoid possible segfaults (afterall it's called 'safely...')
 	if len(cmd) == 0 {
@@ -109,7 +118,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	// set environment
 	c.Env = os.Environ()
 	l.env(c)
-	output, err := l.syncExecute(c, l.Runtime)
+	output, err := l.syncExecute(c, l.Runtime, !l.runforever)
 	if *LogExe {
 		printOutput(curCmd, output)
 	}
@@ -122,27 +131,29 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 
 // execute with timeout.
 // sends SIGKILL to process on timeout and returns error
-func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration) (string, error) {
+func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration, hastimeout bool) (string, error) {
 	running := false
 	killed := false
-	timer1 := time.NewTimer(timeout)
-	go func() {
-		<-timer1.C
-		if running {
-			if c.Process == nil {
-				fmt.Printf("[go-easyops] no process to kill after %0.2fs\n", timeout.Seconds())
-				return
+	if hastimeout {
+		timer1 := time.NewTimer(timeout)
+		go func() {
+			<-timer1.C
+			if running {
+				if c.Process == nil {
+					fmt.Printf("[go-easyops] no process to kill after %0.2fs\n", timeout.Seconds())
+					return
+				}
+				if !running {
+					return
+				}
+				c.Process.Kill()
+				killed = true
+				if *LogExe {
+					fmt.Printf("[go-easyops] process killed after %0.2fs\n", timeout.Seconds())
+				}
 			}
-			if !running {
-				return
-			}
-			c.Process.Kill()
-			killed = true
-			if *LogExe {
-				fmt.Printf("[go-easyops] process killed after %0.2fs\n", timeout.Seconds())
-			}
-		}
-	}()
+		}()
+	}
 	// racecondition - timer might expire between
 	// setting flag and starting process.
 	// (if timer is really short)
@@ -170,6 +181,7 @@ func (l *linux) SetEnvironment(sx []string) {
 	l.envs = sx
 }
 func (l *linux) SetMaxRuntime(d time.Duration) {
+	l.runforever = false
 	l.Runtime = d
 	if !l.context_set {
 		l.recalc_context_from_timeout()
