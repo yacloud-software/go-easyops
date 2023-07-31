@@ -44,6 +44,7 @@ const (
 )
 
 var (
+	auto_kill                      = flag.Bool("ge_autokill_instance_on_port", false, "if true, kill an instance on that grpc port before starting service")
 	never_register_service_as_user = flag.Bool("ge_never_register_service_as_user", false, "if true, do not register service as user, even if it is run locally with a user token")
 	reg_tags                       = flag.String("ge_routing_tags", "", "comma seperated list of key-value pairs. For example -tags=foo=bar,foobar=true")
 	debug_internal_serve           = flag.Bool("ge_debug_internal_server", false, "debug the server @ https://.../internal/... (serving metrics amongst other things)")
@@ -228,6 +229,20 @@ func addTags(sd *serverDef) {
 // it also configures the rpc server to expect a token to identify
 // the user in the rpc metadata call
 func ServerStartup(def *serverDef) error {
+	if *auto_kill {
+		ht := easyhttp.NewDirectClient()
+		hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.Port))
+		if hr.IsSuccess() {
+			for {
+				ht := easyhttp.NewDirectClient()
+				hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.Port))
+				if hr.IsSuccess() {
+					break
+				}
+				time.Sleep(time.Duration(300) * time.Millisecond)
+			}
+		}
+	}
 	addTags(def)
 	go client.GetSignatureFromAuth() // init pubkey
 	go error_handler_startup()
