@@ -62,10 +62,12 @@ func New() Linux {
 	res.recalc_context_from_timeout()
 	return res
 }
-func (l *linux) SetRunForever() {
-	l.runforever = true
-}
+
 func (l *linux) recalc_context_from_timeout() {
+	if l.runforever {
+		l.ctx = context.Background()
+		return
+	}
 	cb := ctx.NewContextBuilder()
 	cb.WithTimeout(l.Runtime)
 	l.ctx = cb.ContextWithAutoCancel()
@@ -179,6 +181,12 @@ func printOutput(cmd string, output string) {
 }
 func (l *linux) SetEnvironment(sx []string) {
 	l.envs = sx
+}
+func (l *linux) SetRunForever() {
+	l.runforever = true
+	if !l.context_set {
+		l.recalc_context_from_timeout()
+	}
 }
 func (l *linux) SetMaxRuntime(d time.Duration) {
 	l.runforever = false
