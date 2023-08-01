@@ -14,7 +14,7 @@ require (
 	golang.conradwood.net/apis/echoservice v1.1.2309
 	golang.conradwood.net/apis/getestservice v1.1.2099
 	golang.conradwood.net/apis/gitserver v1.1.2309
-	golang.conradwood.net/apis/goeasyops v1.1.2309
+	golang.conradwood.net/apis/goeasyops v1.1.2371
 	golang.conradwood.net/apis/helloworld v1.1.2309
 	golang.conradwood.net/apis/registry v1.1.2371
 	golang.conradwood.net/go-easyops v0.0.0-00010101000000-000000000000
