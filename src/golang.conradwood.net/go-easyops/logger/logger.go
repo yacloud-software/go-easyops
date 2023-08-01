@@ -22,6 +22,7 @@ type QueueEntry struct {
 	created int64
 	line    string
 	status  string
+	binline []byte
 }
 
 type AsyncLogQueue struct {
@@ -52,10 +53,6 @@ func NewAsyncLogQueue(appname string, buildid, repoid uint64, group, namespace, 
 	if appname == "" {
 		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without appname")
 	}
-	repo := fmt.Sprintf("FIX_ME_AUTODEPLOYER_LOGGER_%d", repoid)
-	if repo == "" {
-		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without repo")
-	}
 	if group == "" {
 		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without group ")
 	}
@@ -68,7 +65,6 @@ func NewAsyncLogQueue(appname string, buildid, repoid uint64, group, namespace, 
 	alq := &AsyncLogQueue{
 		appDef: &logservice.LogAppDef{
 			Appname:      appname,
-			Repository:   repo,
 			RepoID:       repoid,
 			Groupname:    group,
 			Namespace:    namespace,
@@ -116,9 +112,26 @@ func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
 
 	return nil
 }
+func (alq *AsyncLogQueue) Write(status string, buf []byte) {
+	qe := QueueEntry{
+		created: time.Now().Unix(),
+		binline: buf,
+		status:  status,
+	}
+	alq.Lock()
+	defer alq.Unlock()
+	if len(*alq.entries) > alq.MaxSize {
+		if *log_debug {
+			fmt.Printf("queue size larger than %d (it is %d) - discarding log entries\n", alq.MaxSize, len(*alq.entries))
+		}
+		alq.entries = &([]*QueueEntry{})
+	}
+
+	*alq.entries = append(*alq.entries, &qe)
+}
 func (alq *AsyncLogQueue) Log(status string, format string, a ...interface{}) {
 	s := fmt.Sprintf(format, a...)
-	alq.LogCommandStdout(status, s)
+	alq.LogCommandStdout(s, status)
 }
 
 func (alq *AsyncLogQueue) Close(exitcode int) error {
@@ -166,9 +179,10 @@ func (alq *AsyncLogQueue) Flush() error {
 		logRequest.Lines = append(
 			logRequest.Lines,
 			&logservice.LogLine{
-				Time:   qe.created,
-				Line:   qe.line,
-				Status: qe.status,
+				Time:    qe.created,
+				Line:    qe.line,
+				BinLine: qe.binline,
+				Status:  qe.status,
 			},
 		)
 	}
