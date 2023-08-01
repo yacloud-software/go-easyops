@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+const (
+	chatty_myip = false
+)
+
 var (
 	pref_nic_if = []string{"dummy", "wg", "tun"}
 )
@@ -27,7 +31,9 @@ func (*linux) MyIP() string {
 	cur_pref := 0
 
 	for _, iface := range ifaces {
-		//		fmt.Printf("Iface %s:\n", iface.Name)
+		if chatty_myip {
+			fmt.Printf("Iface %s:\n", iface.Name)
+		}
 		addrs, err := iface.Addrs()
 		fail("cannot get interface address", err)
 		for _, adr := range addrs {
@@ -45,7 +51,9 @@ func (*linux) MyIP() string {
 				use = false
 				s = " [not ip4]"
 			}
-			//			fmt.Printf("   %s%s\n", adr.String(), s)
+			if chatty_myip {
+				fmt.Printf("   %s%s\n", adr.String(), s)
+			}
 			if use {
 				if cur_ip == nil || nic_name_pref(iface.Name) > cur_pref {
 					cur_ip = ipnet
