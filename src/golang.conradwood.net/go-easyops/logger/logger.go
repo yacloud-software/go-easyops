@@ -203,6 +203,24 @@ func (alq *AsyncLogQueue) Flush() error {
 		if time.Since(alq.lastErrPrinted) > (10 * time.Second) {
 			fmt.Printf("%s: Failed to send log: %s\n", alq.String(), err)
 			alq.lastErrPrinted = time.Now()
+
+			// try and stick something into the logserver (unlikely to work, unless a logline causes trouble)
+			olines := logRequest.Lines
+			lc := 0
+			bc := 0
+			for _, ol := range olines {
+				lc++
+				bc = bc + len(ol.Line) + len(ol.BinLine)
+			}
+			logRequest.Lines = []*logservice.LogLine{
+				&logservice.LogLine{
+					Time:    time.Now().Unix(),
+					Status:  "LOGFAILURE",
+					BinLine: []byte(fmt.Sprintf("failed to log %d lines and %d bytes: %s", lc, bc, err)),
+				},
+			}
+			grpcClient.LogCommandStdout(getctx(), logRequest)
+
 		}
 	}
 
