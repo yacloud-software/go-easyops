@@ -20,7 +20,6 @@ var (
 
 type QueueEntry struct {
 	created int64
-	line    string
 	status  string
 	binline []byte
 }
@@ -96,7 +95,7 @@ func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
 	}
 	qe := QueueEntry{
 		created: time.Now().Unix(),
-		line:    line,
+		binline: []byte(line),
 		status:  status,
 	}
 	alq.Lock()
@@ -180,7 +179,6 @@ func (alq *AsyncLogQueue) Flush() error {
 			logRequest.Lines,
 			&logservice.LogLine{
 				Time:    qe.created,
-				Line:    qe.line,
 				BinLine: qe.binline,
 				Status:  qe.status,
 			},
