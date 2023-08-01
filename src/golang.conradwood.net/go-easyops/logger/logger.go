@@ -89,6 +89,16 @@ func NewAsyncLogQueue(appname string, buildid, repoid uint64, group, namespace, 
 	return alq, nil
 }
 
+func (alq *AsyncLogQueue) String() string {
+	if alq == nil {
+		return "empty_asynclogqueue"
+	}
+	ad := alq.appDef
+	if ad == nil {
+		return "new_asynclogqueue"
+	}
+	return fmt.Sprintf("Log for %s, repoid %d, build %d (deplid: %s)", ad.Appname, ad.RepoID, ad.BuildID, ad.DeploymentID)
+}
 func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
 	if *log_debug {
 		fmt.Printf("app:\"%s\" LOGGED: %s\n", alq.appDef.Appname, line)
@@ -162,8 +172,11 @@ func (alq *AsyncLogQueue) Flush() error {
 		return lerr
 	}
 
+	// all done, so clear the array so we free up the memory
+	alq.Lock()
 	flushies := alq.entries
 	alq.entries = &([]*QueueEntry{})
+	alq.Unlock()
 
 	if len(*flushies) == 0 {
 		// save ourselves from dialing and stuff
@@ -188,12 +201,10 @@ func (alq *AsyncLogQueue) Flush() error {
 	_, err := grpcClient.LogCommandStdout(getctx(), logRequest)
 	if err != nil {
 		if time.Since(alq.lastErrPrinted) > (10 * time.Second) {
-			fmt.Printf("Failed to send log: %s\n", err)
+			fmt.Printf("%s: Failed to send log: %s\n", alq.String(), err)
 			alq.lastErrPrinted = time.Now()
 		}
 	}
-
-	// all done, so clear the array so we free up the memory
 
 	return nil
 }
