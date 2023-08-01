@@ -106,8 +106,12 @@ func ReadFile(filename string) ([]byte, error) {
 	return b, err
 }
 
-// get current home dir
+// get current home dir (from environment variable HOME, if that fails user.Current())
 func HomeDir() (string, error) {
+	he := os.Getenv("HOME")
+	if he != "" && FileExists(he) {
+		return he, nil
+	}
 	u, err := user.Current()
 	if err != nil {
 		return "", fmt.Errorf("no current user: %s", err)
