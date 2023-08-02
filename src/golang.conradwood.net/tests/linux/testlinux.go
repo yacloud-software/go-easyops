@@ -1,14 +1,27 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/linux"
 	"golang.conradwood.net/go-easyops/utils"
+	"os"
 	"strings"
 	"time"
 )
 
+var (
+	ds = flag.String("dirsize", "", "if set, calc dirsize")
+)
+
 func main() {
+	flag.Parse()
+	if *ds != "" {
+		size, err := linux.DirSize(*ds)
+		utils.Bail("failed to get dirsize", err)
+		fmt.Printf("Dirsize of \"%s\": %s\n", *ds, utils.PrettyNumber(size))
+		os.Exit(0)
+	}
 	allps, err := linux.AllPids()
 	utils.Bail("failed to get pids", err)
 	fmt.Printf("Got %d pids\n", len(allps))
