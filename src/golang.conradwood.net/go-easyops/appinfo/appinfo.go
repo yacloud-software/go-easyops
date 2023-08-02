@@ -47,7 +47,7 @@ func AppInfo() *AppVersionInfo {
 	if OldAppInfo != nil {
 		return OldAppInfo
 	}
-	a := &AppVersionInfo{}
+	a := &AppVersionInfo{RepositoryName: "notset"}
 	return a
 }
 func required_number(num string) uint64 {
