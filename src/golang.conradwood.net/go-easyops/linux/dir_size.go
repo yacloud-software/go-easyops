@@ -1,6 +1,7 @@
 package linux
 
 import (
+	"errors"
 	"golang.conradwood.net/go-easyops/utils"
 	"os"
 )
@@ -9,6 +10,9 @@ import (
 func DirSize(dir string) (uint64, error) {
 	fi, err := os.Stat(dir)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return 0, nil
+		}
 		return 0, err
 	}
 	if !fi.IsDir() {
