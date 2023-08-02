@@ -71,7 +71,7 @@ func PrintUsage() {
 	fmt.Fprintf(os.Stdout, "  App build time              : %s\n", time.Unix(appinfo.AppInfo().Timestamp, 0))
 	fmt.Fprintf(os.Stdout, "  App description             : %s\n", appinfo.AppInfo().Description)
 	fmt.Fprintf(os.Stdout, "  App repository              : %d\n", appinfo.AppInfo().RepositoryID)
-
+	fmt.Fprintf(os.Stdout, "  App repository git url      : %s\n", appinfo.AppInfo().GitURL)
 	fmt.Fprintf(os.Stdout, "  Source code path            : %s\n", SourceCodePath())
 
 	PrintDefaults()

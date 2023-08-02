@@ -12,6 +12,7 @@ type AppVersionInfo struct {
 	RepositoryID   uint64
 	RepositoryName string
 	CommitID       string
+	GitURL         string
 }
 
 var (
@@ -23,6 +24,7 @@ var (
 	LD_RepositoryID   string
 	LD_RepositoryName string
 	LD_CommitID       string
+	LD_GitURL         string
 )
 
 func RegisterAppInfo(avi *AppVersionInfo) {
@@ -40,6 +42,7 @@ func AppInfo() *AppVersionInfo {
 			RepositoryID:   required_number(LD_RepositoryID),
 			RepositoryName: LD_RepositoryName,
 			CommitID:       LD_CommitID,
+			GitURL:         LD_GitURL,
 		}
 		appInfo = a
 		return a
