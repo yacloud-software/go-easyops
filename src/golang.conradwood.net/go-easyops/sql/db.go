@@ -120,6 +120,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 			return db, nil
 		}
 	}
+
 	opendblock.Lock()
 	defer opendblock.Unlock()
 	// check again, with lock
@@ -156,13 +157,17 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 			os.Exit(10)
 		}
 	}
+
 	dbcon.SetMaxIdleConns(maxIdle())
 	dbcon.SetMaxOpenConns(maxConnections()) // max connections per instance by default
 	// force at least one connection to initialize
 	err = dbcon.QueryRow("SELECT NOW() as now").Scan(&now)
 	if err != nil {
 		fmt.Printf("[go-easyops] Failed to query db %s: %s\n", dbdb, err)
-		return nil, err
+		return nil, fmt.Errorf("failed to open database \"%s\" on host \"%s\" as \"%s\": %w", dbdb, dbhost, dbuser, err)
+	}
+	if *sqldebug {
+		fmt.Printf("[go-easyops] sql now query returned: \"%s\"\n", now)
 	}
 	names := strings.Split(dbhost, ".")
 	dbshort := dbhost
