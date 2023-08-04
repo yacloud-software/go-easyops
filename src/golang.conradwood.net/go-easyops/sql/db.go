@@ -148,7 +148,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		if *failure_action == "quit" {
 			os.Exit(10)
 		} else if *failure_action == "report" {
-			return nil, err
+			return nil, fmt.Errorf("failed to open database \"%s\" on host \"%s\" as \"%s\": %w", dbdb, dbhost, dbuser, err)
 		} else if *failure_action == "retry" {
 			time.Sleep(time.Duration(2) * time.Second)
 		} else {
