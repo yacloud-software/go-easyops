@@ -144,7 +144,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		if err == nil {
 			break
 		}
-		fmt.Printf("Failed to connect to %s on host \"%s\" as \"%s\"\n", dbdb, dbhost, dbuser)
+		fmt.Printf("[go-easyops] Failed to connect to %s on host \"%s\" as \"%s\"\n", dbdb, dbhost, dbuser)
 		if *failure_action == "quit" {
 			os.Exit(10)
 		} else if *failure_action == "report" {
@@ -152,7 +152,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		} else if *failure_action == "retry" {
 			time.Sleep(time.Duration(2) * time.Second)
 		} else {
-			fmt.Printf("ge_sql_failure_action must be one of [report|retry|quit], not \"%s\"\n", *failure_action)
+			fmt.Printf("[go-easyops] ge_sql_failure_action must be one of [report|retry|quit], not \"%s\"\n", *failure_action)
 			os.Exit(10)
 		}
 	}
@@ -161,7 +161,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 	// force at least one connection to initialize
 	err = dbcon.QueryRow("SELECT NOW() as now").Scan(&now)
 	if err != nil {
-		fmt.Printf("Failed to query db %s: %s\n", dbdb, err)
+		fmt.Printf("[go-easyops] Failed to query db %s: %s\n", dbdb, err)
 		return nil, err
 	}
 	names := strings.Split(dbhost, ".")
@@ -177,7 +177,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 	if len(databases) > 5 {
 		fmt.Printf("[go-easyops] WARNING OPENED %d databases\n", len(databases))
 		for i, d := range databases {
-			fmt.Printf("Opened database #%d: %s\n", i, d.dbinfo)
+			fmt.Printf("[go-easyops] Opened database #%d: %s\n", i, d.dbinfo)
 		}
 		panic("too many databases")
 	}
@@ -255,7 +255,7 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 	pp.SqlEntered()
 	defer pp.SqlDone()
 	if *sqldebug {
-		fmt.Printf("[sql] Query %s (%v)\n", query, args)
+		fmt.Printf("[go-easyops] [sql] Query %s (%v)\n", query, args)
 	}
 	l := prometheus.Labels{"dbhost": d.dbshorthost, "database": d.dbname, "queryname": name}
 	sqlTotalQueries.With(l).Inc()
@@ -270,7 +270,7 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 	if err != nil {
 		d.failurectr.Add(1, 1)
 		if *sqldebug || *print_errors {
-			fmt.Printf("[sql] Query %s (%s) failed (%s)\n", name, query, err)
+			fmt.Printf("[go-easyops] [sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
 	} else {
@@ -290,7 +290,7 @@ func (d *DB) ExecContext(ctx context.Context, name string, query string, args ..
 	defer pp.SqlDone()
 	l := prometheus.Labels{"dbhost": d.dbshorthost, "database": d.dbname, "queryname": name}
 	if *sqldebug {
-		fmt.Printf("[sql] Exec %s (%v)\n", query, args)
+		fmt.Printf("[go-easyops] [sql] Exec %s (%v)\n", query, args)
 	}
 	sqlTotalQueries.With(l).Inc()
 	started := time.Now()
@@ -304,7 +304,7 @@ func (d *DB) ExecContext(ctx context.Context, name string, query string, args ..
 	if err != nil {
 		d.failurectr.Add(1, 1)
 		if *sqldebug || *print_errors {
-			fmt.Printf("[sql] Query %s (%s) failed (%s)\n", name, query, err)
+			fmt.Printf("[go-easyops] [sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
 	} else {
@@ -324,7 +324,7 @@ func (d *DB) QueryRowContext(ctx context.Context, name string, query string, arg
 	pp.SqlEntered()
 	defer pp.SqlDone()
 	if *sqldebug {
-		fmt.Printf("[sql] QueryRow %s\n", query)
+		fmt.Printf("[go-easyops] [sql] QueryRow %s\n", query)
 	}
 	l := prometheus.Labels{"dbhost": d.dbshorthost, "database": d.dbname, "queryname": name}
 	sqlTotalQueries.With(l).Inc()
@@ -350,5 +350,5 @@ func pqtime(name string, dur float64) {
 	if !*sqldebug {
 		return
 	}
-	fmt.Printf("Query \"%s\" completed in %0.2f seconds\n", name, dur)
+	fmt.Printf("[go-easyops] Query \"%s\" completed in %0.2f seconds\n", name, dur)
 }
