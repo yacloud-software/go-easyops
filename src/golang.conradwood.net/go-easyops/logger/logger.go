@@ -127,6 +127,9 @@ func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
 	return nil
 }
 func (alq *AsyncLogQueue) Write(buf []byte) (int, error) {
+	if alq == nil {
+		return 0, fmt.Errorf("no logger object")
+	}
 	qe := QueueEntry{
 		created: time.Now().Unix(),
 		binline: buf,
