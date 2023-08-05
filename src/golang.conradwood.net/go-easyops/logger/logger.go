@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	log_debug  = flag.Bool("logger_debug", false, "set to true to debug logging")
+	log_debug  = flag.Bool("ge_debug_logger", false, "set to true to debug logging")
 	grpcClient logservice.LogServiceClient
 	inp        = false
 	logLock    sync.Mutex
@@ -31,6 +31,7 @@ type AsyncLogQueue struct {
 	lastErrPrinted time.Time
 	MaxSize        int
 	sync.Mutex
+	status string
 }
 
 func getClient() error {
@@ -99,7 +100,11 @@ func (alq *AsyncLogQueue) String() string {
 	}
 	return fmt.Sprintf("Log for %s, repoid %d, build %d (deplid: %s)", ad.Appname, ad.RepoID, ad.BuildID, ad.DeploymentID)
 }
+func (alq *AsyncLogQueue) SetStatus(status string) {
+	alq.status = status
+}
 func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
+	alq.status = status
 	if *log_debug {
 		fmt.Printf("app:\"%s\" LOGGED: %s\n", alq.appDef.Appname, line)
 	}
@@ -121,11 +126,11 @@ func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
 
 	return nil
 }
-func (alq *AsyncLogQueue) Write(status string, buf []byte) {
+func (alq *AsyncLogQueue) Write(buf []byte) (int, error) {
 	qe := QueueEntry{
 		created: time.Now().Unix(),
 		binline: buf,
-		status:  status,
+		status:  alq.status,
 	}
 	alq.Lock()
 	defer alq.Unlock()
@@ -137,6 +142,7 @@ func (alq *AsyncLogQueue) Write(status string, buf []byte) {
 	}
 
 	*alq.entries = append(*alq.entries, &qe)
+	return len(buf), nil
 }
 func (alq *AsyncLogQueue) Log(status string, format string, a ...interface{}) {
 	s := fmt.Sprintf(format, a...)
