@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package framework;
+option go_package = "golang.conradwood.net/apis/framework";
 
 option java_package = "golang.conradwood.net.framework";
 
@@ -17,4 +18,3 @@ message FrameworkMessageDetail {
   string Message = 2;
   string RequestID = 3;
 }
-
