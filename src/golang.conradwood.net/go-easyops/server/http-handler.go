@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/appinfo"
@@ -10,9 +11,10 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"net/http"
-	"net/http/pprof"
+	hpprof "net/http/pprof"
 	"os"
 	"runtime/debug"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 )
@@ -37,16 +39,37 @@ func debugHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if lp == "info" {
-		pprof.Index(w, req)
+		hpprof.Index(w, req)
 		return
 	}
-	h := pprof.Handler(lp)
+	if lp == "goroutine" { // tested, works
+		profile := pprof.Lookup(lp)
+		if profile != nil {
+			serve_debug_profile(profile, w, req)
+			return
+		}
+	}
+	h := hpprof.Handler(lp)
 	if h == nil {
 		fmt.Printf("[go-easyops] no such handler:%s\n", lp)
 		return
 	}
 	h.ServeHTTP(w, req)
 	//todo
+}
+func serve_debug_profile(p *pprof.Profile, w http.ResponseWriter, req *http.Request) {
+	buf := &bytes.Buffer{}
+	p.WriteTo(buf, 1)
+	b := buf.Bytes()
+	b = bytes.ReplaceAll(b, []byte("\n"), []byte("<br/>"))
+	bold := []string{"golang.conradwood.net", "golang.singingcat.net", "golang.yacloud.eu"}
+	for _, bol := range bold {
+		b = bytes.ReplaceAll(b, []byte(bol), []byte("<b>"+bol+"</b>"))
+	}
+	w.Header()["Content-Type"] = []string{"text/html"}
+	w.Write([]byte("<html><body>"))
+	w.Write(b)
+	w.Write([]byte("</body></html>"))
 }
 func writeHeap(w http.ResponseWriter, req *http.Request) {
 	filename := "dump"
