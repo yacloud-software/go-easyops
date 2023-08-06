@@ -2,6 +2,7 @@
 syntax = "proto3";
 
 package getestservice;
+option go_package = "golang.conradwood.net/apis/getestservice";
 import "golang.conradwood.net/apis/auth/auth.proto";
 import "golang.conradwood.net/apis/common/common.proto";
 
