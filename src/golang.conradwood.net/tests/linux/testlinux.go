@@ -38,18 +38,20 @@ func main() {
 	check_with_duration(time.Duration(6)*time.Second, []string{"sleep", "3"})
 	check_with_duration(time.Duration(6)*time.Second, []string{"sleep", "100"})
 
+	run([]string{"sleep", "300"})
 	//time.Sleep(time.Duration(6) * time.Second)
 	//	TestExecuteContainer()
 }
 func run(com []string) {
 	fmt.Printf("executing \"%s\"...", strings.Join(com, " "))
 	lin := linux.New()
+	started := time.Now()
 	out, err := lin.SafelyExecute(com, nil)
 	if err != nil {
 		fmt.Printf("Output:\n%s\n", out)
 		utils.Bail("failed to execute", err)
 	}
-	fmt.Printf("Done\n")
+	fmt.Printf("Done (%0.1fs)\n", time.Since(started).Seconds())
 }
 func TestExecuteContainer() {
 	panic("no containers yet")
