@@ -205,7 +205,9 @@ func SaveUserToken(token string) error {
 	tokenwasread = false
 	return nil
 }
-
+func GetCloudName() string {
+	return cloudname
+}
 func SetCloudName(xcloudname string) {
 	if xcloudname != "" && xcloudname != cloudname {
 		if *debug {

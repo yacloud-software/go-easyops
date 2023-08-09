@@ -16,6 +16,11 @@ var (
 
 func main() {
 	flag.Parse()
+	l := linux.New()
+	com := []string{"bash", "-c", "apt-get -s -o Debug::NoLocking=true upgrade | grep ^Inst|wc -l"}
+	out, err := l.SafelyExecute(com, nil)
+	fmt.Printf("Upgradable packages: \"%s\"\n", out)
+	utils.Bail("failed to count packages", err)
 	if *ds != "" {
 		size, err := linux.DirSize(*ds)
 		utils.Bail("failed to get dirsize", err)
