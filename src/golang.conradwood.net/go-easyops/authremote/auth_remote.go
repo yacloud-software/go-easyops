@@ -30,6 +30,13 @@ var (
 	lastService      *apb.SignedUser
 )
 
+func init() {
+	common.AddRegistryChangeReceiver(registry_changed)
+}
+func registry_changed() {
+	authManager = nil
+	authServer = nil
+}
 func Context() context.Context {
 	client.GetSignatureFromAuth()
 	return ContextWithTimeout(time.Duration(10) * time.Second)

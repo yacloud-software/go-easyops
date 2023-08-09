@@ -15,13 +15,14 @@ import (
 )
 
 var (
-	token        = flag.String("token", "", "service token")
-	disusertoken = flag.Bool("ge_disable_user_token", false, "if true disable reading of user token (for testing)")
-	Deadline     = flag.Int("ge_ctx_deadline_seconds", 10, "do not change for production services")
-	tokenwasread = false
-	usertoken    string
-	cloudname    = "yacloud.eu"
-	debug        = flag.Bool("ge_debug_tokens", false, "debug user token stuff")
+	token                    = flag.String("token", "", "service token")
+	disusertoken             = flag.Bool("ge_disable_user_token", false, "if true disable reading of user token (for testing)")
+	Deadline                 = flag.Int("ge_ctx_deadline_seconds", 10, "do not change for production services")
+	tokenwasread             = false
+	usertoken                string
+	last_token_read_registry string
+	cloudname                = "yacloud.eu"
+	debug                    = flag.Bool("ge_debug_tokens", false, "debug user token stuff")
 )
 
 const (
@@ -172,12 +173,13 @@ func GetUserTokenParameter() string {
 	if cmdline.OptEnvString(*token, "GE_TOKEN") != "" {
 		return ""
 	}
-	if tokenwasread {
+	if tokenwasread && last_token_read_registry == cmdline.GetClientRegistryAddress() {
 		return usertoken
 	}
 	u := readToken("user_token")
 	usertoken = u
 	tokenwasread = true
+	last_token_read_registry = cmdline.GetClientRegistryAddress()
 	/*
 		if usertoken == "" {
 			fmt.Printf("[go-easyops] tokens: reading usertoken, but is empty\n")

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/appinfo"
+	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"strings"
@@ -157,6 +158,7 @@ func SetClientRegistryAddress(reg string) {
 		reg = fmt.Sprintf("%s:5000", reg)
 	}
 	manreg = reg
+	common.NotifyRegistryChangeListeners()
 }
 
 // get registry address as per -registry parameter

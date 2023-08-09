@@ -17,6 +17,7 @@ import (
 we attempt to get the public key for authentication from the auth-server
 */
 var (
+	last_registry string
 	pubkeylock    sync.Mutex
 	retrieved_sig = false
 	retrieving    = false
@@ -30,16 +31,23 @@ func init() {
 }
 */
 func GotSig() bool {
+	if cmdline.GetClientRegistryAddress() != last_registry {
+		return false
+	}
 	return retrieved_sig
+}
+func init() {
+	cm.AddRegistryChangeReceiver(GetSignatureFromAuth)
 }
 func GetSignatureFromAuth() {
 	if cmdline.IsStandalone() {
 		//TODO: set a "fake" signature
 		retrieved_sig = true
 		retrieving = false
+		last_registry = cmdline.GetClientRegistryAddress()
 		return
 	}
-	if retrieved_sig {
+	if GotSig() {
 		return
 	}
 	if *no_retrieve {
@@ -55,7 +63,7 @@ func GetSignatureFromAuth() {
 	}
 	retrieving = true
 	pubkeylock.Unlock()
-	if retrieved_sig {
+	if GotSig() {
 		return
 	}
 	if cmdline.DebugAuth() {
@@ -64,7 +72,7 @@ func GetSignatureFromAuth() {
 	cb := ctx.NewContextBuilder()
 	cctx := cb.ContextWithAutoCancel()
 	cctx = context.Background()
-	cn := Connect("auth.AuthenticationService")
+	cn := ConnectAt(cmdline.GetClientRegistryAddress(), "auth.AuthenticationService")
 	authServer := apb.NewAuthenticationServiceClient(cn)
 	pk, err := authServer.GetPublicSigningKey(cctx, &common.Void{})
 	if err != nil {
@@ -79,7 +87,8 @@ func GetSignatureFromAuth() {
 	cn.Close()
 	retrieved_sig = true
 	retrieving = false
+	last_registry = cmdline.GetClientRegistryAddress()
 	if cmdline.DebugAuth() {
-		fmt.Printf("[go-easyops] got Signature and cloudname (%s)\n", pk.CloudName)
+		fmt.Printf("[go-easyops] got Signature and cloudname (%s) from registry %s\n", pk.CloudName, last_registry)
 	}
 }
