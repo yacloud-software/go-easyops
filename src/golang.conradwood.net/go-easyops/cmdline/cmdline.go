@@ -238,3 +238,17 @@ func DebugAuth() bool {
 func SetEnvContext(s string) {
 	overridden_env_context = s
 }
+
+// usually returns /opt/yacloud/current
+func GetYACloudDir() string {
+	dirs := []string{
+		"/opt/yacloud/current",
+		"/opt/yacloud/",
+	}
+	for _, res := range dirs {
+		if utils.FileExists(res + "/ctools") {
+			return res
+		}
+	}
+	return ""
+}
