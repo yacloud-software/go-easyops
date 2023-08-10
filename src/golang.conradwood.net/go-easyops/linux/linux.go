@@ -34,6 +34,7 @@ type linux struct {
 	ctx              context.Context
 	context_set      bool // if user-supplied context
 	envs             []string
+	lastcmd          []string
 	runforever       bool
 }
 
@@ -90,6 +91,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	if len(cmd) == 0 {
 		return "", fmt.Errorf("no command specified for execute.")
 	}
+	l.lastcmd = cmd
 	if !l.AllowConcurrency {
 		if curCmd != "" {
 			if *LogExe {
@@ -108,7 +110,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	}
 	// execute
 	if *LogExe {
-		fmt.Printf("[go-easyops] preparing to execute command %s\n", curCmd)
+		fmt.Printf("[go-easyops] preparing to execute below command:\n%s\n", l.ComWithParas())
 	}
 	c := exec.CommandContext(l.ctx, cmd[0], cmd[1:]...)
 	if dir != "" {
@@ -122,7 +124,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	l.env(c)
 	output, err := l.syncExecute(c, l.Runtime, !l.runforever)
 	if *LogExe {
-		printOutput(curCmd, output)
+		printOutput(l.ComName(), output)
 	}
 	curCmd = ""
 	if err != nil {
@@ -161,7 +163,7 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration, hastimeout bool)
 	// (if timer is really short)
 	running = true
 	if *LogExe {
-		fmt.Printf("[go-easyops] executing command %s (timeout=%0.2fs)\n", curCmd, timeout.Seconds())
+		fmt.Printf("[go-easyops] executing command %s (timeout=%0.2fs)\n", l.ComName(), timeout.Seconds())
 	}
 	b, err := c.CombinedOutput()
 	if *LogExe {
@@ -219,4 +221,21 @@ func (l *linux) env(c *exec.Cmd) error {
 		c.Env = append(c.Env, e)
 	}
 	return nil
+}
+
+func (l *linux) ComWithParas() string {
+	if len(l.lastcmd) == 0 {
+		return "<no command executed>"
+	}
+	return strings.Join(l.lastcmd, " ")
+}
+func (l *linux) ComName() string {
+	if len(l.lastcmd) == 0 || l.lastcmd[0] == "" {
+		return "<no command executed>"
+	}
+	s := l.lastcmd[0]
+	if strings.Contains(s, "sudo") && len(l.lastcmd) > 1 {
+		return "sudo " + l.lastcmd[1]
+	}
+	return l.lastcmd[0]
 }
