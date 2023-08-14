@@ -21,6 +21,12 @@ func main() {
 	for i := 0; i < 10; i++ {
 		lo.LogCommandStdout(fmt.Sprintf("stdout - Line %d logged", i), "testing")
 	}
+	s := ""
+	numlines := 10
+	for i := 0; i < numlines; i++ {
+		s = s + fmt.Sprintf("Line %d of %d logged\n", i, numlines)
+	}
+	lo.Write([]byte(s))
 	lo.Close(0)
 	fmt.Printf("Done\n")
 }

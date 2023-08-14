@@ -61,7 +61,8 @@ func main() {
 	}
 
 	sd := server.NewServerDef()
-
+	sd.SetPublic()
+	sd.DontRegister()
 	if *tag != "" {
 		kv := strings.SplitN(*tag, "=", 2)
 		if len(kv) != 2 {

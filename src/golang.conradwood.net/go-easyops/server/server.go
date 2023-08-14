@@ -97,6 +97,7 @@ type serverDef struct {
 	ErrorHandler    func(ctx context.Context, function_name string, err error)
 	local_service   *au.SignedUser // the local service account
 	service_user_id string         // the serviceaccount userid
+	public          bool
 }
 
 func init() {
@@ -110,6 +111,12 @@ func init() {
 			reRegister()
 		}
 	}()
+}
+func (s *serverDef) DontRegister() {
+	s.RegisterService = false
+}
+func (s *serverDef) SetPublic() {
+	s.public = true
 }
 
 /*
@@ -374,7 +381,9 @@ func ServerStartup(def *serverDef) error {
 		AddRegistry(def)
 	}
 	// something odd?
-	reflection.Register(grpcServer)
+	if !def.public {
+		reflection.Register(grpcServer)
+	}
 	// Serve and Listen
 	// Blocking call!
 	err = startHttpServe(def, grpcServer)
@@ -397,37 +406,38 @@ func ServerStartup(def *serverDef) error {
 
 func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/internal/service-info/", func(w http.ResponseWriter, req *http.Request) {
-		serveServiceInfo(w, req, sd)
-	})
-	mux.HandleFunc("/internal/pleaseshutdown", func(w http.ResponseWriter, req *http.Request) {
-		pleaseShutdown(w, req, grpcServer)
-	})
-	mux.HandleFunc("/internal/healthz", func(w http.ResponseWriter, req *http.Request) {
-		healthzHandler(w, req, sd)
-	})
-	mux.HandleFunc("/internal/help", func(w http.ResponseWriter, req *http.Request) {
-		helpHandler(w, req, sd)
-	})
-	mux.HandleFunc("/internal/clearcache", func(w http.ResponseWriter, req *http.Request) {
-		clearCacheHandler(w, req)
-	})
-	mux.HandleFunc("/internal/parameters", func(w http.ResponseWriter, req *http.Request) {
-		paraHandler(w, req, sd)
-	})
+	if !sd.public {
+		mux.HandleFunc("/internal/service-info/", func(w http.ResponseWriter, req *http.Request) {
+			serveServiceInfo(w, req, sd)
+		})
+		mux.HandleFunc("/internal/pleaseshutdown", func(w http.ResponseWriter, req *http.Request) {
+			pleaseShutdown(w, req, grpcServer)
+		})
+		mux.HandleFunc("/internal/healthz", func(w http.ResponseWriter, req *http.Request) {
+			healthzHandler(w, req, sd)
+		})
+		mux.HandleFunc("/internal/help", func(w http.ResponseWriter, req *http.Request) {
+			helpHandler(w, req, sd)
+		})
+		mux.HandleFunc("/internal/clearcache", func(w http.ResponseWriter, req *http.Request) {
+			clearCacheHandler(w, req)
+		})
+		mux.HandleFunc("/internal/parameters", func(w http.ResponseWriter, req *http.Request) {
+			paraHandler(w, req, sd)
+		})
 
-	nm, _ := prometheus.NonstandMetricNames(pm.DefaultRegisterer.(*pm.Registry))
-	if len(nm) > 0 {
-		for _, n := range nm {
-			fmt.Printf("Reg: \"%s\"\n", n)
+		nm, _ := prometheus.NonstandMetricNames(pm.DefaultRegisterer.(*pm.Registry))
+		if len(nm) > 0 {
+			for _, n := range nm {
+				fmt.Printf("Reg: \"%s\"\n", n)
+			}
+			panic("something registered outside go-easyops and will not be exposed")
 		}
-		panic("something registered outside go-easyops and will not be exposed")
+		gatherer := prometheus.GetGatherer()
+		h := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{})
+		mux.Handle("/internal/service-info/metrics", h)
+		//	mux.Handle("/internal/service-info/metrics", promhttp.Handler())
 	}
-	gatherer := prometheus.GetGatherer()
-	h := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{})
-	mux.Handle("/internal/service-info/metrics", h)
-	//	mux.Handle("/internal/service-info/metrics", promhttp.Handler())
-
 	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", sd.Port))
 	if err != nil {
 		panic(err)
