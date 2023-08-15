@@ -19,8 +19,8 @@ require (
 	golang.conradwood.net/apis/objectstore v1.1.2371
 	golang.conradwood.net/apis/registry v1.1.2371
 	golang.conradwood.net/apis/rpcinterceptor v1.1.2309
-	golang.org/x/net v0.12.0
-	golang.org/x/sys v0.10.0
+	golang.org/x/net v0.14.0
+	golang.org/x/sys v0.11.0
 	golang.yacloud.eu/apis/session v1.1.2371
 	golang.yacloud.eu/apis/urlcacher v1.1.2309
 	google.golang.org/grpc v1.56.2
@@ -37,7 +37,7 @@ require (
 	golang.conradwood.net/apis/autodeployer v1.1.2371 // indirect
 	golang.conradwood.net/apis/commondeploy v1.1.2371 // indirect
 	golang.conradwood.net/apis/deploymonkey v1.1.2371 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 )

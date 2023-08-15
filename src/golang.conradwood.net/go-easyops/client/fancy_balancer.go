@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/resolver"
+	"strings"
 	"sync"
 	"time"
 )
@@ -31,16 +32,24 @@ type FancyBuilder struct {
 // Build creates a new balancer for the (new) ClientConn.
 func (f *FancyBuilder) Build(cc balancer.ClientConn, opts balancer.BuildOptions) balancer.Balancer {
 	fancyPrintf(f, "Building Balancer for %s\n", opts.Target.Endpoint())
+	// name is the dialler address, e.g. "helloworld.HelloWorld@localhost:5000"
 	fal := &FancyAddressList{Name: opts.Target.Endpoint()}
 	cc.UpdateState(balancer.State{
 		ConnectivityState: connectivity.Ready,
 		Picker:            &FancyPicker{addresslist: fal}, // not failing - initially we wait
 	})
+	// target is the servicename, e.g. "helloworld.HelloWorld"
+	idx := strings.Index(fal.Name, "@")
+	if idx == -1 {
+		panic(fmt.Sprintf("unsupported target: %s", fal.Name))
+	}
+	target := fal.Name[:idx]
 	res := &FancyBalancer{cc: cc,
-		target:       opts.Target.Authority,
+		target:       target, //opts.Target.Authority,
 		blockedSince: time.Now(),
 		addresslist:  fal,
 	}
+	fancyPrintf(f, "Built balancer for target \"%s\"\n", res.target)
 	if res.target == "" {
 		s := fmt.Sprintf("cannot create fancy-balancer without servicename (opts=%#v). Dial must be in the format 'go-easyops://servicename/servicename@registry'", opts)
 		panic(s)

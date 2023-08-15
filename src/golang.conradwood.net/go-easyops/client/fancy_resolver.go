@@ -75,8 +75,12 @@ func (f *FancyResolverBuilder) Scheme() string {
 	return "go-easyops"
 }
 func (f *FancyResolverBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-
-	if target.Authority == "" {
+	fmt.Printf("Target: %#v\n", target)
+	authority := target.URL.Host
+	//	authority := "foo-bar"
+	fmt.Printf("Authority: %s\n", authority)
+	// authority is the servicename, e.g. "helloworld.HelloWorld")
+	if authority == "" {
 		panic("no target")
 	}
 	var registry string
@@ -85,7 +89,7 @@ func (f *FancyResolverBuilder) Build(target resolver.Target, cc resolver.ClientC
 	}
 	rs := strings.Split(target.Endpoint(), "@")
 	registry = rs[len(rs)-1]
-	res := &FancyResolver{cc: cc, target: target.Authority, registry: registry}
+	res := &FancyResolver{cc: cc, target: authority, registry: registry}
 	fancyPrintf(res, "fancy_resolver(): Request to build resolver for %#v\n", target)
 
 	common.AddServiceName(res.target)
