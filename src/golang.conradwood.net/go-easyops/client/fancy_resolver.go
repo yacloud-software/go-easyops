@@ -75,10 +75,10 @@ func (f *FancyResolverBuilder) Scheme() string {
 	return "go-easyops"
 }
 func (f *FancyResolverBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-	fmt.Printf("Target: %#v\n", target)
+	//fmt.Printf("Target: %#v\n", target)
 	authority := target.URL.Host
 	//	authority := "foo-bar"
-	fmt.Printf("Authority: %s\n", authority)
+	//fmt.Printf("Authority: %s\n", authority)
 	// authority is the servicename, e.g. "helloworld.HelloWorld")
 	if authority == "" {
 		panic("no target")
