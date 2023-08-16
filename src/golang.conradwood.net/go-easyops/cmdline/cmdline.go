@@ -168,7 +168,7 @@ func SetClientRegistryAddress(reg string) {
 // get registry address as per -registry parameter
 func GetRegistryAddress() string {
 	res := *registry
-	if registry == REGISTRY_DEFAULT {
+	if *registry == REGISTRY_DEFAULT {
 		s := os.Getenv("GE_REGISTRY")
 		if s != "" {
 			res = s
