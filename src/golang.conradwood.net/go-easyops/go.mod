@@ -9,19 +9,19 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/client_model v0.4.0
-	golang.conradwood.net/apis/auth v1.1.2371
-	golang.conradwood.net/apis/common v1.1.2371
+	golang.conradwood.net/apis/auth v1.1.2467
+	golang.conradwood.net/apis/common v1.1.2467
 	golang.conradwood.net/apis/echoservice v1.1.2309
 	golang.conradwood.net/apis/errorlogger v1.1.2309
 	golang.conradwood.net/apis/framework v1.1.2371
-	golang.conradwood.net/apis/goeasyops v1.1.2371
+	golang.conradwood.net/apis/goeasyops v1.1.2467
 	golang.conradwood.net/apis/logservice v1.1.2371
 	golang.conradwood.net/apis/objectstore v1.1.2371
 	golang.conradwood.net/apis/registry v1.1.2371
 	golang.conradwood.net/apis/rpcinterceptor v1.1.2309
 	golang.org/x/net v0.14.0
 	golang.org/x/sys v0.11.0
-	golang.yacloud.eu/apis/session v1.1.2371
+	golang.yacloud.eu/apis/session v1.1.2467
 	golang.yacloud.eu/apis/urlcacher v1.1.2309
 	google.golang.org/grpc v1.56.2
 	gopkg.in/yaml.v2 v2.4.0
