@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const (
+	REGISTRY_DEFAULT = "localhost:5000"
+)
+
 var (
 	// annoyingly, not all go-easyops flags start with ge_
 	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
@@ -19,7 +23,7 @@ var (
 	mlock                 sync.Mutex
 	running_in_datacenter = flag.Bool("AD_started_by_auto_deployer", false, "the autodeployer sets this to true to modify the behaviour to make it suitable for general-availability services in the datacenter")
 
-	registry          = flag.String("registry", "localhost:5000", "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
+	registry          = flag.String("registry", REGISTRY_DEFAULT, "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
 	registry_resolver = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
 	instance_id       = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
 	ext_help          = flag.Bool("X", false, "extended help")
@@ -164,6 +168,12 @@ func SetClientRegistryAddress(reg string) {
 // get registry address as per -registry parameter
 func GetRegistryAddress() string {
 	res := *registry
+	if registry == REGISTRY_DEFAULT {
+		s := os.Getenv("GE_REGISTRY")
+		if s != "" {
+			res = s
+		}
+	}
 	if !strings.Contains(res, ":") {
 		res = fmt.Sprintf("%s:5000", res)
 	}
