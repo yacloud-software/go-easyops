@@ -66,12 +66,6 @@ message CTXRoutingTags {
 message GRPCErrorList {
   repeated GRPCError Errors=1;
 }
-
-// parsed on boot
-message Config {
-  string Registry=1;
-}
-
 message GRPCError {
   string UserMessage=1;
   string LogMessage=2;
