@@ -157,6 +157,9 @@ func (alq *AsyncLogQueue) Close(exitcode int) error {
 	if alq.closed {
 		return fmt.Errorf("Closed already!")
 	}
+	if err != nil {
+		fmt.Printf("[go-easyops] Failed to flush log: %s\n", err)
+	}
 	cl := logservice.CloseLogRequest{AppDef: alq.appDef, ExitCode: int32(exitcode)}
 	lerr := getClient()
 	if lerr != nil {
