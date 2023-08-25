@@ -3,23 +3,32 @@ package cmdline
 import (
 	"flag"
 	"fmt"
+	pb "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/appinfo"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
 	"time"
 )
 
+const (
+	CONFIG_FILE      = "/tmp/goeasyops.config"
+	REGISTRY_DEFAULT = "localhost:5000"
+)
+
 var (
+	config *pb.Config
 	// annoyingly, not all go-easyops flags start with ge_
 	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
 	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
 	mlock                 sync.Mutex
 	running_in_datacenter = flag.Bool("AD_started_by_auto_deployer", false, "the autodeployer sets this to true to modify the behaviour to make it suitable for general-availability services in the datacenter")
 
-	registry          = flag.String("registry", "localhost:5000", "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
+	registry          = flag.String("registry", REGISTRY_DEFAULT, "address of the registry server. This is used for registration as well as resolving unless -registry_resolver is set, in which case this is only used for registration")
 	registry_resolver = flag.String("registry_resolver", "", "address of the registry server (for lookups)")
 	instance_id       = flag.String("ge_instance_id", "", "autodeployers internal instance id. We may use this to get information about ourselves")
 	ext_help          = flag.Bool("X", false, "extended help")
@@ -43,10 +52,35 @@ func init() {
 			go print_late_usage()
 		}
 	}
+
+	// read a potential config file
+	err := readConfig(CONFIG_FILE)
+	if err != nil {
+		os.Exit(10)
+	}
+}
+func readConfig(filename string) error {
+	_, err := os.Stat(filename)
+	if err != nil {
+		return nil // if file does not exist, it's not an error
+	}
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Printf("[go-easyops] failed to read file %s: %s\n", filename, err)
+		return err
+	}
+	cfg := &pb.Config{}
+	err = yaml.UnmarshalStrict(b, cfg)
+	if err != nil {
+		fmt.Printf("[go-easyops] invalid file %s: %s\n", filename, err)
+		return err
+	}
+	config = cfg
+	return nil
 }
 
 // if we have a -X argument we will print extended usage AFTER flags are parsed.
-// we know flags are parsed if ext_help flag (-X) turns true (timeout after 5 secs)
+// we know flags areg parsed if ext_help flag (-X) turns true (timeout after 5 secs)
 func print_late_usage() {
 	fmt.Printf("[go-easyops] Printing extended help after flag.Parse() was called...\n")
 	st := time.Now()
@@ -117,6 +151,13 @@ func PrintDefaults() {
 
 		fmt.Printf("%s\n", s)
 	})
+	fmt.Printf(`
+Environment Variables:
+GE_REGISTRY:    default for -registry
+GE_CTX:         a serialised context (to be used by authremote.Context()
+
+Config file: /tmp/goeasyops.config
+`)
 
 }
 func GetInstanceID() string {
@@ -164,6 +205,17 @@ func SetClientRegistryAddress(reg string) {
 // get registry address as per -registry parameter
 func GetRegistryAddress() string {
 	res := *registry
+	if *registry == REGISTRY_DEFAULT {
+		s := os.Getenv("GE_REGISTRY")
+		if s != "" {
+			res = s
+		}
+	}
+	if *registry == REGISTRY_DEFAULT {
+		if config != nil && config.Registry != "" {
+			res = config.Registry
+		}
+	}
 	if !strings.Contains(res, ":") {
 		res = fmt.Sprintf("%s:5000", res)
 	}
