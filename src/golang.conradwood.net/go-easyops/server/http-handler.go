@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/appinfo"
+	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	pp "golang.conradwood.net/go-easyops/profiling"
@@ -159,6 +160,7 @@ func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	s = s + "<a href=\"/internal/clearcache\">clearcache</a> (append /name to clear a specific cache)<br/>"
 	s = s + "<a href=\"/internal/parameters\">parameters</a><br/>"
 	s = s + "<a href=\"/internal/service-info/grpc-connections\">GRPC Connections</a><br/>"
+	s = s + "<a href=\"/internal/service-info/dependencies\">Registered GRPC Dependencies</a><br/>"
 	s = s + "<a href=\"/internal/debug/info\">Go-Profiler</a><br/>"
 	s = s + "<a href=\"/internal/debug/cpu\">CPU Profiler</a><br/>"
 	s = s + "<a href=\"/internal/debug/heapdump\">Download Heap Dump</a><br/>"
@@ -179,12 +181,23 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		serveVersion(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/grpc-connections") {
 		serveGRPCConnections(w, req, sd)
+	} else if strings.HasPrefix(p, "/internal/service-info/dependencies") {
+		serveDependencies(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/metrics") {
 		fmt.Printf("Request path: \"%s\"\n", p)
 		m := strings.TrimPrefix(p, "/internal/service-info/metrics")
 		m = strings.TrimLeft(m, "/")
 	} else {
 		fmt.Printf("Invalid path: \"%s\"\n", p)
+	}
+}
+
+// serve /internal/service-info/dependencies
+func serveDependencies(w http.ResponseWriter, req *http.Request, sd *serverDef) {
+	s := client.GetDependencies()
+	fmt.Fprintf(w, "# %d registered dependencies\n", len(s))
+	for _, r := range s {
+		fmt.Fprintf(w, "%s\n", r)
 	}
 }
 
