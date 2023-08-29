@@ -212,6 +212,7 @@ func serveVersion(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	fmt.Fprintf(w, "app_description: %s\n", appinfo.AppInfo().Description)
 	fmt.Fprintf(w, "app_repository: %s\n", appinfo.AppInfo().RepositoryName)
 	fmt.Fprintf(w, "app_repository_id: %d\n", appinfo.AppInfo().RepositoryID)
+	fmt.Fprintf(w, "app_artefact_id: %d\n", appinfo.AppInfo().ArtefactID)
 	fmt.Fprintf(w, "app_commit: %s\n", appinfo.AppInfo().CommitID)
 
 }
