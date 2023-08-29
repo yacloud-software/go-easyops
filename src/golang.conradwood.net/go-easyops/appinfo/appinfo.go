@@ -13,6 +13,7 @@ type AppVersionInfo struct {
 	RepositoryName string
 	CommitID       string
 	GitURL         string
+	ArtefactID     uint64
 }
 
 var (
@@ -22,6 +23,7 @@ var (
 	LD_Description    string
 	LD_Timestamp      string
 	LD_RepositoryID   string
+	LD_ArtefactID     string
 	LD_RepositoryName string
 	LD_CommitID       string
 	LD_GitURL         string
@@ -40,6 +42,7 @@ func AppInfo() *AppVersionInfo {
 			Description:    LD_Description,
 			Timestamp:      int64(required_number(LD_Timestamp)),
 			RepositoryID:   required_number(LD_RepositoryID),
+			ArtefactID:     required_number(LD_ArtefactID),
 			RepositoryName: LD_RepositoryName,
 			CommitID:       LD_CommitID,
 			GitURL:         LD_GitURL,

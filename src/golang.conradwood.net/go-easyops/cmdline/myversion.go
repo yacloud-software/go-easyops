@@ -7,6 +7,7 @@ const (
 	BUILD_DESCRIPTION   = "not set" //replaceme
 	BUILD_TIMESTAMP     = 1         //replaceme
 	BUILD_REPOSITORY_ID = 1         // replaceme
+	BUILD_ARTEFACT_ID   = 1         // replaceme
 	BUILD_REPOSITORY    = "not set" // replaceme
 	BUILD_COMMIT        = "not set" // replaceme
 )
