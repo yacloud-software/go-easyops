@@ -80,3 +80,14 @@ message GRPCError {
   string CallingServiceID=5; // the service which called the method which  returned the error
   string CallingServiceEmail=6; // the service which called the service/method which returned the error
 }
+
+
+// a postgres configuration
+message PostgresConfig {
+  string Host=1;
+  string DB=2;
+  string User=3;
+  string PW=4;
+  uint32 MaxConnections=5; // optional: if 0, assumes go-easyops default
+  uint32 MaxIdleSecs=6; // optional: if 0, assumes go-easyops default
+}
