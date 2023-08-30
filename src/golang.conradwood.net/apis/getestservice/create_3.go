@@ -1,6 +1,6 @@
 // client create: EasyOpsClient
 /*
-  Created by /srv/home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+  Created by /home/cnw/devel/go/yatools/src/golang.yacloud.eu/yatools/protoc-gen-cnw/protoc-gen-cnw.go
 */
 
 /* geninfo:
@@ -13,7 +13,7 @@
    varname   : client_EasyOpsClient_2
    clientname: EasyOpsClient
    servername: EasyOpsServer
-   gscvname  : getestservice.EasyOps
+   gsvcname  : getestservice.EasyOps
    lockname  : lock_EasyOpsClient_2
    activename: active_EasyOpsClient_2
 */
@@ -46,3 +46,7 @@ func GetEasyOpsClient() EasyOpsClient {
 }
 
 func EasyOpsLookupID() string { return "getestservice.EasyOps" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.
+
+func init() {
+   client.RegisterDependency("getestservice.EasyOps")
+}

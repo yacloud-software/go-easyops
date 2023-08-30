@@ -1,6 +1,6 @@
 // client create: EchoServiceClient
 /*
-  Created by /srv/home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+  Created by /home/cnw/devel/go/yatools/src/golang.yacloud.eu/yatools/protoc-gen-cnw/protoc-gen-cnw.go
 */
 
 /* geninfo:
@@ -13,7 +13,7 @@
    varname   : client_EchoServiceClient_0
    clientname: EchoServiceClient
    servername: EchoServiceServer
-   gscvname  : getestservice.EchoService
+   gsvcname  : getestservice.EchoService
    lockname  : lock_EchoServiceClient_0
    activename: active_EchoServiceClient_0
 */
@@ -62,3 +62,7 @@ func GetEchoServiceClient() EchoServiceClient {
 }
 
 func EchoServiceLookupID() string { return "getestservice.EchoService" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.
+
+func init() {
+   client.RegisterDependency("getestservice.EchoService")
+}

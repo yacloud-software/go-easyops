@@ -27,6 +27,11 @@ const (
 )
 
 var (
+	e_dbhost = cmdline.ENV("GE_POSTGRES_HOST", "the postgresql hostname to connect to")
+	e_dbdb   = cmdline.ENV("GE_POSTGRES_DB", "the postgresql database to connect to")
+	e_dbuser = cmdline.ENV("GE_POSTGRES_USER", "the postgresql user to connect with")
+	e_dbpw   = cmdline.ENV("GE_POSTGRES_PW", "the postgresql password to connect with")
+
 	failure_action = flag.String("ge_sql_failure_action", "report", "one of [report|quit|retry], report means to report it to the application (this is the default), quit means to quit the process, retry means to block until the connection is open")
 	/* eventually we'll look these up in the datacenter rather than passing
 	these as command line parameters.
@@ -100,11 +105,23 @@ func maxIdle() int {
 // call this once when you startup and cache the result
 // only if there is an error you'll need to retry
 func Open() (*DB, error) {
-	return OpenWithInfo(cmdline.OptEnvString(*f_dbhost, "GE_DBHOST"),
-		cmdline.OptEnvString(*f_dbdb, "GE_DBDB"),
-		cmdline.OptEnvString(*f_dbuser, "GE_DBUSER"),
-		cmdline.OptEnvString(*f_dbpw, "GE_DBPW"),
-	)
+	host := *f_dbhost
+	db := *f_dbdb
+	user := *f_dbuser
+	pw := *f_dbpw
+	if host == "" {
+		host = e_dbhost.Value()
+	}
+	if db == "" {
+		db = e_dbdb.Value()
+	}
+	if user == "" {
+		user = e_dbuser.Value()
+	}
+	if pw == "" {
+		pw = e_dbpw.Value()
+	}
+	return OpenWithInfo(host, db, user, pw)
 }
 func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 	var err error

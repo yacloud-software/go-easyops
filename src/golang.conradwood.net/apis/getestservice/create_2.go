@@ -1,6 +1,6 @@
 // client create: EchoStreamServiceClient
 /*
-  Created by /srv/home/cnw/devel/go/go-tools/src/golang.conradwood.net/gotools/protoc-gen-cnw/protoc-gen-cnw.go
+  Created by /home/cnw/devel/go/yatools/src/golang.yacloud.eu/yatools/protoc-gen-cnw/protoc-gen-cnw.go
 */
 
 /* geninfo:
@@ -13,7 +13,7 @@
    varname   : client_EchoStreamServiceClient_1
    clientname: EchoStreamServiceClient
    servername: EchoStreamServiceServer
-   gscvname  : getestservice.EchoStreamService
+   gsvcname  : getestservice.EchoStreamService
    lockname  : lock_EchoStreamServiceClient_1
    activename: active_EchoStreamServiceClient_1
 */
@@ -62,3 +62,7 @@ func GetEchoStreamServiceClient() EchoStreamServiceClient {
 }
 
 func EchoStreamServiceLookupID() string { return "getestservice.EchoStreamService" } // returns the ID suitable for lookup in the registry. treat as opaque, subject to change.
+
+func init() {
+   client.RegisterDependency("getestservice.EchoStreamService")
+}

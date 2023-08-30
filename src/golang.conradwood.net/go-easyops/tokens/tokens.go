@@ -15,6 +15,8 @@ import (
 )
 
 var (
+	e_token                  = cmdline.ENV("GE_USERTOKEN", "a service token")
+	e_usertoken              = cmdline.ENV("GE_USERTOKEN", "a usertoken")
 	token                    = flag.String("token", "", "service token")
 	disusertoken             = flag.Bool("ge_disable_user_token", false, "if true disable reading of user token (for testing)")
 	Deadline                 = flag.Int("ge_ctx_deadline_seconds", 10, "do not change for production services")
@@ -90,7 +92,10 @@ func SetServiceTokenParameter(tok string) {
 	*token = tok
 }
 func GetServiceTokenParameter() string {
-	return cmdline.OptEnvString(*token, "GE_TOKEN")
+	if *token != "" {
+		return *token
+	}
+	return e_token.Value()
 }
 func readToken(token string) string {
 	var tok string
@@ -164,15 +169,20 @@ func GetUserTokenParameter() string {
 		//fmt.Printf("[go-easyops] tokens: user token disabled\n")
 		return ""
 	}
-	ut := cmdline.OptEnvString("", "GE_USERTOKEN")
+
+	ut := e_usertoken.Value()
 	if ut != "" {
 		return ut
 	}
 	// if token is set either as parameter or as ENV variable GE_TOKEN, then return ""
 	// because we are a service (services do not run as users)
-	if cmdline.OptEnvString(*token, "GE_TOKEN") != "" {
-		return ""
+	if *token != "" {
+		return *token
 	}
+	if e_token.Value() != "" {
+		return e_token.Value()
+	}
+
 	if tokenwasread && last_token_read_registry == cmdline.GetClientRegistryAddress() {
 		return usertoken
 	}

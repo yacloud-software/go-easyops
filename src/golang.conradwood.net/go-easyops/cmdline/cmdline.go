@@ -21,7 +21,9 @@ const (
 )
 
 var (
-	config *pb.Config
+	reg_env = ENV("GE_REGISTRY", "default registry address")
+	e_ctx   = ENV("GE_CTX", "a serialised context to use when creating new ones")
+	config  *pb.Config
 	// annoyingly, not all go-easyops flags start with ge_
 	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
 	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
@@ -153,12 +155,13 @@ func PrintDefaults() {
 		fmt.Printf("%s\n", s)
 	})
 	fmt.Printf(`
-Environment Variables:
-GE_REGISTRY:    default for -registry
-GE_CTX:         a serialised context (to be used by authremote.Context()
-
 Config file: /tmp/goeasyops.config
+
+Environment Variables:
 `)
+
+	s := render_env_help()
+	fmt.Println(s)
 
 }
 func GetInstanceID() string {
@@ -207,7 +210,7 @@ func SetClientRegistryAddress(reg string) {
 func GetRegistryAddress() string {
 	res := *registry
 	if *registry == REGISTRY_DEFAULT {
-		s := os.Getenv("GE_REGISTRY")
+		s := reg_env.Value()
 		if s != "" {
 			res = s
 		}
@@ -281,7 +284,7 @@ func GetEnvContext() string {
 		fmt.Printf("[go-easyops] using overriden env context (%s %s)\n", s, utils.HexStr([]byte(s)))
 		return overridden_env_context
 	}
-	return os.Getenv("GE_CTX")
+	return e_ctx.Value()
 }
 func DebugAuth() bool {
 	return *debug_auth
