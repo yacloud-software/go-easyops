@@ -288,6 +288,14 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 
 // "name" will be used to provide timing information as prometheus metric.
 func (d *DB) ExecContext(ctx context.Context, name string, query string, args ...interface{}) (sql.Result, error) {
+	rep := *sqldebug || *print_errors
+	return d.execContext(ctx, rep, name, query, args...)
+}
+func (d *DB) ExecContextQuiet(ctx context.Context, name string, query string, args ...interface{}) (sql.Result, error) {
+	rep := false
+	return d.execContext(ctx, rep, name, query, args...)
+}
+func (d *DB) execContext(ctx context.Context, report_failure bool, name string, query string, args ...interface{}) (sql.Result, error) {
 	d.reconnect_if_required()
 	d.reconnectLock.RLock()
 	defer d.reconnectLock.RUnlock()
@@ -308,7 +316,7 @@ func (d *DB) ExecContext(ctx context.Context, name string, query string, args ..
 	}
 	if err != nil {
 		d.failurectr.Add(1, 1)
-		if *sqldebug || *print_errors {
+		if report_failure {
 			fmt.Printf("[go-easyops] [sql] Query %s (%s) failed (%s)\n", name, query, err)
 		}
 		sqlFailedQueries.With(l).Inc()
