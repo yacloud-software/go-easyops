@@ -23,7 +23,9 @@ func (e *env_var) Value() string {
 	x := os.Getenv(e.name)
 	return x
 }
-
+func (e *env_var) Name() string {
+	return e.name
+}
 func render_env_help() string {
 	longest := 0
 	for _, e := range envs {

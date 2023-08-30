@@ -12,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	pq "github.com/lib/pq"
+	pb "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/cmdline"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -27,10 +28,11 @@ const (
 )
 
 var (
-	e_dbhost = cmdline.ENV("GE_POSTGRES_HOST", "the postgresql hostname to connect to")
-	e_dbdb   = cmdline.ENV("GE_POSTGRES_DB", "the postgresql database to connect to")
-	e_dbuser = cmdline.ENV("GE_POSTGRES_USER", "the postgresql user to connect with")
-	e_dbpw   = cmdline.ENV("GE_POSTGRES_PW", "the postgresql password to connect with")
+	e_dbhost  = cmdline.ENV("GE_POSTGRES_HOST", "the postgresql hostname to connect to")
+	e_dbdb    = cmdline.ENV("GE_POSTGRES_DB", "the postgresql database to connect to")
+	e_dbuser  = cmdline.ENV("GE_POSTGRES_USER", "the postgresql user to connect with")
+	e_dbpw    = cmdline.ENV("GE_POSTGRES_PW", "the postgresql password to connect with")
+	e_dbproto = cmdline.ENV("GE_POSTGRES_PROTO", "the postgresql connection details as base64 encoded proto goeasyops.PostgresConfig")
 
 	failure_action = flag.String("ge_sql_failure_action", "report", "one of [report|quit|retry], report means to report it to the application (this is the default), quit means to quit the process, retry means to block until the connection is open")
 	/* eventually we'll look these up in the datacenter rather than passing
@@ -120,6 +122,23 @@ func Open() (*DB, error) {
 	}
 	if pw == "" {
 		pw = e_dbpw.Value()
+	}
+	if e_dbproto.Value() != "" {
+		pp := &pb.PostgresConfig{}
+		err := utils.Unmarshal(e_dbproto.Value(), pp)
+		utils.Bail("invalid configuration in "+e_dbproto.Name(), err)
+		if host == "" {
+			host = pp.Host
+		}
+		if db == "" {
+			db = pp.DB
+		}
+		if user == "" {
+			user = pp.User
+		}
+		if pw == "" {
+			pw = pp.PW
+		}
 	}
 	return OpenWithInfo(host, db, user, pw)
 }
