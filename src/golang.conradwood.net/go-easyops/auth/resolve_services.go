@@ -190,7 +190,13 @@ func svc_to_user_load_mapping() {
 }
 
 func ServiceMapToYaml(m map[string]string) []byte {
-	sum := &serviceToUserIDMap{Mapping: m}
+	xmap := make(map[string]string)
+	for k, v := range m {
+		if v != "" {
+			xmap[k] = v
+		}
+	}
+	sum := &serviceToUserIDMap{Mapping: xmap}
 	b, err := yaml.Marshal(sum)
 	if err != nil {
 		return []byte(fmt.Sprintf("failed to yaml: %s", err))
