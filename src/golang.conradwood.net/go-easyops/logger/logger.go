@@ -1,245 +1,37 @@
 package logger
 
-import (
-	"context"
-	"flag"
-	"fmt"
-	"golang.conradwood.net/apis/logservice"
-	"golang.conradwood.net/go-easyops/client"
-	"golang.conradwood.net/go-easyops/ctx"
-	"sync"
-	"time"
-)
+import ()
 
-var (
-	log_debug  = flag.Bool("ge_debug_logger", false, "set to true to debug logging")
-	grpcClient logservice.LogServiceClient
-	inp        = false
-	logLock    sync.Mutex
-)
-
-type QueueEntry struct {
-	created int64
-	status  string
-	binline []byte
-}
-
-type AsyncLogQueue struct {
-	closed         bool
-	appDef         *logservice.LogAppDef
-	entries        *[]*QueueEntry
-	lastErrPrinted time.Time
-	MaxSize        int
-	sync.Mutex
-	status string
-}
-
-func getClient() error {
-	if inp {
-		return fmt.Errorf("Logservice initialisation already in progress\n")
-	}
-	if grpcClient != nil {
-		return nil
-	}
-	logLock.Lock()
-	inp = true
-	grpcClient = logservice.NewLogServiceClient(client.Connect("logservice.LogService"))
-	inp = false
-	logLock.Unlock()
-	return nil
-}
+type AsyncLogQueue struct{}
 
 func NewAsyncLogQueue(appname string, buildid, repoid uint64, group, namespace, deplid string) (*AsyncLogQueue, error) {
-	if appname == "" {
-		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without appname")
-	}
-	if group == "" {
-		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without group ")
-	}
-	if namespace == "" {
-		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without namespace")
-	}
-	if deplid == "" {
-		return nil, fmt.Errorf("[go-easyops] Will not instantiate an AsyncLogQueue without deploymentid")
-	}
-	alq := &AsyncLogQueue{
-		appDef: &logservice.LogAppDef{
-			Appname:      appname,
-			RepoID:       repoid,
-			Groupname:    group,
-			Namespace:    namespace,
-			DeploymentID: deplid,
-			BuildID:      buildid,
-		},
-		closed:  false,
-		MaxSize: 5000,
-	}
-
-	alq.entries = &([]*QueueEntry{})
-	t := time.NewTicker(1 * time.Second)
-
-	go func(a *AsyncLogQueue) {
-		for _ = range t.C {
-			err := a.Flush()
-			if (*log_debug) && (err != nil) {
-				fmt.Printf("Error flushing logqueue:%s\n", err)
-			}
-		}
-	}(alq)
-
-	return alq, nil
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
 
 func (alq *AsyncLogQueue) String() string {
-	if alq == nil {
-		return "empty_asynclogqueue"
-	}
-	ad := alq.appDef
-	if ad == nil {
-		return "new_asynclogqueue"
-	}
-	return fmt.Sprintf("Log for %s, repoid %d, build %d (deplid: %s)", ad.Appname, ad.RepoID, ad.BuildID, ad.DeploymentID)
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
 func (alq *AsyncLogQueue) SetStatus(status string) {
-	alq.status = status
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
 func (alq *AsyncLogQueue) LogCommandStdout(line string, status string) error {
-	alq.status = status
-	if *log_debug {
-		fmt.Printf("app:\"%s\" LOGGED: %s\n", alq.appDef.Appname, line)
-	}
-	qe := QueueEntry{
-		created: time.Now().Unix(),
-		binline: []byte(line),
-		status:  status,
-	}
-	alq.Lock()
-	defer alq.Unlock()
-	if len(*alq.entries) > alq.MaxSize {
-		if *log_debug {
-			fmt.Printf("queue size larger than %d (it is %d) - discarding log entries\n", alq.MaxSize, len(*alq.entries))
-		}
-		alq.entries = &([]*QueueEntry{})
-	}
-
-	*alq.entries = append(*alq.entries, &qe)
-
-	return nil
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
 func (alq *AsyncLogQueue) Write(buf []byte) (int, error) {
-	if alq == nil {
-		return 0, fmt.Errorf("no logger object")
-	}
-	qe := QueueEntry{
-		created: time.Now().Unix(),
-		binline: buf,
-		status:  alq.status,
-	}
-	alq.Lock()
-	defer alq.Unlock()
-	if len(*alq.entries) > alq.MaxSize {
-		if *log_debug {
-			fmt.Printf("queue size larger than %d (it is %d) - discarding log entries\n", alq.MaxSize, len(*alq.entries))
-		}
-		alq.entries = &([]*QueueEntry{})
-	}
-
-	*alq.entries = append(*alq.entries, &qe)
-	return len(buf), nil
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
 func (alq *AsyncLogQueue) Log(status string, format string, a ...interface{}) {
-	s := fmt.Sprintf(format, a...)
-	alq.LogCommandStdout(s, status)
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
 
 func (alq *AsyncLogQueue) Close(exitcode int) error {
-	err := alq.Flush()
-	if alq.closed {
-		return fmt.Errorf("Closed already!")
-	}
-	if err != nil {
-		fmt.Printf("[go-easyops] Failed to flush log: %s\n", err)
-	}
-	cl := logservice.CloseLogRequest{AppDef: alq.appDef, ExitCode: int32(exitcode)}
-	lerr := getClient()
-	if lerr != nil {
-		return lerr
-	}
-	_, e := grpcClient.CloseLog(getctx(), &cl)
-	if e != nil {
-		return e
-	}
-	alq.closed = true
-	return err
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
+
 func (alq *AsyncLogQueue) SetStartupID(s string) {
-	if alq.appDef == nil {
-		return
-	}
-	alq.appDef.StartupID = s
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
+
 func (alq *AsyncLogQueue) Flush() error {
-	lerr := getClient()
-	if lerr != nil {
-		return lerr
-	}
-
-	// all done, so clear the array so we free up the memory
-	alq.Lock()
-	flushies := alq.entries
-	alq.entries = &([]*QueueEntry{})
-	alq.Unlock()
-
-	if len(*flushies) == 0 {
-		// save ourselves from dialing and stuff
-		return nil
-	}
-
-	logRequest := &logservice.LogRequest{
-		AppDef: alq.appDef,
-	}
-
-	for _, qe := range *flushies {
-		logRequest.Lines = append(
-			logRequest.Lines,
-			&logservice.LogLine{
-				Time:    qe.created,
-				BinLine: qe.binline,
-				Status:  qe.status,
-			},
-		)
-	}
-
-	_, err := grpcClient.LogCommandStdout(getctx(), logRequest)
-	if err != nil {
-		if time.Since(alq.lastErrPrinted) > (10 * time.Second) {
-			fmt.Printf("%s: Failed to send log: %s\n", alq.String(), err)
-			alq.lastErrPrinted = time.Now()
-
-			// try and stick something into the logserver (unlikely to work, unless a logline causes trouble)
-			olines := logRequest.Lines
-			lc := 0
-			bc := 0
-			for _, ol := range olines {
-				lc++
-				bc = bc + len(ol.Line) + len(ol.BinLine)
-			}
-			logRequest.Lines = []*logservice.LogLine{
-				&logservice.LogLine{
-					Time:    time.Now().Unix(),
-					Status:  "LOGFAILURE",
-					BinLine: []byte(fmt.Sprintf("failed to log %d lines and %d bytes: %s", lc, bc, err)),
-				},
-			}
-			grpcClient.LogCommandStdout(getctx(), logRequest)
-
-		}
-	}
-
-	return nil
-}
-
-func getctx() context.Context {
-	cb := ctx.NewContextBuilder()
-	return cb.ContextWithAutoCancel()
+	panic("this logger no longer exists as part of go-easyops. sorry.")
 }
