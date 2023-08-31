@@ -203,7 +203,7 @@ func resolver_thread() {
 }
 
 func defaultInterval() time.Duration {
-	return time.Duration(*normal_sleep_time) * time.Second
+	return *normal_sleep_time
 }
 
 // get the ip:port listings from the registry for this service

@@ -3,6 +3,7 @@ package client
 import (
 	"flag"
 	"golang.conradwood.net/go-easyops/prometheus"
+	"time"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 )
 
 var (
-	normal_sleep_time = flag.Int("ge_dialer_sleep_time", 20, "interval in seconds before querying the registry for changes (should be lower than ge_max_block)")
+	normal_sleep_time = flag.Duration("ge_dialer_sleep_time", time.Duration(20)*time.Second, "interval in seconds before querying the registry for changes (should be lower than ge_max_block)")
 
 	blockCtr = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
