@@ -31,7 +31,8 @@ func init() {
 }
 */
 func GotSig() bool {
-	if cmdline.GetClientRegistryAddress() != last_registry {
+	cur := cmdline.GetClientRegistryAddress()
+	if cur != last_registry {
 		return false
 	}
 	return retrieved_sig
