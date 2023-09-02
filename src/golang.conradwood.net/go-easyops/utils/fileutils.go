@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"golang.org/x/sys/unix"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -120,4 +121,52 @@ func HomeDir() (string, error) {
 		return "", fmt.Errorf("No current user")
 	}
 	return u.HomeDir, nil
+}
+
+// removes dir, changes permissions if needs to
+func RemoveAll(dir string) error {
+	var err error
+
+	err = os.RemoveAll(dir)
+	if err == nil {
+		return nil
+	}
+
+	// reset permissions and try again
+	err = ChmodR(dir, 0777, 0777)
+	if err != nil {
+		return err
+	}
+	err = os.RemoveAll(dir)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+// recursively chmod a dir and files and subdirectories. applies 'dirmask' to dirs and 'filemask' to files
+func ChmodR(dir string, dirmask, filemask fs.FileMode) error {
+	err := os.Chmod(dir, dirmask)
+	if err != nil {
+		return err
+	}
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.IsDir() {
+			err = ChmodR(dir+"/"+f.Name(), dirmask, filemask)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		err = os.Chmod(dir+"/"+f.Name(), filemask)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
