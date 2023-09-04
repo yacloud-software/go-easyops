@@ -78,6 +78,7 @@ func (c *contextBuilder) contextWithLocalState() (context.Context, context.Cance
 	newmd := metadata.Pairs(METANAME, b)
 	ctx = metadata.NewOutgoingContext(ctx, newmd)
 	ls.callingservice = c.service
+	panic_if_service_account(common.VerifySignedUser(inctx.ImCtx.User))
 	return ctx, cf, ls
 }
 
@@ -114,6 +115,7 @@ func autocanceler(t time.Duration, cf context.CancelFunc) {
 add a user to context
 */
 func (c *contextBuilder) WithUser(user *auth.SignedUser) {
+	panic_if_service_account(common.VerifySignedUser(user))
 	c.user = user
 }
 
@@ -224,6 +226,7 @@ func metadata_to_ctx(md metadata.MD, found bool) (*ge.InContext, error) {
 		//		fmt.Printf("[go-easyops] warning invalid inbound v2 context (%s)\n", err)
 		return nil, err
 	}
+	panic_if_service_account(common.VerifySignedUser(res.ImCtx.User))
 	return res, nil
 
 }
@@ -251,6 +254,7 @@ func Serialise(ctx context.Context) ([]byte, error) {
 			Tags:           ls.RoutingTags(),
 		},
 	}
+	panic_if_service_account(common.VerifySignedUser(ic.ImCtx.User))
 	var b []byte
 	var err error
 	b, err = utils.MarshalBytes(ic)
@@ -304,6 +308,7 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	}
 	cb := &contextBuilder{}
 	if ic.ImCtx != nil {
+		panic_if_service_account(common.VerifySignedUser(ic.ImCtx.User))
 		cb.WithUser(ic.ImCtx.User)
 	} else {
 		panic("no imctx")
