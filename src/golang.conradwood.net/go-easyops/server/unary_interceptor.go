@@ -9,6 +9,7 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/ctx/shared"
+	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"google.golang.org/grpc"
@@ -135,6 +136,10 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 		if *debug_rpc_serve {
 			fmt.Printf("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
 		}
+	}
+	u := auth.GetUser(in_ctx)
+	if u != nil && u.ServiceAccount {
+		return nil, nil, errors.Unauthenticated(in_ctx, "user %s is a serviceaccount", u.ID)
 	}
 	octx := ctx.Inbound2Outbound(in_ctx, sd.local_service)
 	ls := ctx.GetLocalState(octx)
