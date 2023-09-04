@@ -124,9 +124,16 @@ func GetLocalUsers() (*apb.SignedUser, *apb.SignedUser) {
 		//		fmt.Printf("utok: \"%s\"\n", utok)
 		lastUser = SignedGetByToken(context_background(), utok)
 		lastService = SignedGetByToken(context_background(), tokens.GetServiceTokenParameter())
-		if lastUser != nil && common.VerifySignedUser(lastUser) == nil {
+		lu := common.VerifySignedUser(lastUser)
+		if lastUser != nil && lu == nil {
 			fmt.Printf("[go-easyops] Warning - local user signature invalid\n")
 			return nil, nil
+		}
+		if lu != nil {
+			if lu.ServiceAccount {
+				fmt.Printf("[go-easyops] Error - local user resolved to a service account\n")
+				panic("invalid user configuration")
+			}
 		}
 		if lastService != nil && common.VerifySignedUser(lastService) == nil {
 			fmt.Printf("[go-easyops] Warning - local service signature invalid\n")

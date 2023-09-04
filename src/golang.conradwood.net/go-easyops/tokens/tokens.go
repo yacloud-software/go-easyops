@@ -172,13 +172,22 @@ func GetUserTokenParameter() string {
 
 	ut := e_usertoken.Value()
 	if ut != "" {
+		if *debug {
+			fmt.Printf("[go-easyops] tokens: getting user token from e_usertoken\n")
+		}
 		return ut
 	}
 	// if token is set either as parameter or as ENV variable GE_TOKEN, then return ""
 	// because we are a service (services do not run as users)
-	if *token != "" {
-		return *token
-	}
+	/*
+	// fix: we never return -token=XX as UserToken
+			if *token != "" {
+				if *debug {
+					fmt.Printf("[go-easyops] tokens: getting user token from *token\n")
+				}
+				return *token
+			}
+	*/
 	if e_token.Value() != "" {
 		return e_token.Value()
 	}
