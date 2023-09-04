@@ -325,6 +325,6 @@ func panic_if_service_account(u *auth.User) {
 		return
 	}
 	if u.ServiceAccount {
-		panic("attempt to build context with serviceaccount as user")
+		panic(fmt.Sprintf("attempt to build context with serviceaccount as user %s (%s)", u.ID, u.Email))
 	}
 }
