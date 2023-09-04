@@ -25,6 +25,7 @@ const (
 var (
 	ser_prefix = []byte("SER-CTX-V2")
 	debug      = flag.Bool("ge_debug_context_v2", false, "if true debug v2 context builder in more detail")
+	do_panic   = flag.Bool("ge_panic_v2_on_error", false, "if true panic very often")
 )
 
 // build V2 Contexts. That is, a context with metadata serialised into an rpc InContext struct
@@ -325,6 +326,9 @@ func panic_if_service_account(u *auth.User) {
 		return
 	}
 	if u.ServiceAccount {
-		panic(fmt.Sprintf("attempt to build context with serviceaccount as user %s (%s)", u.ID, u.Email))
+		if *do_panic {
+			panic(fmt.Sprintf("attempt to build context with serviceaccount as user %s (%s)", u.ID, u.Email))
+		}
+		fmt.Printf("[go-easyops] WARNING -- creating context with user as serviceaccount (%s) (%s)\n", u.ID, u.Email)
 	}
 }
