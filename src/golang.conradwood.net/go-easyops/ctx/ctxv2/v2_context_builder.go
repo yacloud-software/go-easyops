@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
 	"golang.yacloud.eu/apis/session"
@@ -200,6 +201,7 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	ctx, _, ls := cb.contextWithLocalState() // always has a parent context, which means it needs no auto-cancel, uses parent cancelfunc
 	// localstate has a different calling service (the original one)
 	ls.callingservice = res.MCtx.CallingService
+	panic_if_service_account(common.VerifySignedUser(res.ImCtx.User))
 	return ctx, true
 }
 func NewContextBuilder() *contextBuilder {
@@ -311,4 +313,10 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	}
 	cb.WithTimeout(t)
 	return cb.ContextWithAutoCancel(), nil
+}
+
+func panic_if_service_account(u *auth.User) {
+	if u.ServiceAccount {
+		panic("attempt to build context with serviceaccount as user")
+	}
 }
