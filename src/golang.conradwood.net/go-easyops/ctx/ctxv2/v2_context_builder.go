@@ -316,6 +316,9 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 }
 
 func panic_if_service_account(u *auth.User) {
+	if u == nil {
+		return
+	}
 	if u.ServiceAccount {
 		panic("attempt to build context with serviceaccount as user")
 	}
