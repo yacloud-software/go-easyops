@@ -62,7 +62,7 @@ func main() {
 
 	server.SetHealth(server.STARTING)
 	sd := server.NewServerDef()
-	sd.SetPublic()
+	//	sd.SetPublic()
 	sd.DontRegister()
 	if *tag != "" {
 		kv := strings.SplitN(*tag, "=", 2)

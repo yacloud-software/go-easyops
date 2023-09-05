@@ -466,7 +466,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 
 // attempt to http call into the server to trigger server_started callback
 func callback_attempt(sd *serverDef) {
-	url := fmt.Sprintf("https://localhost:%d/internal/healthz", sd.Port)
+	url := fmt.Sprintf("https://localhost:%d/internal/health", sd.Port)
 	for {
 		//fmt.Printf("Testing %s\n", url)
 		hr := easyhttp.NewDirectClient().Get(url)
