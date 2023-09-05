@@ -17,7 +17,7 @@ import (
 we attempt to get the public key for authentication from the auth-server
 */
 var (
-	last_registry string
+	last_registry = ""
 	pubkeylock    sync.Mutex
 	retrieved_sig = false
 	retrieving    = false
