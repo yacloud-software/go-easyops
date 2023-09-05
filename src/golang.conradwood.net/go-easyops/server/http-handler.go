@@ -155,6 +155,7 @@ func debugCpuHandler(w http.ResponseWriter, req *http.Request) {
 func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	s := "<html><body>"
 	s = s + "<a href=\"/internal/pleaseshutdown\">shutdown</a><br/>"
+	s = s + "<a href=\"/internal/health\">server health</a><br/>"
 	s = s + "<a href=\"/internal/service-info/version\">VersionInfo</a><br/>"
 	s = s + "<a href=\"/internal/service-info/metrics\">metrics</a><br/>"
 	s = s + "<a href=\"/internal/clearcache\">clearcache</a> (append /name to clear a specific cache)<br/>"
@@ -169,7 +170,7 @@ func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 }
 
 func healthzHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
-	fmt.Fprintf(w, "OK")
+	fmt.Fprintf(w, getHealthString())
 }
 
 // this services the /service-info/ url

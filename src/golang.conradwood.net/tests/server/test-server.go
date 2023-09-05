@@ -60,6 +60,7 @@ func main() {
 		}
 	}
 
+	server.SetHealth(server.STARTING)
 	sd := server.NewServerDef()
 	sd.SetPublic()
 	sd.DontRegister()

@@ -413,7 +413,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 		mux.HandleFunc("/internal/pleaseshutdown", func(w http.ResponseWriter, req *http.Request) {
 			pleaseShutdown(w, req, grpcServer)
 		})
-		mux.HandleFunc("/internal/healthz", func(w http.ResponseWriter, req *http.Request) {
+		mux.HandleFunc("/internal/health", func(w http.ResponseWriter, req *http.Request) {
 			healthzHandler(w, req, sd)
 		})
 		mux.HandleFunc("/internal/help", func(w http.ResponseWriter, req *http.Request) {
