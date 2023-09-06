@@ -13,7 +13,14 @@ var (
 )
 
 func SetHealth(h HEALTH) {
+	rereg := false
+	if h != health {
+		rereg = true
+	}
 	health = h
+	if rereg && startup_complete {
+		reRegister()
+	}
 }
 
 func getHealthString() string {

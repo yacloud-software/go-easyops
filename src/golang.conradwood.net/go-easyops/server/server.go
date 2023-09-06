@@ -61,6 +61,7 @@ var (
 	startedPreviously = false
 	starterLock       sync.Mutex
 	rgclient          pb.RegistryClient
+	startup_complete  = false
 )
 
 type UserCache struct {
@@ -459,6 +460,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 
 	fancyPrintf("grpc on port: %d\n", sd.Port)
 	go callback_attempt(sd)
+	startup_complete = true
 	err = srv.Serve(tls.NewListener(conn, srv.TLSConfig))
 	fancyPrintf("Serve failed: %v\n", err)
 	return err
