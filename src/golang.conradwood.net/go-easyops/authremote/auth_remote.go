@@ -154,7 +154,7 @@ func ContextWithTimeoutAndTags(t time.Duration, rt *ge.CTXRoutingTags) context.C
 	sctx := cmdline.GetEnvContext()
 	if sctx != "" {
 		if ctx.IsSerialisedByBuilder([]byte(sctx)) {
-			ctx, err := ctx.DeserialiseContext([]byte(sctx))
+			ctx, err := ctx.DeserialiseContextWithTimeout(t, []byte(sctx))
 			if err != nil {
 				fmt.Printf("[go-easyops] weird context GE_CTX (%s)\n", err)
 			} else {
