@@ -301,6 +301,7 @@ retry:
 	if h.doMetric() {
 		callcounter.With(h.promLabels()).Inc()
 	}
+	h.Debugf("http: %s %s\n", req.Method, req.URL)
 	resp, err := hclient.Do(req)
 	if resp != nil {
 		if resp.StatusCode == 401 {
