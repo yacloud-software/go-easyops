@@ -95,7 +95,7 @@ func FindFile(name string) (string, error) {
 		nname = "../" + nname
 	}
 	if *extra_dir != "" {
-		nname := (*extra_dir) + "/" + name
+		nname := fmt.Sprintf("%s/%s", *extra_dir, name)
 		if FileExists(nname) {
 			return nname, nil
 		}
