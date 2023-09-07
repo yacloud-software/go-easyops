@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	extra_dir       = flag.String("ge_findfile_additional_dir", "", "if set, findfile will search this directory as well")
 	debug_find_file = flag.Bool("ge_debug_find_file", false, "debug fuzzy filename matches")
 	find_file_cache = make(map[string]string)
 	ffclock         sync.Mutex
@@ -92,6 +93,12 @@ func FindFile(name string) (string, error) {
 			return nname, nil
 		}
 		nname = "../" + nname
+	}
+	if *extra_dir != "" {
+		nname := (*extra_dir) + "/" + name
+		if FileExists(nname) {
+			return nname, nil
+		}
 	}
 	debugFind(name, "[not found]")
 	return "", fmt.Errorf("File not found: %s", name)
