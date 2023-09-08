@@ -240,10 +240,14 @@ func paraHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		return
 	}
 	if len(req.Form) == 0 {
-		fmt.Fprintf(w, "No parameter specified (try https://.../internal/parameters?debug=true)\n")
-		http.Error(w, "no parameter specified", errno)
+		flag.VisitAll(func(f *flag.Flag) {
+			s := "SET"
+			if fmt.Sprintf("%v", f.Value) == fmt.Sprintf("%v", f.DefValue) {
+				s = "DEFAULT"
+			}
+			fmt.Fprintf(w, "%s %s %s %s\n", "STRING", s, f.Name, f.Value)
+		})
 		return
-
 	}
 	for name, value := range req.Form {
 		if len(value) != 1 {
