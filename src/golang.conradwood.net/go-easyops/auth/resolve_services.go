@@ -163,6 +163,10 @@ func GetServiceIDByName(servicename string) string {
 	if found {
 		return uid
 	}
+	_, found = default_service_mapping[servicename]
+	if found {
+		return fmt.Sprintf("SERVICE_%s_NOT_IN_MAPPING", servicename)
+	}
 	panic(fmt.Sprintf("[go-easyops] Application requested service \"%s\", which is not mapped to a userid", servicename))
 }
 func svc_to_user_load_mapping() {
@@ -191,9 +195,6 @@ func svc_to_user_load_mapping() {
 
 func ServiceMapToYaml(m map[string]string) []byte {
 	xmap := make(map[string]string)
-	for k, v := range default_service_mapping {
-		xmap[k] = v
-	}
 	for k, v := range m {
 		if v != "" {
 			xmap[k] = v
