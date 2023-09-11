@@ -191,9 +191,14 @@ func svc_to_user_load_mapping() {
 
 func ServiceMapToYaml(m map[string]string) []byte {
 	xmap := make(map[string]string)
+	for k, v := range default_service_mapping {
+		xmap[k] = v
+	}
 	for k, v := range m {
 		if v != "" {
 			xmap[k] = v
+		} else {
+			delete(xmap, k)
 		}
 	}
 	sum := &serviceToUserIDMap{Mapping: xmap}
