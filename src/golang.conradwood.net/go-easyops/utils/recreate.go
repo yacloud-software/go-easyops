@@ -15,7 +15,7 @@ func RecreateSafely(dirname string) error {
 	fname := dirname + "/.goeasyops-dir"
 	if FileExists(dirname) {
 		if FileExists(fname) {
-			err = os.RemoveAll(dirname)
+			err = RemoveAll(dirname)
 			if err != nil {
 				return err
 			}
