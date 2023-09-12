@@ -155,8 +155,8 @@ func PrintDefaults() {
 		fmt.Printf("%s\n", s)
 	})
 	fmt.Printf(`
-Config file: /tmp/goeasyops.config
-
+Yaml Mapping file: /etc/yacloud/config/service_map.yaml
+Defaults override file: /tmp/goeasyops.config
 Environment Variables:
 `)
 
