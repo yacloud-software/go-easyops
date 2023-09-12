@@ -146,7 +146,7 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 	err := sd.checkAccess(octx, rc)
 	if err != nil {
 		if *debug_rpc_serve {
-			fmt.Printf("[go-easyops] checkaccess error: %s\n", err)
+			fmt.Printf("[go-easyops] checkaccess error: %s (peer=%s)\n", err, peerFromContext(octx))
 			fmt.Printf("[go-easyops] Context: %#v\n", ctx.Context2String(octx))
 		}
 		return nil, nil, err
