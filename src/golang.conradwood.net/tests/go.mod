@@ -38,7 +38,6 @@ require (
 	golang.conradwood.net/apis/errorlogger v1.1.2495 // indirect
 	golang.conradwood.net/apis/framework v1.1.2503 // indirect
 	golang.conradwood.net/apis/objectstore v1.1.2503 // indirect
-	golang.conradwood.net/apis/rpcinterceptor v1.1.2495 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.12.0 // indirect

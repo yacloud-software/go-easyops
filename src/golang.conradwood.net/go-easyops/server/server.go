@@ -373,7 +373,7 @@ func ServerStartup(def *serverDef) error {
 		fmt.Println("Got no server name!")
 		return errors.New("Missing servername")
 	}
-	// we have a good service token, lookup our serviceid for future calls to rpcinterceptor:
+
 	serverDefs[def.name] = def
 	common.AddExportedServiceName(def.name)
 

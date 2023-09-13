@@ -1,5 +1,5 @@
 /*
-this context uses a go-easyops proto to store information. It does not require rpcinterceptor and it is extensible
+this context uses a go-easyops proto to store information.
 */
 
 package ctxv2

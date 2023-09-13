@@ -19,7 +19,6 @@ const (
 
 var (
 	known_not_auth_rpcs = []string{
-		"rpcinterceptor.RPCInterceptorService.InterceptRPC",
 		"registry.Registry.V2GetTarget",
 		"auth.AuthenticationService.GetPublicSigningKey",
 		"auth.AuthenticationService.SignedGetByToken",

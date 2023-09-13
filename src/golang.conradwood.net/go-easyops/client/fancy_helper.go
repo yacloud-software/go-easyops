@@ -11,7 +11,6 @@ var (
 		"registry.Registry",
 		"auth.AuthenticationService",
 		"auth.AuthManagerService",
-		"rpcinterceptor.RPCInterceptorService",
 		"errorlogger.ErrorLogger",
 	}
 	debug_fancy = flag.Bool("ge_debug_fancy_dialer", false, "debug the fancy resolver and balancer")

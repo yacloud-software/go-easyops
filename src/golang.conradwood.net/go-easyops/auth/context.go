@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"golang.conradwood.net/apis/auth"
-	//	rc "golang.conradwood.net/apis/rpcinterceptor"
 	//"google.golang.org/protobuf/proto"
 	//	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
@@ -18,10 +17,6 @@ import (
 const (
 	SERBINPREFIX = "CTXUSER-BIN-"
 	SERSTRPREFIX = "CTXUSER-STR-"
-)
-
-var (
-// rpci rc.RPCInterceptorServiceClient
 )
 
 // return a context with token and/or from environment or so

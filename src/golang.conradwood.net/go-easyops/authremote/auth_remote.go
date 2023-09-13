@@ -5,7 +5,6 @@ import (
 	"fmt"
 	apb "golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
-	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cache"
 	"golang.conradwood.net/go-easyops/client"
@@ -20,7 +19,6 @@ import (
 var (
 	userbyemailcache = cache.NewResolvingCache("userbyemail", time.Duration(60)*time.Second, 9999)
 	userbytokencache = cache.NewResolvingCache("userbytoken", time.Duration(60)*time.Second, 9999)
-	rpci             rc.RPCInterceptorServiceClient
 	authServer       apb.AuthenticationServiceClient
 	authServerLock   sync.Mutex
 	authManager      apb.AuthManagerServiceClient
@@ -205,7 +203,7 @@ func GetAuthClient() apb.AuthenticationServiceClient {
 }
 
 // create an outbound context for a given user. user must be valid and signed
-// this is an expensive call ! (also calls rpcinterceptor)
+// this is an expensive call
 // this is not privileged (user must be signed)
 func ContextForUser(user *apb.User) (context.Context, error) {
 	return ContextForUserWithTimeout(user, 0) //default timeout
@@ -232,7 +230,7 @@ func ContextForUserWithTimeout(user *apb.User, secs uint64) (context.Context, er
 }
 
 // create an outbound context for a given user by id (with current service token)
-// this is an expensive call ! (also calls rpcinterceptor)
+// this is an expensive call
 // it is also privileged
 func ContextForUserID(userid string) (context.Context, error) {
 	return ContextForUserIDWithTimeout(userid, 0)

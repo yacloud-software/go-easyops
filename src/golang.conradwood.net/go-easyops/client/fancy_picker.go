@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	ge "golang.conradwood.net/apis/goeasyops"
-	//	rc "golang.conradwood.net/apis/rpcinterceptor"
 	"golang.conradwood.net/go-easyops/auth"
 	//	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/cmdline"
