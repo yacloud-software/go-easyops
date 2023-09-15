@@ -49,4 +49,5 @@ func CtxTestLookupID() string { return "getestservice.CtxTest" } // returns the 
 
 func init() {
    client.RegisterDependency("getestservice.CtxTest")
+   AddService("getestservice.CtxTest")
 }

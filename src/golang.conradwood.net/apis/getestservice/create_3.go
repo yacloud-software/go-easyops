@@ -49,4 +49,5 @@ func EasyOpsLookupID() string { return "getestservice.EasyOps" } // returns the 
 
 func init() {
    client.RegisterDependency("getestservice.EasyOps")
+   AddService("getestservice.EasyOps")
 }

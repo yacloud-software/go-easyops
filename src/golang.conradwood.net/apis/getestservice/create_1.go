@@ -65,4 +65,5 @@ func EchoServiceLookupID() string { return "getestservice.EchoService" } // retu
 
 func init() {
    client.RegisterDependency("getestservice.EchoService")
+   AddService("getestservice.EchoService")
 }

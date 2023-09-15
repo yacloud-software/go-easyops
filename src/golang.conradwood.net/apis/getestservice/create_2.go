@@ -65,4 +65,5 @@ func EchoStreamServiceLookupID() string { return "getestservice.EchoStreamServic
 
 func init() {
    client.RegisterDependency("getestservice.EchoStreamService")
+   AddService("getestservice.EchoStreamService")
 }

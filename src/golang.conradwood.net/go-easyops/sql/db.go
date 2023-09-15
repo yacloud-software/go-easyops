@@ -104,6 +104,15 @@ func maxIdle() int {
 	return 4
 }
 
+// make sure we catch missing database configuration issues (fail-fast)
+func init() {
+	go func() {
+		time.Sleep(time.Duration(2) * time.Second)
+		_, err := Open()
+		utils.Bail("database error", err)
+	}()
+}
+
 // call this once when you startup and cache the result
 // only if there is an error you'll need to retry
 func Open() (*DB, error) {
