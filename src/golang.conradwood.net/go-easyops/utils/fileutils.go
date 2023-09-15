@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -16,7 +18,16 @@ var (
 	debug_find_file = flag.Bool("ge_debug_find_file", false, "debug fuzzy filename matches")
 	find_file_cache = make(map[string]string)
 	ffclock         sync.Mutex
+	workingdir      string
 )
+
+func init() {
+	var err error
+	workingdir, err = os.Getwd()
+	if err != nil {
+		fmt.Printf("cannot get current working directory: %s\n", err)
+	}
+}
 
 // given an arbitrary string, will remove all unsafe characters. result may be safely used as a filename
 func MakeSafeFilename(name string) string {
@@ -90,18 +101,45 @@ func FindFile(name string) (string, error) {
 			ffclock.Lock()
 			find_file_cache[name] = nname
 			ffclock.Unlock()
+			nname, err := filepath.Abs(nname)
+			if err != nil {
+				return "", err
+			}
 			return nname, nil
 		}
 		nname = "../" + nname
 	}
 	if *extra_dir != "" {
 		nname := fmt.Sprintf("%s/%s", *extra_dir, name)
+		nname, err := filepath.Abs(nname)
+		if err != nil {
+			return "", err
+		}
 		if FileExists(nname) {
 			return nname, nil
 		}
 	}
 	debugFind(name, "[not found]")
 	return "", fmt.Errorf("File not found: %s", name)
+}
+
+// this will find a file or directory in the given working directory by traversing up the directory
+// hierarchy but only upto the workingdir (not higher).
+// the returned file is guaranteed to be within the workingdir.
+// if it cannot be found, an error is returned.
+func FindFileInWorkingDir(name string) (string, error) {
+	name, err := FindFile(name)
+	if err != nil {
+		return "", err
+	}
+	name, err = filepath.Abs(name)
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(name, WorkingDir()) {
+		return "", fmt.Errorf("file %s not in working dir %s", name, WorkingDir())
+	}
+	return name, nil
 }
 
 // read file (uses some magic to find it too)
@@ -112,6 +150,18 @@ func ReadFile(filename string) ([]byte, error) {
 	}
 	b, err := ioutil.ReadFile(fn)
 	return b, err
+}
+
+// return the "workingdir" (the one we were started in)
+func WorkingDir() string {
+	if workingdir == "" {
+		var err error
+		workingdir, err = os.Getwd()
+		// this is critical, user wanted workingdir, but we do not
+		// have one. how did this even happen?
+		Bail("failed to get workingdir", err)
+	}
+	return workingdir
 }
 
 // get current home dir (from environment variable HOME, if that fails user.Current())
