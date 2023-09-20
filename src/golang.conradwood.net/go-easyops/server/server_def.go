@@ -37,6 +37,12 @@ type serverDef struct {
 	public          bool
 }
 
+func (s *serverDef) SetErrorHandler(e func(ctx context.Context, fn string, err error)) {
+	s.ErrorHandler = e
+}
+func (s *serverDef) SetNoAuth() {
+	s.NoAuth = true
+}
 func (s *serverDef) SetPort(port int) {
 	s.Port = port
 }
