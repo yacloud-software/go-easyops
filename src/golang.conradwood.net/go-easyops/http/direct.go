@@ -216,7 +216,15 @@ func (h *HTTP) Put(url string, body string) *HTTPResponse {
 func Get(url string) ([]byte, error) {
 	h := &HTTP{}
 	res := h.Get(url)
-	return res.Body(), res.Error()
+	err := res.Error()
+	if err != nil {
+		return nil, err
+	}
+	code := res.HTTPCode()
+	if code < 200 || code >= 300 {
+		return nil, fmt.Errorf("failed to download %s, HTTP Status: %d", url, code)
+	}
+	return res.Body(), nil
 }
 func Post(url string, body []byte) ([]byte, error) {
 	h := &HTTP{}
