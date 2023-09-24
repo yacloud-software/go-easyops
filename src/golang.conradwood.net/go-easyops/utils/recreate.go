@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
@@ -11,8 +12,25 @@ var ()
 // if dir DOES exist, check for existence of a file  ".filelayouter", if so, recreate
 // otherwise error
 func RecreateSafely(dirname string) error {
-	var err error
 	fname := dirname + "/.goeasyops-dir"
+
+	// check if directory exists and is empty
+	if FileExists(dirname) {
+		files, err := ioutil.ReadDir(dirname)
+		if err == nil {
+			if len(files) == 0 {
+				err = os.Chmod(dirname, 0777)
+				if err != nil {
+					return err
+				}
+				err = WriteFile(fname, make([]byte, 0))
+				return err
+			}
+		}
+	}
+
+	// check if directory exists and has goeasyops marker
+	var err error
 	if FileExists(dirname) {
 		if FileExists(fname) {
 			err = RemoveAll(dirname)
