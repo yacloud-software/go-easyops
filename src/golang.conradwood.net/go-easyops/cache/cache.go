@@ -18,9 +18,10 @@ import (
 )
 
 var (
-	randsrc     = rand.New(rand.NewSource(time.Now().UnixNano()))
-	cacheLock   sync.Mutex
-	performance = prometheus.NewSummaryVec(
+	randsrc_lock sync.Mutex
+	randsrc      = rand.New(rand.NewSource(time.Now().UnixNano()))
+	cacheLock    sync.Mutex
+	performance  = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:       "goeasyops_cache_performance",
 			Help:       "V=1 UNIT=s DESC=Performance of cache lookups",
@@ -91,7 +92,9 @@ func Clear(cacheName string) ([]*Cache, error) {
 
 // create a new cache. "name" must be a prometheus metric compatible name and unique throughout
 // good practice: prefix it with servicepackagename. for example:
-//  servicename: "lbproxy.LBProxyService"
+//
+//	servicename: "lbproxy.LBProxyService"
+//
 // -> cachename: "lbproxy_tokencache"
 func New(name string, lifetime time.Duration, maxSizeInMB int) *Cache {
 	res := &Cache{name: name, MaxLifetime: lifetime}
@@ -213,7 +216,9 @@ func (c *Cache) setCacheGaugeLoop() {
 		}
 		c.mlock.Unlock()
 		c.setCacheGauge(i)
+		randsrc_lock.Lock()
 		t := randsrc.Int63n(int64(1 * 60))
+		randsrc_lock.Unlock()
 		time.Sleep(time.Duration(t) * time.Second)
 	}
 }
