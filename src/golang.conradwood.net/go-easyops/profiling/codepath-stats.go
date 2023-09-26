@@ -3,10 +3,12 @@ package profiling
 import (
 	"flag"
 	"golang.conradwood.net/go-easyops/prometheus"
+	"sync"
 	"time"
 )
 
 var (
+	prof_lock    sync.Mutex
 	rpcCtr       = 0
 	sqlCtr       = 0
 	serverRPCCtr = 0
@@ -40,11 +42,14 @@ func init() {
 }
 
 func statsCheck() {
+
 	for {
+		prof_lock.Lock()
 		gm_ctr.With(prometheus.Labels{"codepath": "grpccall"}).Set(float64(rpcCtr))
 		gm_ctr.With(prometheus.Labels{"codepath": "sqlquery"}).Set(float64(sqlCtr))
 		if serverRPCCtr == 0 {
 			cm_total.With(prometheus.Labels{"rpcactive": "false"}).Inc()
+			prof_lock.Unlock()
 			time.Sleep(time.Duration(*ms) * time.Millisecond)
 			continue
 		}
@@ -64,25 +69,38 @@ func statsCheck() {
 		if a > 0 {
 			cm_ctr.With(prometheus.Labels{"codepath": "sqlquery"}).Add(float64(a))
 		}
+		prof_lock.Unlock()
 		time.Sleep(time.Duration(*ms) * time.Millisecond)
 	}
 }
 
 func ClientRpcEntered() {
+	prof_lock.Lock()
+	defer prof_lock.Unlock()
 	rpcCtr++
 }
 func ClientRpcDone() {
+	prof_lock.Lock()
+	defer prof_lock.Unlock()
 	rpcCtr--
 }
 func ServerRpcEntered() {
+	prof_lock.Lock()
+	defer prof_lock.Unlock()
 	serverRPCCtr++
 }
 func ServerRpcDone() {
+	prof_lock.Lock()
+	defer prof_lock.Unlock()
 	serverRPCCtr--
 }
 func SqlEntered() {
+	prof_lock.Lock()
+	defer prof_lock.Unlock()
 	sqlCtr++
 }
 func SqlDone() {
+	prof_lock.Lock()
+	defer prof_lock.Unlock()
 	sqlCtr--
 }

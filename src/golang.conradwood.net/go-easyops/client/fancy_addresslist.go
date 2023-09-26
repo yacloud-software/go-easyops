@@ -188,12 +188,14 @@ func (fal *FancyAddressList) ByUser(userid string) []*fancy_adr {
 
 func (fal *FancyAddressList) readyOnly(in []*fancy_adr) []*fancy_adr {
 	var valids []*fancy_adr
+	bal_state_lock.Lock()
 	for _, fa := range in {
 		if fa.state != connectivity.Ready {
 			continue
 		}
 		valids = append(valids, fa)
 	}
+	bal_state_lock.Unlock()
 	return valids
 
 }

@@ -85,6 +85,7 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 	matching := lf.SelectValid(info.Ctx)
 
 	if len(matching) == 0 {
+		bal_state_lock.Lock()
 		for _, a := range lf.addresses {
 			// this is not right here. We probably should periodically keep them alive rather than wait until
 			// we have no more READY ones
@@ -96,6 +97,7 @@ func (f *FancyPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) 
 			}
 			fancyPrintf(f, "picker address: %s\n", a.String())
 		}
+		bal_state_lock.Unlock()
 		fancyPrintf(f, "Picker - No valid connections for %s\n", info.FullMethodName)
 		//fmt.Printf("[go-easyops] picker: No valid connections for %s\n", info.FullMethodName)
 		return balancer.PickResult{}, balancer.ErrNoSubConnAvailable

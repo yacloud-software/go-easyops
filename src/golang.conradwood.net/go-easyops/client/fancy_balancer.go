@@ -20,9 +20,10 @@ func init() {
 }
 
 var (
-	balancers []*FancyBalancer
-	bal_lock  sync.Mutex
-	maxblock  = flag.Float64("ge_max_block", 30, "max `seconds` to block rpcs for if backends are not available (fail afterwards)")
+	balancers      []*FancyBalancer
+	bal_lock       sync.Mutex
+	bal_state_lock sync.Mutex
+	maxblock       = flag.Float64("ge_max_block", 30, "max `seconds` to block rpcs for if backends are not available (fail afterwards)")
 )
 
 /*********** the builder for our balancer *****************/
@@ -56,8 +57,8 @@ func (f *FancyBuilder) Build(cc balancer.ClientConn, opts balancer.BuildOptions)
 	}
 	// looks a bit dumb. we really should reuse slots from closed ones
 	bal_lock.Lock()
-	defer bal_lock.Unlock()
 	balancers = append(balancers, res)
+	bal_lock.Unlock()
 	return res
 }
 
@@ -126,8 +127,11 @@ func (f *FancyBalancer) HandleSubConnStateChange(sc balancer.SubConn, state conn
 
 		return
 	}
+
+	bal_state_lock.Lock()
 	oldstate := fa.state
 	fa.state = state
+	bal_state_lock.Unlock()
 
 	fancyPrintf(f, "balancer: Handlesubstate service %s at %s transitioned from %s to %s\n", f.target, fa.addr, oldstate.String(), state.String())
 	f.failing = false
@@ -263,7 +267,10 @@ Behaviour should be like this:
 
 func balancer_thread() {
 	for {
-		for _, b := range balancers {
+		bal_lock.Lock()
+		x := balancers
+		bal_lock.Unlock()
+		for _, b := range x {
 			b.Check()
 		}
 		time.Sleep(time.Duration(1) * time.Second)
