@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package common;
+option go_package = "golang.conradwood.net/apis/common";
+option java_package = "net.conradwood.golang.apis.common";
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FieldOptions {
+  string sql_type = 51235;
+  string sql_reference = 51236;
+  string sql_unique = 51237;
+  string sql_ignore = 51238;
+  string sql_name = 51239;
+  string sql_nullreference = 51240;
+}
+
+// Void should be used when no explicit request or response is required.
+message Void {
+  // No fields, deliberately.
+}
+
+/* some services report cpuload on where they are running
+usage:
+ add this to your service:
+ rpc GetCPULoad(common.Void) returns (common.CPULoad);
+ add this to your source:
+ import (
+ "golang.conradwood.net/go-easyops/linux"
+ )
+ add this to your grpcServer struct:
+ linux.Loadavg // embed GetCPULoad() RPC
+*/
+message CPULoad {
+  double Avg1 = 1;
+  double Avg5 = 2;
+  double Avg15 = 3;
+  uint32 CPUCount = 4;  // number of cpus in system
+  double PerCPU = 5;    // Avg1 / CPUCount
+  uint64 User = 6;      // time spent in usermode
+  uint64 Nice = 7;      // time spent in "nice" usermode
+  uint64 System = 8;    // time spent System mode
+  uint64 Idle = 9;      // time spent idling
+  uint64 IOWait = 10;   // time spent waiting for io
+  uint64 IRQ = 11;      // time spent serving irq
+  uint64 SoftIRQ = 12;  // time spent serving softirqs
+  uint64 Sum = 13;      // total time spent doing stuff (diff to prev. reading)
+  uint64 RawSum = 14;   // number from procstat (ever-increasing counter) total time spent doing stuff
+  double IdleTime = 15; // percentage idling
+}
+
+// Status represents whether or not the specified operation
+// was successful, and what error occurred if it was not.
+message Status {
+  // Success is set to true or false depending on whether or
+  // not the operation was successful.
+  // In the event of an error, further details can be found
+  // in the `ErrorCode` and `ErrorDescription` fields.
+  bool Success = 1;
+
+  // ErrorCode is present if an error has occurred during the
+  // operation. ErrorCode mappings will be listed in our
+  // documentation.
+  int32 ErrorCode = 2;
+
+  // ErrorDescription is present if an error has occurred during
+  // the operation. This is intended to be human-readable (machines
+  // should use the ErrorCode instead).
+  string ErrorDescription = 3;
+}
+
+enum ProgrammingLanguage {
+  INVALID = 0;
+  GO = 1;
+  Java = 2;
+}
+
+enum Language {
+  UNKNOWN = 0;
+  ENGLISH_UK = 1;
+  GERMAN = 2;
+}
+
+enum Currency {
+  UNKNOWN_CURRENCY = 0;
+  GBP = 1;
+  EUR = 2;
+  USD = 3;
+}
