@@ -17,7 +17,7 @@ type dirwalker struct {
 	fn func(root string, relative_filename string) error
 }
 
-// walk a directory tree and call function for each file
+// walk a directory tree and call function for each file (but not each dir)
 func DirWalk(dir string, fn func(root string, relative_filename string) error) error {
 	dw := &dirwalker{root: dir, fn: fn}
 	return dw.Walk("")
