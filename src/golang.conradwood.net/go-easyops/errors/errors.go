@@ -102,6 +102,9 @@ func NotFound(ctx context.Context, logmessage string, a ...interface{}) error {
 func Unauthenticated(ctx context.Context, logmessage string, a ...interface{}) error {
 	return Error(ctx, codes.Unauthenticated, "access denied", logmessage, a...)
 }
+func AlreadyExists(ctx context.Context, logmessage string, a ...interface{}) error {
+	return Error(ctx, codes.AlreadyExists, "already exists", logmessage, a...)
+}
 
 // shortcut: we write this so often: user submitted args that aren't valid
 func InvalidArgs(ctx context.Context, publicmessage string, logmessage string, a ...interface{}) error {
