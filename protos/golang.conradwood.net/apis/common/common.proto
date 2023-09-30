@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package common;
+
 option go_package = "golang.conradwood.net/apis/common";
 option java_package = "net.conradwood.golang.apis.common";
 import "google/protobuf/descriptor.proto";
