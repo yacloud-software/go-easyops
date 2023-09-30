@@ -11,6 +11,11 @@ import (
 	"golang.conradwood.net/go-easyops/rpc"
 )
 
+// get the OrganisationID in this context
+func GetOrganisationID(uctx context.Context) string {
+	return "1" // currently ALWAYS 1
+}
+
 // get the user in this context
 func GetUser(uctx context.Context) *apb.User {
 	u := ctx.GetLocalState(uctx).User()
