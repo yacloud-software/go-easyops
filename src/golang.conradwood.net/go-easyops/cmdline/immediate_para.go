@@ -23,5 +23,8 @@ func (i *impara) Set(s string) error {
 	return nil
 }
 func (i *impara) String() string {
+	if i == nil {
+		return "[nil]"
+	}
 	return i.name + " " + i.desc
 }
