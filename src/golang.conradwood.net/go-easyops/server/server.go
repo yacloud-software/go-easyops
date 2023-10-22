@@ -88,27 +88,6 @@ func init() {
 		}
 	}()
 }
-func (s *serverDef) DontRegister() {
-	s.RegisterService = false
-}
-func (s *serverDef) SetPublic() {
-	s.public = true
-}
-
-/*
-set a callback that is called AFTER grpc server started successfully
-*/
-func (s *serverDef) SetOnStartupCallback(f func()) {
-	s.callback = f
-}
-
-// add a routing tag to a serverdef
-func (s *serverDef) AddTag(key, value string) {
-	s.tags[key] = value
-}
-func (s *serverDef) toString() string {
-	return fmt.Sprintf("Port #%d: %s (%v)", s.Port, s.name, s.types)
-}
 
 func NewTCPServerDef(name string) *serverDef {
 	sd := NewServerDef()
@@ -212,6 +191,11 @@ func addTags(sd *serverDef) {
 // it also configures the rpc server to expect a token to identify
 // the user in the rpc metadata call
 func ServerStartup(def *serverDef) error {
+	if !def.port_set {
+		fmt.Printf("WARNING! server port variable assignment detected. This is deprecated. Instead, use SetPort(). In future your code will not compile.\n")
+		fmt.Printf("Program will continue in 3 seconds\n")
+		time.Sleep(time.Duration(3) * time.Second)
+	}
 	if *auto_kill {
 		ht := easyhttp.NewDirectClient()
 		hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.Port))

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	au "golang.conradwood.net/apis/auth"
 	pb "golang.conradwood.net/apis/registry"
 )
@@ -35,6 +36,7 @@ type serverDef struct {
 	local_service   *au.SignedUser // the local service account
 	service_user_id string         // the serviceaccount userid
 	public          bool
+	port_set        bool
 }
 
 func (s *serverDef) SetErrorHandler(e func(ctx context.Context, fn string, err error)) {
@@ -45,7 +47,29 @@ func (s *serverDef) SetNoAuth() {
 }
 func (s *serverDef) SetPort(port int) {
 	s.Port = port
+	s.port_set = true
 }
 func (s *serverDef) SetRegister(r Register) {
 	s.Register = r
+}
+func (s *serverDef) DontRegister() {
+	s.RegisterService = false
+}
+func (s *serverDef) SetPublic() {
+	s.public = true
+}
+
+/*
+set a callback that is called AFTER grpc server started successfully
+*/
+func (s *serverDef) SetOnStartupCallback(f func()) {
+	s.callback = f
+}
+
+// add a routing tag to a serverdef
+func (s *serverDef) AddTag(key, value string) {
+	s.tags[key] = value
+}
+func (s *serverDef) toString() string {
+	return fmt.Sprintf("Port #%d: %s (%v)", s.Port, s.name, s.types)
 }
