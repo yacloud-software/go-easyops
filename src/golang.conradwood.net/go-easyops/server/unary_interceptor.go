@@ -124,7 +124,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	st = AddErrorDetail(st, gerr)
 	re := st.Err()
 	sd.logError(outbound_ctx, cs, re)
-	eh := sd.ErrorHandler
+	eh := sd.errorHandler
 	if eh != nil {
 		eh(outbound_ctx, cs.MethodName, err)
 	}

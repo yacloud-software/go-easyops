@@ -31,7 +31,7 @@ newest method of authentication...
 */
 // return error if not allowed to access
 func (sd *serverDef) checkAccess(octx context.Context, rc *rpccall) error {
-	if sd.NoAuth || cmdline.IsStandalone() {
+	if sd.noAuth || cmdline.IsStandalone() {
 		return nil
 	}
 	if auth.GetUser(octx) == nil && auth.GetService(octx) == nil {

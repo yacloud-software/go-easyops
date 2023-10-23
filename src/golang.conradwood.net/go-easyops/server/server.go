@@ -116,10 +116,10 @@ func NewServerDef() *serverDef {
 		res.Certificate = Certificate
 		res.CA = Ca
 	*/
-	res.DeployPath = deploymentPath()
+	res.deployPath = deploymentPath()
 	res.types = append(res.types, pb.Apitype_status)
 	res.types = append(res.types, pb.Apitype_grpc)
-	res.RegisterService = true
+	res.registerService = true
 	return res
 }
 func deploymentPath() string {
@@ -238,7 +238,7 @@ func ServerStartup(def *serverDef) error {
 			}
 		}
 		var su *au.SignedUser
-		if !def.NoAuth {
+		if !def.noAuth {
 			if tk == "" {
 				fancyPrintf("*********** AUTHENTICATION CONFIGURATION ERROR ******************\n")
 				fancyPrintf("Cannot connect to a server without %s token.\n", tokname)
@@ -336,7 +336,7 @@ func ServerStartup(def *serverDef) error {
 	serverDefs[def.name] = def
 	common.AddExportedServiceName(def.name)
 
-	if def.RegisterService {
+	if def.registerService {
 		fancyPrintf("Adding service %s to registry...\n", def.name)
 		AddRegistry(def)
 	}
@@ -504,7 +504,7 @@ func AddRegistry(sd *serverDef) (string, error) {
 	req := pb.ServiceLocation{}
 	req.Service = &pb.ServiceDescription{}
 	req.Service.Name = sd.name
-	req.Service.Path = sd.DeployPath
+	req.Service.Path = sd.deployPath
 	sa := &pb.ServiceAddress{Port: int32(sd.Port)}
 	req.Address = []*pb.ServiceAddress{sa}
 

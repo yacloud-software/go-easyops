@@ -19,20 +19,20 @@ type serverDef struct {
 	 set to true if this server does NOT require authentication (default: it does need authentication).
 	 This should normally not be necessary. Normally, a service needs to be called with EITHER a service account OR a user account OR both. There are very special circumstances where this is not possible, for example, the registry and the auth service cannot be called with a service or user account, because in order to get one, the service needs to lookup and call the auth service. Thus registry and auth both expose their RPCs as "NoAuth". In normal circumstances this is never necessary.
 	*/
-	NoAuth bool
+	noAuth bool
 	// set to false if this service should not register with the registry initially
-	RegisterService bool
+	registerService bool
 	name            string
 	types           []pb.Apitype
 	registered_id   string
-	DeployPath      string // do not override the default. Exposed due to an implementation limitation
+	deployPath      string // do not override the default. Exposed due to an implementation limitation
 	serviceID       uint64
 	asUser          *au.SignedUser // if we're running as a user rather than a server this is the account
 	tags            map[string]string
 	/*
 	   if something needs to be done to errors before they propagate up the stack, then this hook can be used to do so
 	*/
-	ErrorHandler    func(ctx context.Context, function_name string, err error)
+	errorHandler    func(ctx context.Context, function_name string, err error)
 	local_service   *au.SignedUser // the local service account
 	service_user_id string         // the serviceaccount userid
 	public          bool
@@ -40,10 +40,10 @@ type serverDef struct {
 }
 
 func (s *serverDef) SetErrorHandler(e func(ctx context.Context, fn string, err error)) {
-	s.ErrorHandler = e
+	s.errorHandler = e
 }
 func (s *serverDef) SetNoAuth() {
-	s.NoAuth = true
+	s.noAuth = true
 }
 func (s *serverDef) SetPort(port int) {
 	s.Port = port
@@ -53,7 +53,7 @@ func (s *serverDef) SetRegister(r Register) {
 	s.Register = r
 }
 func (s *serverDef) DontRegister() {
-	s.RegisterService = false
+	s.registerService = false
 }
 func (s *serverDef) SetPublic() {
 	s.public = true
