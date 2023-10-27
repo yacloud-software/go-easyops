@@ -98,6 +98,9 @@ func GetServiceTokenParameter() string {
 	return e_token.Value()
 }
 func readToken(token string) string {
+	if *disusertoken {
+		panic("codepath bug. user token is disabled but attempted to read it")
+	}
 	var tok string
 	var btok []byte
 	var fname string
@@ -180,13 +183,13 @@ func GetUserTokenParameter() string {
 	// if token is set either as parameter or as ENV variable GE_TOKEN, then return ""
 	// because we are a service (services do not run as users)
 	/*
-	// fix: we never return -token=XX as UserToken
-			if *token != "" {
-				if *debug {
-					fmt.Printf("[go-easyops] tokens: getting user token from *token\n")
+		// fix: we never return -token=XX as UserToken
+				if *token != "" {
+					if *debug {
+						fmt.Printf("[go-easyops] tokens: getting user token from *token\n")
+					}
+					return *token
 				}
-				return *token
-			}
 	*/
 	if e_token.Value() != "" {
 		return e_token.Value()
