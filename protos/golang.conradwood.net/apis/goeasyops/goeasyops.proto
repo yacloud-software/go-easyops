@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package goeasyops;
+
 option go_package = "golang.conradwood.net/apis/goeasyops";
 import "golang.conradwood.net/apis/auth/auth.proto";
 import "golang.conradwood.net/apis/common/common.proto";
