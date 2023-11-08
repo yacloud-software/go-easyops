@@ -11,6 +11,7 @@ import (
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
+	gctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
 	"time"
@@ -67,6 +68,10 @@ func log(l *le) {
 	if u != nil {
 		uid = u.ID
 	}
+	reqid := "norequestidinerrorhandler"
+	if l.ctx != nil {
+		reqid = gctx.GetRequestID(l.ctx)
+	}
 	svc := auth.GetService(l.ctx)
 	st := status.Convert(l.err)
 	e := &el.ErrorLogRequest{
@@ -77,7 +82,7 @@ func log(l *le) {
 		ServiceName:    l.rc.ServiceName,
 		MethodName:     l.rc.MethodName,
 		Timestamp:      uint32(l.ts.Unix()),
-		RequestID:      "norequestidinerrorhandler",
+		RequestID:      reqid,
 		CallingService: svc,
 		Errors:         &ge.GRPCErrorList{},
 	}
