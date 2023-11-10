@@ -18,10 +18,11 @@ import (
 )
 
 var (
-	logChan       = make(chan *le, 200)
-	els           el.ErrorLoggerClient
-	error_looping = false
-	debug_elog    = flag.Bool("ge_debug_error_log", false, "if true debug what is being sent to the error logger")
+	logChan              = make(chan *le, 200)
+	els                  el.ErrorLoggerClient
+	error_looping        = false
+	send_to_error_logger = flag.Bool("ge_use_errorlogger", true, "if false, do not send stuff to error logger")
+	debug_elog           = flag.Bool("ge_debug_error_log", false, "if true debug what is being sent to the error logger")
 )
 
 type le struct {
@@ -112,7 +113,9 @@ func log(l *le) {
 	if *debug_elog {
 		fmt.Printf("[go-easyops] errorlog: %v\n", e)
 	}
-	els.Log(ctx, e)
+	if *send_to_error_logger {
+		els.Log(ctx, e)
+	}
 }
 func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 	// add details (and keep previous)
