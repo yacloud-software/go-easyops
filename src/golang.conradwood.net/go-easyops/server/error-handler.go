@@ -11,16 +11,18 @@ import (
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
+	gctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
 	"time"
 )
 
 var (
-	logChan       = make(chan *le, 200)
-	els           el.ErrorLoggerClient
-	error_looping = false
-	debug_elog    = flag.Bool("ge_debug_error_log", false, "if true debug what is being sent to the error logger")
+	logChan              = make(chan *le, 200)
+	els                  el.ErrorLoggerClient
+	error_looping        = false
+	send_to_error_logger = flag.Bool("ge_use_errorlogger", true, "if false, do not send stuff to error logger")
+	debug_elog           = flag.Bool("ge_debug_error_log", false, "if true debug what is being sent to the error logger")
 )
 
 type le struct {
@@ -67,6 +69,10 @@ func log(l *le) {
 	if u != nil {
 		uid = u.ID
 	}
+	reqid := "norequestidinerrorhandler"
+	if l.ctx != nil {
+		reqid = gctx.GetRequestID(l.ctx)
+	}
 	svc := auth.GetService(l.ctx)
 	st := status.Convert(l.err)
 	e := &el.ErrorLogRequest{
@@ -77,7 +83,7 @@ func log(l *le) {
 		ServiceName:    l.rc.ServiceName,
 		MethodName:     l.rc.MethodName,
 		Timestamp:      uint32(l.ts.Unix()),
-		RequestID:      "norequestidinerrorhandler",
+		RequestID:      reqid,
 		CallingService: svc,
 		Errors:         &ge.GRPCErrorList{},
 	}
@@ -107,7 +113,9 @@ func log(l *le) {
 	if *debug_elog {
 		fmt.Printf("[go-easyops] errorlog: %v\n", e)
 	}
-	els.Log(ctx, e)
+	if *send_to_error_logger {
+		els.Log(ctx, e)
+	}
 }
 func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 	// add details (and keep previous)
