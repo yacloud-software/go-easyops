@@ -107,8 +107,11 @@ func maxIdle() int {
 // make sure we catch missing database configuration issues (fail-fast)
 func init() {
 	go func() {
-		time.Sleep(time.Duration(2) * time.Second)
+		time.Sleep(time.Duration(3) * time.Second)
 		_, err := Open()
+		if err != nil {
+			fmt.Printf("Application %s error\n", cmdline.SourceCodePath())
+		}
 		utils.Bail("database error", err)
 	}()
 }

@@ -33,7 +33,7 @@ func (ls *localState) Info() string {
 	if ls.builder == nil {
 		return "nobuilder"
 	}
-	return "localstate_from_ctxv2_builder"
+	return "gotbuilder"
 }
 func (ls *localState) Debug() bool {
 	return false
