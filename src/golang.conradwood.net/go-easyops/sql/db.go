@@ -105,15 +105,18 @@ func maxIdle() int {
 }
 
 // make sure we catch missing database configuration issues (fail-fast)
+// that is stupid, because it makes it fail even if we include it but not execute it (import with _)
 func init() {
-	go func() {
-		time.Sleep(time.Duration(3) * time.Second)
-		_, err := Open()
-		if err != nil {
-			fmt.Printf("Application %s error\n", cmdline.SourceCodePath())
-		}
-		utils.Bail("database error", err)
-	}()
+	/*
+		go func() {
+			time.Sleep(time.Duration(3) * time.Second)
+			_, err := Open()
+			if err != nil {
+				fmt.Printf("Application %s error\n", cmdline.SourceCodePath())
+			}
+			utils.Bail("database error", err)
+		}()
+	*/
 }
 
 // call this once when you startup and cache the result
