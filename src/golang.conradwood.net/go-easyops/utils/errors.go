@@ -8,6 +8,7 @@ import (
 )
 
 // extracts the PRIVATE and possibly SENSITIVE debug error message from a string
+// obsolete - use errors.ErrorString(err)
 func ErrorString(err error) string {
 	st := status.Convert(err)
 	s := "[STATUS] "
