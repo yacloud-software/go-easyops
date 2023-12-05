@@ -10,11 +10,11 @@ import (
 // no longer exported - please use NewServerDef instead
 type serverDef struct {
 	callback    func()   // called if/when server started up successfully
-	Port        int      // the port the GRPC server should listen on
+	port        int      // the port the GRPC server should listen on
 	Certificate []byte   // do not override the default. Exposed due to an implementation limitation
 	Key         []byte   // do not override the default. Exposed due to an implementation limitation
 	CA          []byte   // do not override the default. Exposed due to an implementation limitation
-	Register    Register // do not override the default. Exposed due to an implementation limitation
+	register    Register // do not override the default. Exposed due to an implementation limitation
 	/*
 	 set to true if this server does NOT require authentication (default: it does need authentication).
 	 This should normally not be necessary. Normally, a service needs to be called with EITHER a service account OR a user account OR both. There are very special circumstances where this is not possible, for example, the registry and the auth service cannot be called with a service or user account, because in order to get one, the service needs to lookup and call the auth service. Thus registry and auth both expose their RPCs as "NoAuth". In normal circumstances this is never necessary.
@@ -46,11 +46,11 @@ func (s *serverDef) SetNoAuth() {
 	s.noAuth = true
 }
 func (s *serverDef) SetPort(port int) {
-	s.Port = port
+	s.port = port
 	s.port_set = true
 }
 func (s *serverDef) SetRegister(r Register) {
-	s.Register = r
+	s.register = r
 }
 func (s *serverDef) DontRegister() {
 	s.registerService = false
@@ -71,5 +71,5 @@ func (s *serverDef) AddTag(key, value string) {
 	s.tags[key] = value
 }
 func (s *serverDef) toString() string {
-	return fmt.Sprintf("Port #%d: %s (%v)", s.Port, s.name, s.types)
+	return fmt.Sprintf("Port #%d: %s (%v)", s.port, s.name, s.types)
 }

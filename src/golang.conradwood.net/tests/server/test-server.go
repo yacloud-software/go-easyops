@@ -90,13 +90,13 @@ func main() {
 		go PingSelf()
 	}
 	sd.AddTag("foo", "bar")
-	sd.Port = p
-	sd.Register = server.Register(
+	sd.SetPort(p)
+	sd.SetRegister(server.Register(
 		func(g *grpc.Server) error {
 			pb.RegisterEchoServiceServer(g, &echoServer{})
 			return nil
 		},
-	)
+	))
 	err := server.ServerStartup(sd)
 	//	err := create.NewEchoServiceServer(&echoServer{}, p)
 	utils.Bail("Unable to start server", err)

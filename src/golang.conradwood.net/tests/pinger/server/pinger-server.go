@@ -22,13 +22,13 @@ var (
 func main() {
 	flag.Parse()
 	sd := server.NewServerDef()
-	sd.Port = *port
-	sd.Register = server.Register(
+	sd.SetPort(*port)
+	sd.SetRegister(server.Register(
 		func(server *grpc.Server) error {
 			pb.RegisterEchoServiceServer(server, &echoserver{})
 			return nil
 		},
-	)
+	))
 	fmt.Printf("Sleeping...\n")
 	//	time.Sleep(time.Duration(4) * time.Second)
 	err := server.ServerStartup(sd)

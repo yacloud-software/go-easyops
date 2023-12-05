@@ -30,14 +30,14 @@ var (
 
 func start_server() {
 	sd := server.NewServerDef()
-	sd.Port = 3005
+	sd.SetPort(3005)
 	sd.SetOnStartupCallback(run_tests)
-	sd.Register = server.Register(
+	sd.SetRegister(server.Register(
 		func(g *grpc.Server) error {
 			ge.RegisterCtxTestServer(g, &geServer{})
 			return nil
 		},
-	)
+	))
 	err := server.ServerStartup(sd)
 	utils.Bail("Unable to start server", err)
 }

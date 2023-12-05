@@ -198,11 +198,11 @@ func ServerStartup(def *serverDef) error {
 	}
 	if *auto_kill {
 		ht := easyhttp.NewDirectClient()
-		hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.Port))
+		hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.port))
 		if hr.IsSuccess() {
 			for {
 				ht := easyhttp.NewDirectClient()
-				hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.Port))
+				hr := ht.Get(fmt.Sprintf("https://localhost:%d/internal/pleaseshutdown", def.port))
 				if hr.IsSuccess() {
 					break
 				}
@@ -278,7 +278,7 @@ func ServerStartup(def *serverDef) error {
 	}()
 	stopped = false
 	defer stopping()
-	listenAddr := fmt.Sprintf(":%d", def.Port)
+	listenAddr := fmt.Sprintf(":%d", def.port)
 	s := ""
 	if u != nil {
 		def.service_user_id = u.ID
@@ -313,8 +313,8 @@ func ServerStartup(def *serverDef) error {
 	grpc.EnableTracing = true
 	// callback to the callers' specific intialisation
 	// (set by the caller of this function)
-	if def.Register != nil {
-		def.Register(grpcServer)
+	if def.register != nil {
+		def.register(grpcServer)
 	}
 	if err != nil {
 		fancyPrintf("Serverstartup: failed to register service on startup: %s\n", err)
@@ -398,7 +398,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 		mux.Handle("/internal/service-info/metrics", h)
 		//	mux.Handle("/internal/service-info/metrics", promhttp.Handler())
 	}
-	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", sd.Port))
+	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", sd.port))
 	if err != nil {
 		panic(err)
 	}
@@ -408,7 +408,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 	cert, err := tls.X509KeyPair(BackendCert, BackendKey)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", sd.Port),
+		Addr:    fmt.Sprintf(":%d", sd.port),
 		Handler: grpcHandlerFunc(grpcServer, mux),
 		TLSConfig: &tls.Config{
 			Certificates:       []tls.Certificate{cert},
@@ -417,7 +417,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 		},
 	}
 
-	fancyPrintf("grpc on port: %d\n", sd.Port)
+	fancyPrintf("grpc on port: %d\n", sd.port)
 	go callback_attempt(sd)
 	startup_complete = true
 	err = srv.Serve(tls.NewListener(conn, srv.TLSConfig))
@@ -427,7 +427,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 
 // attempt to http call into the server to trigger server_started callback
 func callback_attempt(sd *serverDef) {
-	url := fmt.Sprintf("https://localhost:%d/internal/health", sd.Port)
+	url := fmt.Sprintf("https://localhost:%d/internal/health", sd.port)
 	for {
 		//fmt.Printf("Testing %s\n", url)
 		hr := easyhttp.NewDirectClient().Get(url)
@@ -436,7 +436,7 @@ func callback_attempt(sd *serverDef) {
 		}
 		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
-	fmt.Printf("[go-easyops] Server started on port %d\n", sd.Port)
+	fmt.Printf("[go-easyops] Server started on port %d\n", sd.port)
 	if sd.callback != nil {
 		sd.callback()
 	}
@@ -489,7 +489,7 @@ func UnregisterPortRegistry(port []int) error {
 
 func find(port int, name string) *serverDef {
 	for _, sd := range knownServices {
-		if sd.Port == port && sd.name == name {
+		if sd.port == port && sd.name == name {
 			return sd
 		}
 	}
@@ -497,7 +497,7 @@ func find(port int, name string) *serverDef {
 }
 
 func AddRegistry(sd *serverDef) (string, error) {
-	if find(sd.Port, sd.name) == nil {
+	if find(sd.port, sd.name) == nil {
 		knownServices = append(knownServices, sd)
 	}
 
@@ -505,12 +505,12 @@ func AddRegistry(sd *serverDef) (string, error) {
 	req.Service = &pb.ServiceDescription{}
 	req.Service.Name = sd.name
 	req.Service.Path = sd.deployPath
-	sa := &pb.ServiceAddress{Port: int32(sd.Port)}
+	sa := &pb.ServiceAddress{Port: int32(sd.port)}
 	req.Address = []*pb.ServiceAddress{sa}
 
 	rsr := &pb.RegisterServiceRequest{
 		ProcessID:   cmdline.GetInstanceID(),
-		Port:        uint32(sd.Port),
+		Port:        uint32(sd.port),
 		ApiType:     sd.types,
 		ServiceName: sd.name,
 		Pid:         cmdline.GetPid(),
@@ -614,8 +614,8 @@ func StartFakeService(name string) {
 		panic(s)
 	}
 	sd := NewServerDef()
-	sd.Port = port
-	sd.Register = Register(
+	sd.port = port
+	sd.register = Register(
 		func(server *grpc.Server) error {
 			e := new(echoServer)
 			echo.RegisterEchoServiceServer(server, e)
