@@ -24,8 +24,8 @@ type ProgressReporter struct {
 	lastPrinted time.Time
 	eta         time.Time
 	etaCalced   time.Time
-	rate1       *RateCalculator
-	rate2       *RateCalculator
+	rate1       *rateCalculator
+	rate2       *rateCalculator
 	cur_rc      int       // 1==rate1, 2==rate2
 	since_rc    time.Time // when was cur_rc last changed ?
 	start       time.Time
@@ -85,10 +85,10 @@ func (p *ProgressReporter) Print() bool {
 
 func (p *ProgressReporter) fixRates() {
 	if p.rate1 == nil {
-		p.rate1 = &RateCalculator{name: "calc1", start: time.Now()}
+		p.rate1 = &rateCalculator{name: "calc1", start: time.Now()}
 	}
 	if p.rate2 == nil {
-		p.rate2 = &RateCalculator{name: "calc2", start: time.Now()}
+		p.rate2 = &rateCalculator{name: "calc2", start: time.Now()}
 	}
 	if p.cur_rc == 0 {
 		p.cur_rc = 1
@@ -107,7 +107,7 @@ func (p *ProgressReporter) fixRates() {
 func (p *ProgressReporter) Rate() float64 {
 	p.fixRates()
 
-	var rc *RateCalculator
+	var rc *rateCalculator
 
 	rc = p.rate1
 	if p.cur_rc == 2 {
@@ -140,7 +140,20 @@ func (p *ProgressReporter) String() string {
 
 }
 
-type RateCalculator struct {
+type RateCalculator interface {
+	Add(a uint64)
+	Rate() float64
+	Reset()
+	String() string
+}
+
+func NewRateCalculator(name string) RateCalculator {
+	res := &rateCalculator{name: name, start: time.Now()}
+	return res
+
+}
+
+type rateCalculator struct {
 	start     time.Time
 	counter   uint64
 	additions int
@@ -148,18 +161,18 @@ type RateCalculator struct {
 	name      string
 }
 
-func (r *RateCalculator) Add(a uint64) {
+func (r *rateCalculator) Add(a uint64) {
 	r.additions++
 	r.counter = r.counter + a
 
 }
-func (r *RateCalculator) Rate() float64 {
+func (r *rateCalculator) Rate() float64 {
 	elapsed := time.Since(r.start).Seconds()
 	z := float64(r.counter)
 	f := z / (elapsed)
 	return f
 }
-func (r *RateCalculator) Reset() {
+func (r *rateCalculator) Reset() {
 	r.start = time.Now()
 	r.additions = 0
 	r.counter = 0
@@ -167,6 +180,6 @@ func (r *RateCalculator) Reset() {
 	//	fmt.Printf("Reset \"%s\"\n", r.name)
 }
 
-func (r *RateCalculator) String() string {
+func (r *rateCalculator) String() string {
 	return fmt.Sprintf("%s (started %0.1f seconds ago, points=%d", r.name, time.Since(r.start).Seconds(), r.additions)
 }
