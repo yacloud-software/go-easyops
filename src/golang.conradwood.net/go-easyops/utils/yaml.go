@@ -5,6 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// reads a raml file and parses it (strict) into interface. error if unknown tags are encountered in yaml
 func ReadYaml(filename string, target interface{}) error {
 	b, err := ReadFile(filename)
 	if err != nil {
@@ -21,6 +22,7 @@ func ReadYaml(filename string, target interface{}) error {
 	return nil
 }
 
+// interprets the bytes as yaml and decodes it (strict) into interface. error if unknown tags are encountered in yaml
 func UnmarshalYaml(buf []byte, target interface{}) error {
 	decoder := yaml.NewDecoder(bytes.NewReader(buf))
 	decoder.KnownFields(true)
