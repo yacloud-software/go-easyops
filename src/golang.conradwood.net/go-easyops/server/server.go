@@ -71,7 +71,7 @@ type UserCache struct {
 
 type Register func(server *grpc.Server) error
 
-// serverdef interface
+// server interface
 type Server interface {
 	AddTag(key, value string)
 }
@@ -90,7 +90,7 @@ func init() {
 }
 
 func NewTCPServerDef(name string) *serverDef {
-	sd := NewServerDef()
+	sd := NewServerDef().(*serverDef)
 	sd.tags = make(map[string]string)
 	sd.types = sd.types[:0]
 	sd.types = append(sd.types, pb.Apitype_tcp)
@@ -99,7 +99,7 @@ func NewTCPServerDef(name string) *serverDef {
 }
 
 func NewHTMLServerDef(name string) *serverDef {
-	sd := NewServerDef()
+	sd := NewServerDef().(*serverDef)
 	sd.tags = make(map[string]string)
 	sd.types = sd.types[:0]
 	sd.types = append(sd.types, pb.Apitype_html)
@@ -107,7 +107,7 @@ func NewHTMLServerDef(name string) *serverDef {
 	return sd
 }
 
-func NewServerDef() *serverDef {
+func NewServerDef() ServerDef {
 	res := &serverDef{}
 	res.tags = make(map[string]string)
 	res.registered_id = ""
@@ -190,7 +190,8 @@ func addTags(sd *serverDef) {
 // together with the server (rather than as part of this software)
 // it also configures the rpc server to expect a token to identify
 // the user in the rpc metadata call
-func ServerStartup(def *serverDef) error {
+func ServerStartup(sd ServerDef) error {
+	def := sd.(*serverDef)
 	if !def.port_set {
 		fmt.Printf("WARNING! server port variable assignment detected. This is deprecated. Instead, use SetPort(). In future your code will not compile.\n")
 		fmt.Printf("Program will continue in 3 seconds\n")
@@ -613,7 +614,7 @@ func StartFakeService(name string) {
 		fmt.Println(s)
 		panic(s)
 	}
-	sd := NewServerDef()
+	sd := NewServerDef().(*serverDef)
 	sd.port = port
 	sd.register = Register(
 		func(server *grpc.Server) error {
