@@ -1,5 +1,5 @@
 /*
-obsolete, deprecated in favour of ctx package
+deprecated. See ctx package for a replacement implementation.
 */
 package rpc
 

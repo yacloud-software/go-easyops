@@ -1,3 +1,6 @@
+/*
+contains an example of how to use the /internal/ api of gRPC servers to shutdown a server gracefully.
+*/
 package main
 
 import (

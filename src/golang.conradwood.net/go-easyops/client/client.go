@@ -1,3 +1,62 @@
+/*
+This package facilitates making load-balanced, fail-over, authenticated gRPC calls to server. (it also provides shortcuts to objectstore get/put)
+
+Typically, in the yacloud, a new client is constructed via the proto package. For example
+
+	import "golang.conradwood.net/apis/getestservice"
+	...
+	getestservice.GetEchoClient()...
+
+# Load balancing
+
+The client will maintain a list of available targets for grpc calls. Each service has a unique list of targets. The list is periodically and aysnchronously updated by polling the registry.
+
+If no targets are available, a call to this service will be blocked for some time, then fail. Once failed, all subsequent calls will be failed immediately until a target becomes available.
+This allows for some basic recovery for circular service dependencies on boot. Whilst it is considered bad practice, it is a pattern commonly found and thus go-easyops attempts to make it work as well as can be expected. (Better to avoid circular dependencies altogether!!)
+
+RPC calls are not retried - if they fail (for any reason) they will not be sent to a different server.
+
+# Routing
+
+This client implements several and distinct features to determine where to route rpc calls too.
+  - Round-Robin for multiple targets
+  - By User: to user specific services
+  - By Context-Tag: arbitrary tags in the context
+
+In the absense of both user specific services and context-tags, a simple round-robin strategy is implemented for multiple targets.
+
+# Routing - by user
+
+A service may be registered with a useraccount instead of a service account (the default if started by a user on the command line. Also see command line flag -ge_disable_user_token). The client determines the current useraccount from the context used to invoke the target. If a service running as the same user as is in the context, the client will route the rpc call to the service running as this user.
+
+This is intended for debugging and "live" development. The user object is typically created and propagated and the edge of the system, for example at the webserver proxy. Thus, while developing or debugging any rpc server it is often useful to route some (and only some) calls into the development version. Developers should always start their work-in-progress servers under their own useraccount. Thus all calls the Developer makes are routed to their laptop. Subsequent calls go back into the infrastructure, but remain restricted to the useraccount, thus can be considered safe (subject to bugs in the backends of course).
+
+Note: this is not intended for general production use. For various reasons, it is a really bad idea to fire up rpc servers specific to each user. Instead the rpc server should handle multiple users. The user's token for authentication is considered private, like a password.
+
+# Routing - by Context-Tag
+
+A context-tag is a key with a value .
+
+A service may register itself with one or more tags. A Context may carry one or more tags. On each rpc call the list of targets is iterated through. Any service that has all tags with exactly matching values will be considered for routing, all others dismissed. If after, the first iteration, one or more services remain, those will be used for routing in a round-robin fashion.
+
+If no exact match is found, the context tags are inspected for "FallbackToPlain" option (see ctx package). If set, the list of all services with exactly 0 tags will be used for round-robin. If not set the rpc will be failed with "no target available".
+
+Note: Whilst context-tags are often quite useful, their use is generally discouraged, especially for large sets of servers. It is intented to be used for a standardized, quick and reasonably efficient means to route low-volume (~20/s or less) calls to remote rpc servers. In small setups this can often be useful to send information to remote clusters for remote-processing. (using a tag, for example, cluster=lhr, cluster=fra, cluster=lgw, cluster=cdn etc...)
+
+# Routing - directly
+
+One can bypass the fail-over and connection management altogether with functions such as ConnectWithIP. This is intented for circumstances where a standardised approach (round-robin/user/context) is unsuitable. Beware of dragons: This approach requires development of load-balancers, fail-over strategies, monitoring, recovery, start-up delays and many other features the default routing strategy implements. The complexity is often underestimated, but soon does become significant. (That is the point of the routing implementations above, really)
+
+# Standalone operation
+
+Standalone operation means that no other services are required to make rpc calls between a client and server. Whilst this is very limited (e.g. no load-balancing, no fail-over and NO AUTHENTICATION, it is useful for quickly testing a binary). Both, server and client must be started in standalone mode.
+
+Also see command line parameter -ge_standalone and package server
+
+# ObjectStore
+
+Mostly because an extra package for objectstore seems overkill, this package also provides function to get/put objects into the objectstore.
+*/
 package client
 
 import (

@@ -1,3 +1,9 @@
+/*
+mysql database handler. the use of this package is discouraged.
+
+sometimes it is necessary to connect to mysql databases. This package provides a managed way to do so.
+development is largely stopped on this package. the use of postgres package is encouraged instead.
+*/
 package mysql
 
 // this package opens and maintains database connections

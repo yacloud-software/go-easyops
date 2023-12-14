@@ -1,3 +1,6 @@
+/*
+wrapper around objectstore service.
+*/
 package objectstore
 
 import (
@@ -15,6 +18,7 @@ var (
 	ostore os.ObjectStoreClient
 )
 
+// store a proto in the objectstore
 func StoreProto(ctx context.Context, key string, p proto.Message) error {
 	b, err := utils.MarshalBytes(p)
 	if err != nil {
@@ -22,6 +26,8 @@ func StoreProto(ctx context.Context, key string, p proto.Message) error {
 	}
 	return PutWithID(ctx, key, b)
 }
+
+// retrieve a proto in the objectstore
 func RetrieveProto(ctx context.Context, key string, p proto.Message) error {
 	b, err := Get(ctx, key)
 	if err != nil {

@@ -1,3 +1,6 @@
+/*
+deprecated. this package no longer implements any functionality.
+*/
 package logger
 
 import ()

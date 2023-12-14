@@ -1,3 +1,8 @@
+/*
+This package stores data about the build process.
+During build variables are set, such as file location, build number and time.
+These can be retrieved through this package.
+*/
 package appinfo
 
 import (

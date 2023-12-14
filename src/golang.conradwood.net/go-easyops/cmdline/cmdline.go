@@ -1,3 +1,33 @@
+/*
+provides a standard configuration mechanism for clients and servers on the commandline
+
+go-easyops itself can be configured through environment variables and command line parameters. any go-easyops program
+includes standard command line parameters. some are described below
+
+# -h
+
+prints out build information and command line parameters for the application
+
+# -X
+
+prints out build information and command line parameters to the behaviour of go-easyops
+
+# Environment Variables
+
+-h and -X also print environment variables and a short help text for each. Application developers are encouraged to use
+this package to manage environment variables. a typical example
+
+	var (
+	  mytext = cmdline.ENV("MYTEXT","specifies the text to display")
+	)
+	func main() {
+	  fmt.Println(mytext.Value())
+	}
+
+# Config Files
+
+a config file (typically /tmp/goeasyops.config) provides optional and initial configuration for go-easyops. This is intented to configure developer machines on-the-fly for access to a different cloud and cluster. For example, based on the current path, a git repository url may be used to configure a specific and matching registry. (config file syntax is in yaml, see goeasyops proto, protobuf "Config")
+*/
 package cmdline
 
 import (

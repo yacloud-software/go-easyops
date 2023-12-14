@@ -1,3 +1,6 @@
+/*
+commonly used by other go-easyops packages. May provide useful information on the state of go-easyops.
+*/
 package common
 
 // this packge MUST NOT add command line variables.
@@ -24,6 +27,7 @@ type BlockedService struct {
 	Counter int
 }
 
+// add a service name to the list of services being used
 func AddServiceName(s string) {
 	addlock.Lock()
 	defer addlock.Unlock()
@@ -34,9 +38,13 @@ func AddServiceName(s string) {
 	}
 	clients = append(clients, &Service{Name: s})
 }
+
+// get all services used
 func GetConnectionNames() []*Service {
 	return clients
 }
+
+// get services that are used, but are currently blocked because no targets are available
 func GetBlockedConnectionNames() []*BlockedService {
 	addlock.Lock()
 	defer addlock.Unlock()
@@ -48,6 +56,8 @@ func GetBlockedConnectionNames() []*BlockedService {
 	}
 	return res
 }
+
+// mark a service as blocked by name
 func AddBlockedServiceName(s string) {
 	addlock.Lock()
 	defer addlock.Unlock()
@@ -59,6 +69,8 @@ func AddBlockedServiceName(s string) {
 	}
 	blocked = append(blocked, &BlockedService{Name: s, Counter: 1})
 }
+
+// unmark a service as blocked by name
 func RemoveBlockedServiceName(s string) {
 	addlock.Lock()
 	defer addlock.Unlock()
@@ -70,6 +82,7 @@ func RemoveBlockedServiceName(s string) {
 	}
 }
 
+// mark a service as exported.
 func AddExportedServiceName(name string) {
 	addlock.Lock()
 	defer addlock.Unlock()

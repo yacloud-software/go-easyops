@@ -1,3 +1,17 @@
+/*
+This provides information about users and their groups and organisations.
+
+It provides many helper functions to determine if a user has certain permissions, is a root user or a service.
+it has helpers to print out user information.
+
+It works on a context to retrieve user and service information.
+
+Note that a 'service account' is also a 'user'. It is just marked as a service. Service accounts are treated differently in some places. For example, a web proxy does not (should not) allow services to log in to a website.
+
+As a rule of thumb, Most calls in this package do not require network I/O and thus are fairly safe and cheap. see package authremote for calls that require network I/O.
+
+It also provides some wrappers to create a new context. That is for historic reasons. Developers should use and port code to use the ctx package instead. In almost all cases, if a context is already present (for example, in a gRPC server), that context must be re-used. New Contexts should only be created after a user has been authenticated.
+*/
 package auth
 
 import (

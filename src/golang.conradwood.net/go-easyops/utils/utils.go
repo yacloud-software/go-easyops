@@ -1,5 +1,5 @@
 /*
-Package utils provides a lot of utilities for files, strings, numbers, printing data
+Package utils provides a lot of utilities for files, strings, numbers, printing data, formatting and parsing time, rate calculation, sliding average calculation, (linux) console pretty printing and so on.
 */
 package utils
 

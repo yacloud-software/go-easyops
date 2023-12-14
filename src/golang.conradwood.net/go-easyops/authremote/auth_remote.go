@@ -1,3 +1,8 @@
+/*
+This package provides access to user information which require network I/O, for example lookup of users by email.
+
+It also provides some wrappers to create a new context. That is for historic reasons. Developers should use and port code to use the ctx package instead.
+*/
 package authremote
 
 import (

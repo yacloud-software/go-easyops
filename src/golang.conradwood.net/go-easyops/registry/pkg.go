@@ -1,3 +1,6 @@
+/*
+connect to a registry. used by many other go-easyops packages.
+*/
 package registry
 
 import (

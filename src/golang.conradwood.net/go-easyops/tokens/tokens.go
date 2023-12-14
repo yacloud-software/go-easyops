@@ -1,3 +1,6 @@
+/*
+mostly deprecated. internal use only.
+*/
 package tokens
 
 import (
