@@ -38,7 +38,7 @@ func (c *Cell) String() string {
 	} else if c.typ == 2 {
 		return fmt.Sprintf("%d", c.num)
 	} else if c.typ == 3 {
-		return TimestampString(c.ts) + " (" + TimestampString(c.ts) + ")"
+		return TimestampString(c.ts)
 	} else if c.typ == 7 {
 		return TimestampAgeString(c.ts) + " (" + TimestampString(c.ts) + ")"
 	} else if c.typ == 4 {
