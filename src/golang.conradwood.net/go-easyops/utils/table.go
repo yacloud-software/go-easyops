@@ -38,6 +38,8 @@ func (c *Cell) String() string {
 	} else if c.typ == 2 {
 		return fmt.Sprintf("%d", c.num)
 	} else if c.typ == 3 {
+		return TimestampString(c.ts) + " (" + TimestampString(c.ts) + ")"
+	} else if c.typ == 7 {
 		return TimestampAgeString(c.ts) + " (" + TimestampString(c.ts) + ")"
 	} else if c.typ == 4 {
 		return fmt.Sprintf("%0.2f", c.f)
@@ -94,6 +96,11 @@ func (t *Table) AddStrings(sts ...string) *Table {
 func (t *Table) AddTimestamp(ts uint32) *Table {
 	r := t.GetRowOrCreate(t.addingRow)
 	r.AddCell(&Cell{typ: 3, ts: ts})
+	return t
+}
+func (t *Table) AddTimestampWithAge(ts uint32) *Table {
+	r := t.GetRowOrCreate(t.addingRow)
+	r.AddCell(&Cell{typ: 7, ts: ts})
 	return t
 }
 func (t *Table) AddFloat64(f float64) *Table {
