@@ -51,9 +51,10 @@ const (
 )
 
 var (
-	reg_env = ENV("GE_REGISTRY", "default registry address")
-	e_ctx   = ENV("GE_CTX", "a serialised context to use when creating new ones")
-	config  *pb.Config
+	default_timeout = flag.Duration("ge_ctx_deadline", time.Duration(10)*time.Second, "the default timeout for contexts. do not change in production")
+	reg_env         = ENV("GE_REGISTRY", "default registry address")
+	e_ctx           = ENV("GE_CTX", "a serialised context to use when creating new ones")
+	config          *pb.Config
 	// annoyingly, not all go-easyops flags start with ge_
 	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
 	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
@@ -337,4 +338,9 @@ func GetYACloudDir() string {
 		}
 	}
 	return ""
+}
+
+// default timeout for new contexts
+func DefaultTimeout() time.Duration {
+	return *default_timeout
 }

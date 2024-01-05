@@ -22,7 +22,6 @@ var (
 	e_usertoken              = cmdline.ENV("GE_USERTOKEN", "a usertoken")
 	token                    = flag.String("token", "", "service token")
 	disusertoken             = flag.Bool("ge_disable_user_token", false, "if true disable reading of user token (for testing)")
-	Deadline                 = flag.Int("ge_ctx_deadline_seconds", 10, "do not change for production services")
 	tokenwasread             = false
 	usertoken                string
 	last_token_read_registry string
@@ -57,9 +56,9 @@ func DISContextWithToken() context.Context {
 		}
 	*/
 	md := buildMeta()
-	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(*Deadline)*time.Second)
+	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
 	go func(cf context.CancelFunc) {
-		time.Sleep(time.Duration((*Deadline)+5) * time.Second)
+		time.Sleep(time.Duration((10)+5) * time.Second)
 		cnc()
 	}(cnc)
 	return metadata.NewOutgoingContext(ctx, md)

@@ -10,7 +10,7 @@ import (
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/prometheus"
-	"golang.conradwood.net/go-easyops/tokens"
+	//	"golang.conradwood.net/go-easyops/tokens"
 	"golang.org/x/net/context"
 	"time"
 )
@@ -215,7 +215,7 @@ func CallStateFromContext(ctx context.Context) *CallState {
 // 1. Accessible as a local context Variable
 // 2. Ready to be transmitted via metadata (in case the context is use for outbound calls)
 func (cs *CallState) UpdateContextFromResponse() error {
-	return cs.UpdateContextFromResponseWithTimeout(time.Duration(*tokens.Deadline) * time.Second)
+	return cs.UpdateContextFromResponseWithTimeout(time.Duration(10) * time.Second)
 }
 func (cs *CallState) UpdateContextFromResponseWithTimeout(t time.Duration) error {
 	panic("obsolete codepath")

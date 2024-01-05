@@ -42,7 +42,7 @@ func registry_changed() {
 }
 func Context() context.Context {
 	client.GetSignatureFromAuth()
-	return ContextWithTimeout(time.Duration(10) * time.Second)
+	return ContextWithTimeout(cmdline.DefaultTimeout())
 }
 
 /*
@@ -95,7 +95,7 @@ func DerivedContextWithRouting(cv context.Context, kv map[string]string, fallbac
 get a context with routing tags, specified by proto
 */
 func NewContextWithRoutingTags(rt *ge.CTXRoutingTags) context.Context {
-	return ContextWithTimeoutAndTags(time.Duration(10)*time.Second, rt)
+	return ContextWithTimeoutAndTags(cmdline.DefaultTimeout(), rt)
 }
 
 /*
