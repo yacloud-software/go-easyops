@@ -33,3 +33,7 @@ func UnmarshalYaml(buf []byte, target interface{}) error {
 	}
 	return nil
 }
+
+func MarshalYaml(src interface{}) ([]byte, error) {
+	return yaml.Marshal(src)
+}
