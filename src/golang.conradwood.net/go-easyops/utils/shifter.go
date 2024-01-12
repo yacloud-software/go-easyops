@@ -45,6 +45,8 @@ func (sh *Shifter) Unshift_uint16() uint32 {
 	}
 	return res
 }
+
+// LSB first, MSB last. e.g. 0xAABBCCDD will be shifted into a byte array like so: []byte{0xDD,0xCC,0xBB,0xAA}
 func (sh *Shifter) Unshift_uint32() uint32 {
 	res := uint32(0)
 	for i := 0; i < 4; i++ {
