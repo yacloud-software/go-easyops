@@ -87,6 +87,8 @@ func debugFind(name, nname string) {
 	fmt.Printf("File: %s resolved to %s\n", name, nname)
 	return
 }
+
+// search for a file in git repo and above. error if not found
 func FindFile(name string) (string, error) {
 	ffclock.Lock()
 	nname, foo := find_file_cache[name]
