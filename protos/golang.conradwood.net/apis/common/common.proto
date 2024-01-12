@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+
 package common;
 
 option go_package = "golang.conradwood.net/apis/common";
