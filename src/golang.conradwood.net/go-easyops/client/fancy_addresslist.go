@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/auth"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/resolver"
+	"strings"
 )
 
 // this is essentially a list of addresses
@@ -20,15 +22,41 @@ type FancyAddressList struct {
 }
 
 type fancy_adr struct {
-	addr    string
-	subcon  balancer.SubConn
-	state   connectivity.State
-	removed bool
-	Target  *registry.Target
+	addr     string
+	subcon   balancer.SubConn
+	state    connectivity.State
+	removed  bool
+	Target   *registry.Target
+	grpc_con *grpc.ClientConn // only used if client calls Connect() on this
 }
 
 func (fa *fancy_adr) String() string {
 	return fmt.Sprintf("%s: %s[%s] removed=%v", fa.Target.ServiceName, fa.addr, fa.state.String(), fa.removed)
+}
+
+func (fa *fancy_adr) disconnect() {
+	if fa.grpc_con == nil {
+		return
+	}
+	fa.grpc_con.Close()
+	fa.grpc_con = nil
+}
+
+// open and maintain a connection to this peer
+func (fa *fancy_adr) Connection() (*grpc.ClientConn, error) {
+	if fa.grpc_con != nil {
+		return fa.grpc_con, nil
+	}
+	gc, err := grpc.Dial(fmt.Sprintf("ipv4:%s", fa.addr), grpc.WithBlock(),
+		grpc.WithTransportCredentials(GetClientCreds()),
+		grpc.WithUnaryInterceptor(ClientMetricsUnaryInterceptor),
+		grpc.WithStreamInterceptor(unaryStreamInterceptor),
+	)
+	if err != nil {
+		return nil, err
+	}
+	fa.grpc_con = gc
+	return gc, nil
 }
 func (fal *FancyAddressList) Count() int {
 	return len(fal.addresses)
@@ -66,6 +94,7 @@ func (fal *FancyAddressList) RequiredList(addresses []resolver.Address) []*fancy
 		fancyPrintf(fal, "balancer: removed %s\n", fa.addr)
 		fa.removed = true
 		removed = true
+		fa.disconnect()
 	}
 	if removed {
 		var fa []*fancy_adr
@@ -238,5 +267,20 @@ func (fal *FancyAddressList) SelectValid(ctx context.Context) []*fancy_adr {
 }
 
 func (fal *FancyAddressList) ServiceName() string {
-	return fal.Name
+	s := fal.Name
+	idx := strings.Index(s, "@")
+	if idx != -1 {
+		s = s[:idx]
+	}
+	return s
+}
+
+func GetAllFancyAddressLists() []*FancyAddressList {
+	var res []*FancyAddressList
+	for _, bal := range balancers {
+		if bal.addresslist != nil {
+			res = append(res, bal.addresslist)
+		}
+	}
+	return res
 }

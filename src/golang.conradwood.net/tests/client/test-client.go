@@ -21,6 +21,9 @@ var (
 
 func main() {
 	flag.Parse()
+	fal, err := client.ConnectNoBalance("registry.Registry")
+	utils.Bail("no registry", err)
+	fmt.Printf("Got fancyaddresslist for %s\n", fal.ServiceName())
 	fmt.Printf("go-easyops test client\n")
 	u, s := authremote.GetLocalUsers()
 	fmt.Printf("Local User account   : %s\n", user2string(u))

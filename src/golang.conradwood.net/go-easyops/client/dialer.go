@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -98,6 +99,31 @@ func connectWithIPOptions(servicename string, block bool) (*grpc.ClientConn, err
 
 func Connect(serviceNameOrPath string) *grpc.ClientConn {
 	return ConnectAt(cmdline.GetClientRegistryAddress(), serviceNameOrPath)
+}
+
+func ConnectNoBalanceAt(registryadr string, serviceNameOrPath string) (*FancyAddressList, error) {
+	_, err := dialService(registryadr, serviceNameOrPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// this is, of course a bit of a hack. really it should be a channel and so on
+	started := time.Now()
+	for {
+		if time.Since(started) > time.Duration(8)*time.Second {
+			return nil, fmt.Errorf("Unable to dial service \"%s\" - timeout after %0.1fs", serviceNameOrPath, time.Since(started).Seconds())
+		}
+		for _, fal := range GetAllFancyAddressLists() {
+			fmt.Printf("Looking for \"%s\" - is it \"%s\"?\n", serviceNameOrPath, fal.ServiceName())
+			if fal.ServiceName() == serviceNameOrPath {
+				return fal, nil
+			}
+		}
+		time.Sleep(time.Duration(750) * time.Millisecond)
+	}
+}
+func ConnectNoBalance(serviceNameOrPath string) (*FancyAddressList, error) {
+	return ConnectNoBalanceAt(cmdline.GetClientRegistryAddress(), serviceNameOrPath)
 }
 
 // convenience method to get a loadbalanced connection to a service
