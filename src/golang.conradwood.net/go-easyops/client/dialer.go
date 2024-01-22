@@ -101,6 +101,8 @@ func Connect(serviceNameOrPath string) *grpc.ClientConn {
 	return ConnectAt(cmdline.GetClientRegistryAddress(), serviceNameOrPath)
 }
 
+// this initiates a balancer for a service and returns an address list. this is not actually balanced, but the
+// fancyaddresslist does maintain the list of active targets.
 func ConnectNoBalanceAt(registryadr string, serviceNameOrPath string) (*FancyAddressList, error) {
 	_, err := dialService(registryadr, serviceNameOrPath)
 	if err != nil {
