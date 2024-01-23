@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/resolver"
 	"strings"
+	"sync"
+	"time"
 )
 
 /*
@@ -28,12 +30,13 @@ type FancyAddressList struct {
 }
 
 type FancyAddr struct {
-	addr     string
-	subcon   balancer.SubConn
-	state    connectivity.State
-	removed  bool
-	Target   *registry.Target
-	grpc_con *grpc.ClientConn // only used if client calls Connect() on this
+	addr      string
+	subcon    balancer.SubConn
+	state     connectivity.State
+	removed   bool
+	Target    *registry.Target
+	grpc_con  *grpc.ClientConn // only used if client calls Connect() on this
+	dial_lock sync.Mutex
 }
 
 // a key that can be used in maps to find this particular fancyaddress.
@@ -71,7 +74,16 @@ func (fa *FancyAddr) Connection() (*grpc.ClientConn, error) {
 	if fa.grpc_con != nil {
 		return fa.grpc_con, nil
 	}
-	gc, err := grpc.Dial(fmt.Sprintf("ipv4:%s", fa.addr), grpc.WithBlock(),
+	fa.dial_lock.Lock()
+	defer fa.dial_lock.Unlock()
+	if fa.grpc_con != nil {
+		return fa.grpc_con, nil
+	}
+	dialstring := fmt.Sprintf("%s", fa.addr)
+	fmt.Printf("[go-easyops] dialling \"%s\"...\n", dialstring)
+	ctx, cnc := context.WithTimeout(context.Background(), time.Duration(2)*time.Second)
+	defer cnc()
+	gc, err := grpc.DialContext(ctx, dialstring, grpc.WithBlock(),
 		grpc.WithTransportCredentials(GetClientCreds()),
 		grpc.WithUnaryInterceptor(ClientMetricsUnaryInterceptor),
 		grpc.WithStreamInterceptor(unaryStreamInterceptor),
@@ -98,6 +110,16 @@ func (fal *FancyAddressList) Updated() {
 func (fal *FancyAddressList) Add(f *FancyAddr) {
 	fal.addresses = append(fal.addresses, f)
 	fal.Updated()
+}
+func (fal *FancyAddressList) remove(f *FancyAddr) {
+	var nr []*FancyAddr
+	for _, fa := range fal.addresses {
+		if fa.Key() == f.Key() {
+			continue
+		}
+		nr = append(nr, fa)
+	}
+	fal.addresses = nr
 }
 
 // returns the fancyaddress that matches the key. see fancyaddress.Key(). this might return nil if no such fancyaddress is known (any more)
