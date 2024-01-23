@@ -12,10 +12,16 @@ import (
 	"strings"
 )
 
-// this is essentially a list of addresses
-// the balancer removes/adds/updates addresses and the
-// picker reads/chooses/sorts them.
-// this struct synchronises access between them
+/*
+this is essentially a list of addresses.
+the balancer removes/adds/updates addresses and the
+picker reads/chooses/sorts them.
+this struct synchronises access between them.
+
+The list is semi-uptodate, that means, it is cached, but updated if go-easyops determines that the registry
+has better information than its cache.
+The Addresses in this list are still subject to the filtering done in the registry. The Registry "prefers" certain targets, for example, higher buildids
+*/
 type FancyAddressList struct {
 	Name      string
 	addresses []*fancy_adr
@@ -133,7 +139,7 @@ func (fal *FancyAddressList) BySubCon(sc balancer.SubConn) *fancy_adr {
 	return fa
 }
 
-// return all addresses the fancyaddresslist knows about
+// return all addresses the fancyaddresslist knows about.
 func (fal *FancyAddressList) AllAddresses() []*fancy_adr {
 	var valids []*fancy_adr
 	for _, a := range fal.addresses {
