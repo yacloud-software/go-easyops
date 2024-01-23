@@ -24,10 +24,10 @@ The Addresses in this list are still subject to the filtering done in the regist
 */
 type FancyAddressList struct {
 	Name      string
-	addresses []*fancy_adr
+	addresses []*FancyAddr
 }
 
-type fancy_adr struct {
+type FancyAddr struct {
 	addr     string
 	subcon   balancer.SubConn
 	state    connectivity.State
@@ -36,11 +36,16 @@ type fancy_adr struct {
 	grpc_con *grpc.ClientConn // only used if client calls Connect() on this
 }
 
-func (fa *fancy_adr) String() string {
+func (fa *FancyAddr) String() string {
 	return fmt.Sprintf("%s: %s[%s] removed=%v", fa.Target.ServiceName, fa.addr, fa.state.String(), fa.removed)
 }
 
-func (fa *fancy_adr) disconnect() {
+// return true if this is _actually_ available. e.g. a TCP reset will cause this connection to be "not ready", but still be listed in the registry and caches
+func (fa *FancyAddr) IsReady() bool {
+	return fa.state == connectivity.Ready
+}
+
+func (fa *FancyAddr) disconnect() {
 	if fa.grpc_con == nil {
 		return
 	}
@@ -49,7 +54,7 @@ func (fa *fancy_adr) disconnect() {
 }
 
 // open and maintain a connection to this peer
-func (fa *fancy_adr) Connection() (*grpc.ClientConn, error) {
+func (fa *FancyAddr) Connection() (*grpc.ClientConn, error) {
 	if fa.grpc_con != nil {
 		return fa.grpc_con, nil
 	}
@@ -71,20 +76,20 @@ func (fal *FancyAddressList) IsEmpty() bool {
 	return len(fal.addresses) == 0
 }
 
-// called by the balancer when a fancy_adr has been updated. (or anyone updating fancy_adr)
+// called by the balancer when a FancyAddr has been updated. (or anyone updating FancyAddr)
 // we may need to clear some caches (now or in future...)
 func (fal *FancyAddressList) Updated() {
 }
 
 // perhaps should check/panic on duplicates here?
-func (fal *FancyAddressList) Add(f *fancy_adr) {
+func (fal *FancyAddressList) Add(f *FancyAddr) {
 	fal.addresses = append(fal.addresses, f)
 	fal.Updated()
 }
 
 // removes all addresses which are NOT in the array and returns the removed ones
-func (fal *FancyAddressList) RequiredList(addresses []resolver.Address) []*fancy_adr {
-	var res []*fancy_adr
+func (fal *FancyAddressList) RequiredList(addresses []resolver.Address) []*FancyAddr {
+	var res []*FancyAddr
 	removed := false
 	for _, fa := range fal.addresses {
 		stillgood := false
@@ -103,7 +108,7 @@ func (fal *FancyAddressList) RequiredList(addresses []resolver.Address) []*fancy
 		fa.disconnect()
 	}
 	if removed {
-		var fa []*fancy_adr
+		var fa []*FancyAddr
 		for _, foa := range fal.addresses {
 			if foa.removed {
 				res = append(res, foa)
@@ -119,7 +124,7 @@ func (fal *FancyAddressList) RequiredList(addresses []resolver.Address) []*fancy
 
 /******************************** find entries by various keys *************************/
 
-func (fal *FancyAddressList) ByAddr(adr string) *fancy_adr {
+func (fal *FancyAddressList) ByAddr(adr string) *FancyAddr {
 	for _, fa := range fal.addresses {
 		if fa.addr == adr {
 			return fa
@@ -128,8 +133,8 @@ func (fal *FancyAddressList) ByAddr(adr string) *fancy_adr {
 	return nil
 }
 
-func (fal *FancyAddressList) BySubCon(sc balancer.SubConn) *fancy_adr {
-	var fa *fancy_adr
+func (fal *FancyAddressList) BySubCon(sc balancer.SubConn) *FancyAddr {
+	var fa *FancyAddr
 	for _, a := range fal.addresses {
 		if a.subcon == sc {
 			fa = a
@@ -140,17 +145,29 @@ func (fal *FancyAddressList) BySubCon(sc balancer.SubConn) *fancy_adr {
 }
 
 // return all addresses the fancyaddresslist knows about.
-func (fal *FancyAddressList) AllAddresses() []*fancy_adr {
-	var valids []*fancy_adr
+func (fal *FancyAddressList) AllAddresses() []*FancyAddr {
+	var valids []*FancyAddr
 	for _, a := range fal.addresses {
 		valids = append(valids, a)
 	}
 	return valids
 }
 
+// return all "ready" addresses
+func (fal *FancyAddressList) AllReadyAddresses() []*FancyAddr {
+	var valids []*FancyAddr
+	for _, a := range fal.addresses {
+		if !a.IsReady() {
+			continue
+		}
+		valids = append(valids, a)
+	}
+	return valids
+}
+
 // return addresses with 0 tags
-func (fal *FancyAddressList) ByWithoutTags() []*fancy_adr {
-	var valids []*fancy_adr
+func (fal *FancyAddressList) ByWithoutTags() []*FancyAddr {
+	var valids []*FancyAddr
 	// filter addresses to include only those which contain required all tags
 	for _, a := range fal.addresses {
 		if a.Target == nil {
@@ -170,7 +187,7 @@ supplied.
 if no tags are supplied, return _ALL_ targets (including those with tags)
 */
 
-func (fal *FancyAddressList) ByMatchingTags(tags map[string]string) []*fancy_adr {
+func (fal *FancyAddressList) ByMatchingTags(tags map[string]string) []*FancyAddr {
 	fancyPrintf(fal, "Filtering (%d) addresses by tags\n", len(fal.addresses))
 	if len(tags) == 0 {
 		// no point iterating over all addresses if we have no tags
@@ -178,7 +195,7 @@ func (fal *FancyAddressList) ByMatchingTags(tags map[string]string) []*fancy_adr
 		fancyPrintf(fal, "empty list for filterbytags!")
 		return fal.addresses
 	}
-	var valids []*fancy_adr
+	var valids []*FancyAddr
 	// filter addresses to include only those which contain required all tags
 	for _, a := range fal.addresses {
 		valid := true
@@ -202,8 +219,8 @@ func (fal *FancyAddressList) ByMatchingTags(tags map[string]string) []*fancy_adr
 }
 
 // get all those without routinginfo or no routinginfo.user
-func (fal *FancyAddressList) ByNoUserRoutingInfo() []*fancy_adr {
-	var res []*fancy_adr
+func (fal *FancyAddressList) ByNoUserRoutingInfo() []*FancyAddr {
+	var res []*FancyAddr
 	for _, a := range fal.addresses {
 		ri := a.Target.RoutingInfo
 		if ri != nil && ri.RunningAs != nil {
@@ -215,8 +232,8 @@ func (fal *FancyAddressList) ByNoUserRoutingInfo() []*fancy_adr {
 }
 
 // get all those with a routinginfo RunningAs user
-func (fal *FancyAddressList) ByUser(userid string) []*fancy_adr {
-	var res []*fancy_adr
+func (fal *FancyAddressList) ByUser(userid string) []*FancyAddr {
+	var res []*FancyAddr
 	for _, a := range fal.addresses {
 		ri := a.Target.RoutingInfo
 		if ri == nil || ri.RunningAs == nil {
@@ -230,8 +247,8 @@ func (fal *FancyAddressList) ByUser(userid string) []*fancy_adr {
 	return res
 }
 
-func (fal *FancyAddressList) readyOnly(in []*fancy_adr) []*fancy_adr {
-	var valids []*fancy_adr
+func (fal *FancyAddressList) readyOnly(in []*FancyAddr) []*FancyAddr {
+	var valids []*FancyAddr
 	bal_state_lock.Lock()
 	for _, fa := range in {
 		if fa.state != connectivity.Ready {
@@ -258,7 +275,7 @@ Then from the remaining addresses (in ready state), follow these rules:
 3. if 1 or more addresses have a routinginfo.user that matches user in context, return only those
  4. otherwise return those without routinguser.info
 */
-func (fal *FancyAddressList) SelectValid(ctx context.Context) []*fancy_adr {
+func (fal *FancyAddressList) SelectValid(ctx context.Context) []*FancyAddr {
 	nro := fal.ByNoUserRoutingInfo()
 	if len(nro) == len(fal.addresses) {
 		// ALL addresses have routinginfo, so we have 0 addresses WITHOUT routinginfo

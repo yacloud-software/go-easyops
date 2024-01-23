@@ -190,7 +190,7 @@ func (f *FancyBalancer) HandleResolvedAddrs(addresses []resolver.Address, err er
 			continue
 		}
 		//	sc = append(sc, sco)
-		f.addresslist.Add(&fancy_adr{
+		f.addresslist.Add(&FancyAddr{
 			state: connectivity.Ready, // docs say use CONNECTING here, but that never calls the picker nor the stateupdate. how does that work?
 			//			state:  connectivity.Idle,
 			//state:  connectivity.Connecting,
