@@ -116,7 +116,7 @@ func ConnectNoBalanceAt(registryadr string, serviceNameOrPath string) (*FancyAdd
 			return nil, fmt.Errorf("Unable to dial service \"%s\" - timeout after %0.1fs", serviceNameOrPath, time.Since(started).Seconds())
 		}
 		for _, fal := range GetAllFancyAddressLists() {
-			fmt.Printf("Looking for \"%s\" - is it \"%s\"?\n", serviceNameOrPath, fal.ServiceName())
+			//			fmt.Printf("Looking for \"%s\" - is it \"%s\"?\n", serviceNameOrPath, fal.ServiceName())
 			if fal.ServiceName() == serviceNameOrPath {
 				return fal, nil
 			}
