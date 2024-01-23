@@ -133,6 +133,15 @@ func (fal *FancyAddressList) BySubCon(sc balancer.SubConn) *fancy_adr {
 	return fa
 }
 
+// return all addresses the fancyaddresslist knows about
+func (fal *FancyAddressList) AllAddresses() []*fancy_adr {
+	var valids []*fancy_adr
+	for _, a := range fal.addresses {
+		valids = append(valids, a)
+	}
+	return valids
+}
+
 // return addresses with 0 tags
 func (fal *FancyAddressList) ByWithoutTags() []*fancy_adr {
 	var valids []*fancy_adr
@@ -230,15 +239,18 @@ func (fal *FancyAddressList) readyOnly(in []*fancy_adr) []*fancy_adr {
 }
 
 /*
-this is called for _every_ rpc call. it should be performance optimised
-this returns a list of addresses for the picker to pick from.
+	this is called for _every_ rpc call. it should be performance optimised
+	this returns a list of addresses for the picker to pick from.
+	this function is what the picker calls. if loadbalancing is implemented by the user, this
+	function should be used
+
 the rules are:
 First: Never return any addresses which are not in connectivty state READY.
 Then from the remaining addresses (in ready state), follow these rules:
 1. If we have 0 addresses with routinginfo for a user, return all.
 2. if context has no user, return those without routinginfo.user
 3. if 1 or more addresses have a routinginfo.user that matches user in context, return only those
-4. otherwise return those without routinguser.info
+ 4. otherwise return those without routinguser.info
 */
 func (fal *FancyAddressList) SelectValid(ctx context.Context) []*fancy_adr {
 	nro := fal.ByNoUserRoutingInfo()
