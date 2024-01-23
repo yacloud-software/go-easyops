@@ -36,6 +36,15 @@ type FancyAddr struct {
 	grpc_con *grpc.ClientConn // only used if client calls Connect() on this
 }
 
+// a key that can be used in maps to find this particular fancyaddress.
+func (fa *FancyAddr) Key() string {
+	return "faddr_" + fa.addr
+}
+
+// address, including port, e.g. 10.1.1.1:6000
+func (fa *FancyAddr) Address() string {
+	return fa.addr
+}
 func (fa *FancyAddr) String() string {
 	return fmt.Sprintf("%s: %s[%s] removed=%v", fa.Target.ServiceName, fa.addr, fa.state.String(), fa.removed)
 }
@@ -53,7 +62,11 @@ func (fa *FancyAddr) disconnect() {
 	fa.grpc_con = nil
 }
 
-// open and maintain a connection to this peer
+/*
+ open and maintain a connection to this peer. This can help to build custom load-balancers, but is not intented for general-use.
+ use with caution - using this method required in-depth knowledge of grpc and go-easyops
+*/
+
 func (fa *FancyAddr) Connection() (*grpc.ClientConn, error) {
 	if fa.grpc_con != nil {
 		return fa.grpc_con, nil
@@ -85,6 +98,16 @@ func (fal *FancyAddressList) Updated() {
 func (fal *FancyAddressList) Add(f *FancyAddr) {
 	fal.addresses = append(fal.addresses, f)
 	fal.Updated()
+}
+
+// returns the fancyaddress that matches the key. see fancyaddress.Key(). this might return nil if no such fancyaddress is known (any more)
+func (fal *FancyAddressList) ByKey(key string) *FancyAddr {
+	for _, fa := range fal.addresses {
+		if fa.Key() == key {
+			return fa
+		}
+	}
+	return nil
 }
 
 // removes all addresses which are NOT in the array and returns the removed ones
@@ -153,7 +176,7 @@ func (fal *FancyAddressList) AllAddresses() []*FancyAddr {
 	return valids
 }
 
-// return all "ready" addresses
+// return all "ready" addresses (those with a TCP connection in ready state)
 func (fal *FancyAddressList) AllReadyAddresses() []*FancyAddr {
 	var valids []*FancyAddr
 	for _, a := range fal.addresses {
@@ -301,6 +324,7 @@ func (fal *FancyAddressList) SelectValid(ctx context.Context) []*FancyAddr {
 	return fal.readyOnly(bu)
 }
 
+// servicename, e.g. "registry.Registry"
 func (fal *FancyAddressList) ServiceName() string {
 	s := fal.Name
 	idx := strings.Index(s, "@")
