@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"crypto/tls"
+	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -15,6 +16,7 @@ import (
 )
 
 var (
+	header_timeout  = flag.Duration("ge_http_header_timeout", time.Duration(3)*time.Second, "how long to wait for headers after establishing tcp connection")
 	durationSummary = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:       "goeasyops_httpclient_duration",
@@ -40,7 +42,7 @@ var (
 		MaxIdleConns:          50,
 		MaxIdleConnsPerHost:   10,
 		IdleConnTimeout:       3 * time.Second,
-		ResponseHeaderTimeout: 3 * time.Second,
+		ResponseHeaderTimeout: *header_timeout,
 		ExpectContinueTimeout: 5 * time.Second,
 		DialContext: (&net.Dialer{
 			Timeout:   5 * time.Second,

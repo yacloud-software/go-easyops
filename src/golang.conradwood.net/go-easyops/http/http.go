@@ -33,7 +33,7 @@ type HTTPIF interface {
 // use urlcacher for the url (needs ctx to authenticate)
 func NewCachingClient(ctx context.Context) HTTPIF {
 	if *debug {
-		fmt.Printf("New caching client..\n")
+		fmt.Printf("[go-easyops] New caching client..\n")
 	}
 	res := &cHTTP{}
 	res.ctx, res.ctx_cancel = context.WithCancel(ctx)
@@ -44,7 +44,7 @@ func NewCachingClient(ctx context.Context) HTTPIF {
 // retrieve directly from source
 func NewDirectClient() HTTPIF {
 	if *debug {
-		fmt.Printf("New direct client..\n")
+		fmt.Printf("[go-easyops] New direct client..\n")
 	}
 	return &HTTP{}
 }
