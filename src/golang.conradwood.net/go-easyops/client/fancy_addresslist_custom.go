@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	debug_custom_resolver    = flag.Bool("debug_custom_fancy_resolver", false, "debug the custom fancy resolver, if any are being used")
+	debug_custom_resolver    = flag.Bool("ge_debug_custom_fancy_resolver", false, "debug the custom fancy resolver, if any are being used")
 	custom_fancyadrlist_lock sync.Mutex
 )
 
