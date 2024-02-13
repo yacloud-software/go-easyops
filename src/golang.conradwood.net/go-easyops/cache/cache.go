@@ -1,5 +1,6 @@
 /*
-package cache provides a basic, safe in-memory cache
+package cache provides a basic, safe in-memory cache. This is currently per-instance.
+a patch to make it per-cluster is welcome. (perhaps using redis?)
 */
 package cache
 
@@ -73,6 +74,8 @@ type cacheEntry struct {
 func init() {
 	prometheus.MustRegister(efficiency, size, performance, usage)
 }
+
+// clear the entire cache with this name and return cache objects (which cleared)
 func Clear(cacheName string) ([]*Cache, error) {
 	fmt.Printf("[go-easyops] Clearing cache \"%s\"\n", cacheName)
 	cacheLock.Lock()
@@ -105,6 +108,8 @@ func New(name string, lifetime time.Duration, maxSizeInMB int) *Cache {
 	cacheLock.Unlock()
 	return res
 }
+
+// evict (aka remove) a specific key from this cache
 func (c *Cache) Evict(key string) {
 	c.mlock.Lock()
 	for _, x := range c.mcache {
@@ -114,6 +119,8 @@ func (c *Cache) Evict(key string) {
 	}
 	c.mlock.Unlock()
 }
+
+// clear this cache (that is: remove all entries in it)
 func (c *Cache) Clear() {
 	c.mlock.Lock()
 	c.mcache = make([]*cacheEntry, 0)
@@ -121,9 +128,12 @@ func (c *Cache) Clear() {
 	c.setCacheGauge(0)
 }
 
+// put something into this cache, with a specific expiry time
 func (c *Cache) PutWithExpiry(key string, value interface{}, expiry *time.Time) {
 	c.putRaw(key, value, expiry)
 }
+
+// put something into this cache
 func (c *Cache) Put(key string, value interface{}) {
 	c.putRaw(key, value, nil)
 }
@@ -167,6 +177,7 @@ func (c *Cache) putRaw(key string, value interface{}, expiry *time.Time) {
 	c.mcache = append(c.mcache, mc)
 }
 
+// get something from the cache (specified by key)
 func (c *Cache) Get(key string) interface{} {
 	label := prometheus.Labels{"cachename": c.name}
 	usage.With(label).Inc()
@@ -194,6 +205,8 @@ func (c *Cache) Get(key string) interface{} {
 	efficiency.With(prometheus.Labels{"cachename": c.name, "result": "miss"}).Inc()
 	return nil
 }
+
+// get all the keys from the cache
 func (c *Cache) Keys() []string {
 	var res []string
 	c.mlock.Lock()
@@ -228,6 +241,7 @@ func (c *Cache) setCacheGauge(used int) {
 
 }
 
+// return the name of this cache
 func (c *Cache) Name() string {
 	return c.name
 }
