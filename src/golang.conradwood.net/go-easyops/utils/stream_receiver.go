@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -10,6 +12,7 @@ type ByteStreamReceiver struct {
 	sync.Mutex
 	open_files map[string]*open_file
 	last_file  *open_file
+	path       string
 }
 
 // the proto must be compatible with this interface
@@ -18,8 +21,17 @@ type StreamData interface {
 	GetData() []byte
 }
 
-func NewByteStreamReceiver() *ByteStreamReceiver {
+func NewByteStreamReceiver(path string) *ByteStreamReceiver {
+	p, err := filepath.Abs(path)
+	if err != nil {
+		fmt.Printf("[go-easyops] byte-stream receiver failed filepath.Abs(%s): %s", path, err)
+		return nil
+	}
+	for strings.HasSuffix(p, "/") {
+		p = p[:len(p)-1]
+	}
 	res := &ByteStreamReceiver{
+		path:       p,
 		open_files: make(map[string]*open_file),
 	}
 	return res
@@ -37,7 +49,7 @@ func (bsr *ByteStreamReceiver) NewData(data StreamData) error {
 		return fmt.Errorf("premature data received without filename")
 	}
 	b := data.GetData()
-	err := write_to.Write(b)
+	err := write_to.Write(bsr.path, b)
 	if err != nil {
 		return err
 	}
@@ -84,9 +96,9 @@ type open_file struct {
 	fd       *os.File
 }
 
-func (of *open_file) Write(buf []byte) error {
+func (of *open_file) Write(path string, buf []byte) error {
 	if of.fd == nil {
-		f, err := os.Create("/tmp/x/" + of.filename)
+		f, err := os.Create(path + "/" + of.filename)
 		if err != nil {
 			return err
 		}
