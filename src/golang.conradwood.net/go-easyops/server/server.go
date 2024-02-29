@@ -129,7 +129,7 @@ func deploymentPath() string {
 	return ""
 }
 
-func stopping() {
+func stopping(res chan bool) {
 	starterLock.Lock()
 	if stopped {
 		starterLock.Unlock()
@@ -272,13 +272,20 @@ func ServerStartup(sd ServerDef) error {
 	startOnce()
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	k := make(chan bool, 10)
 	go func() {
 		<-c
-		stopping()
+		go stopping(k)
+		select {
+		case <-k:
+			//
+		case <-time.After(time.Duration(5) * time.Second):
+			//
+		}
 		os.Exit(0)
 	}()
 	stopped = false
-	defer stopping()
+	defer stopping(k)
 	listenAddr := fmt.Sprintf(":%d", def.port)
 	s := ""
 	if u != nil {
