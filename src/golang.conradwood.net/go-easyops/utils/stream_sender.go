@@ -4,16 +4,25 @@ import (
 	"fmt"
 )
 
-type send_data_type func(b []byte) error
-type send_new_file_type func(key, filename string) error
+type Send_data_type func(b []byte) error
+type Send_new_file_type func(key, filename string) error
 
 // sends a bunch of bytes down a grpc stream
 type ByteStreamSender struct {
-	new_file  send_new_file_type
-	send_data send_data_type
+	new_file  Send_new_file_type
+	send_data Send_data_type
 }
 
-func NewByteStreamSender(f1 send_new_file_type, f2 send_data_type) *ByteStreamSender {
+/*
+create a new bytestream sender.
+(key and filename are opaque to this sender)
+f1 - a function that sends a message on the stream to indicate start of a new file and key
+f2 - a function that sends a bunch of data on the stream
+
+once stream sender is created, call SendBytes with filename and content.
+it will break the file into small pieces and call f2() with small arrays suitable for sending in a packet
+*/
+func NewByteStreamSender(f1 Send_new_file_type, f2 Send_data_type) *ByteStreamSender {
 	res := &ByteStreamSender{
 		new_file:  f1,
 		send_data: f2,
