@@ -352,6 +352,7 @@ func ServerStartup(sd ServerDef) error {
 	if !def.public {
 		reflection.Register(grpcServer)
 	}
+	start_profiling(def)
 	// Serve and Listen
 	// Blocking call!
 	err = startHttpServe(def, grpcServer)
