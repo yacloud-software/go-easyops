@@ -309,6 +309,25 @@ func GetByToken(ctx context.Context, token string) *apb.User {
 	}
 	return ar.User
 }
+func SignedGetByEmail(ctx context.Context, email string) *apb.SignedUser {
+	if email == "" {
+		return nil
+	}
+	managerClient()
+	req := &apb.ByEmailRequest{Email: email}
+	su, err := authManager.SignedGetUserByEmail(ctx, req)
+	if err != nil {
+		return nil
+	}
+	u := common.VerifySignedUser(su)
+	if u == nil {
+		return nil
+	}
+	if !u.Active {
+		return nil
+	}
+	return su
+}
 func SignedGetByToken(ctx context.Context, token string) *apb.SignedUser {
 	if token == "" {
 		//		utils.PrintStack("[go-easyops] attempt to get user for empty token\n")
