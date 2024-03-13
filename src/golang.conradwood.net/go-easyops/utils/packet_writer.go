@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"sync"
 )
 
 /*
@@ -31,6 +32,7 @@ type PacketWriter struct {
 	esc    byte
 	writer io.Writer
 	closed bool
+	wrlock sync.Mutex
 }
 
 func (pr *PacketWriter) Close() error {
@@ -51,6 +53,7 @@ func (pr *PacketWriter) Write(buf []byte) (int, error) {
 	if len(buf) > 8192 {
 		return 0, fmt.Errorf("exceeded max packet size")
 	}
+
 	// TODO: convert to streaming for more efficiency
 	pkt := bytes.Buffer{}
 	pkt.Write([]byte{pr.start})
@@ -62,7 +65,11 @@ func (pr *PacketWriter) Write(buf []byte) (int, error) {
 	}
 	pkt.Write([]byte{pr.stop})
 	pktbytes := pkt.Bytes()
+
+	pr.wrlock.Lock() // start lock for atomic write for any one packet
 	n, err := pr.writer.Write(pktbytes)
+	pr.wrlock.Unlock() // end lock for atomic write for any one packet
+
 	if err != nil {
 		return n, err
 	}
