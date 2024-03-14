@@ -7,14 +7,21 @@ import (
 )
 
 /*
-creates a new PacketReader.
-The reader, reads from a stream (an io.Reader). Reads from the PacketReader block until a complete packet is received (or EOF).
-each read is guaranteed to return either complete packet in the buf or error if the packet won't fit into the buf.
-a packet is started with the start byte, ends with the stop byte.
-any start/stop or escape bytes in the payload must be escaped with the escape byte
-it automatically resynchronises on lost data. This means, it is suitable for lossy transmission layers, such as UDP or serial ports.
-the lost data is not recovered (it is lost), but it will continue to parse the stream and resynchronise to start/stop bytes.
-any packet that is returned to the reader, is already un-escaped.
+This is part of the Packetizer toolset.
+
+A PacketReader reads from any stream (specifically, an io.Reader). It reads from the stream until any one of the following conditions occur:
+
+1) the io.Reader signals io.EOF
+2) the io.Reader signals some other error
+3) a complete packet, starting with the start byte and ending with the stop byte has been received through the io.Reader
+4) the start of a packet has been read, but its size exceeds the buffer size (specifically: the of the array passed to PacketReader.Read([]byte))
+
+A packet is defined as the data between start and stop byte. As a consequence, Any start and stop bytes in the payload must be
+escaped with the escape byte
+
+The data returned by the packet reader is guaranteed to be equal to the payload send by the PacketWriter. In other words:
+any escaping and wrapping and unescaping and unwrapping is handled by the reader and writer.
+see also [NewPacketWriter]
 */
 func NewPacketReader(r io.Reader, start, escape, stop byte) (*PacketReader, error) {
 	err := check_valid(start, escape, stop)

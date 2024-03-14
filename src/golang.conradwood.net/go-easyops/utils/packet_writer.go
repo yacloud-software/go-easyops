@@ -8,9 +8,22 @@ import (
 )
 
 /*
-creates a new PacketWriter (see also PacketReader)
-The writer, writes packets to the stream. It assumes each call to write is an entire packet.
-any start/stop or escape bytes in the payload will be escaped with the escape byte
+This is part of the Packetizer toolset.
+
+A PacketWriter writes arbitrary data to an io.Writer. Each call to [PacketWriter.Write] is assumed to be one packet.
+The PacketWriter sends extra data to the io.Writer to allow a [PacketReader] to identify and reassemble each packet.
+
+The algorithm to send any one packet can be summarised like so:
+
+1. Send one extra byte, the start- byte
+2. Send the payload upto, but not including any start, stop or escape bytes in the payload
+3. for any start, stop or escape byte, insert an extra escape byte
+4. repeat send until all bytes are send
+5. send one extra byte, the escape-byte
+
+This algorithm is sufficient to send any data, 8-bit clean, across any io.Writer and reassemble it on the receiving side ot he
+stream.
+The canonical implementation to reassemble the packets is [NewPacketReader].
 */
 func NewPacketWriter(r io.Writer, start, escape, stop byte) (*PacketWriter, error) {
 	err := check_valid(start, escape, stop)
