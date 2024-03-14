@@ -11,10 +11,10 @@ This is part of the Packetizer toolset.
 
 A PacketReader reads from any stream (specifically, an io.Reader). It reads from the stream until any one of the following conditions occur:
 
-1) the io.Reader signals io.EOF
-2) the io.Reader signals some other error
-3) a complete packet, starting with the start byte and ending with the stop byte has been received through the io.Reader
-4) the start of a packet has been read, but its size exceeds the buffer size (specifically: the of the array passed to PacketReader.Read([]byte))
+ 1. the io.Reader signals io.EOF
+ 2. the io.Reader signals some other error
+ 3. a complete packet, starting with the start byte and ending with the stop byte has been received through the io.Reader
+ 4. the start of a packet has been read, but its size exceeds the buffer size (specifically: the of the array passed to PacketReader.Read([]byte))
 
 A packet is defined as the data between start and stop byte. As a consequence, Any start and stop bytes in the payload must be
 escaped with the escape byte

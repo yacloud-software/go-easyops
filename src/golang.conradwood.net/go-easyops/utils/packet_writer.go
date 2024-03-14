@@ -15,11 +15,11 @@ The PacketWriter sends extra data to the io.Writer to allow a [PacketReader] to 
 
 The algorithm to send any one packet can be summarised like so:
 
-1. Send one extra byte, the start- byte
-2. Send the payload upto, but not including any start, stop or escape bytes in the payload
-3. for any start, stop or escape byte, insert an extra escape byte
-4. repeat send until all bytes are send
-5. send one extra byte, the escape-byte
+ 1. Send one extra byte, the start- byte
+ 2. Send the payload upto, but not including any start, stop or escape bytes in the payload
+ 3. for any start, stop or escape byte, insert an extra escape byte
+ 4. repeat send until all bytes are send
+ 5. send one extra byte, the escape-byte
 
 This algorithm is sufficient to send any data, 8-bit clean, across any io.Writer and reassemble it on the receiving side ot he
 stream.
