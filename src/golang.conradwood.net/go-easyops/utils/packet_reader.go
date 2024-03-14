@@ -40,6 +40,7 @@ type PacketReader struct {
 	debug        bool
 	packet_chan  chan *readerEvent
 	reader_error error // any error the io.reader has returned
+	stopped      bool
 }
 
 type readerEvent struct {
@@ -67,6 +68,19 @@ func (pr *PacketReader) Read(buf []byte) (int, error) {
 	}
 	pr.debugf("Got packet %d bytes\n", n)
 	return n, nil
+}
+
+// closes underlying reader as well AND aborts a current read
+func (pr *PacketReader) Close() {
+	if pr.stopped {
+		return
+	}
+	rc, cast := pr.reader.(io.ReadCloser)
+	if cast {
+		rc.Close()
+	}
+	pr.packet_chan <- &readerEvent{err: io.EOF}
+	close(pr.packet_chan)
 }
 
 // copy from io.reader to packets
