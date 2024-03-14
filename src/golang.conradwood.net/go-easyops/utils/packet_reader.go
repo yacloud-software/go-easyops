@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io"
+	"sync"
 )
 
 /*
@@ -41,6 +42,7 @@ type PacketReader struct {
 	packet_chan  chan *readerEvent
 	reader_error error // any error the io.reader has returned
 	stopped      bool
+	stop_lock    sync.Mutex
 }
 
 type readerEvent struct {
@@ -80,7 +82,10 @@ func (pr *PacketReader) Close() {
 		rc.Close()
 	}
 	pr.packet_chan <- &readerEvent{err: io.EOF}
+	pr.stopped = true
+	pr.stop_lock.Lock()
 	close(pr.packet_chan)
+	pr.stop_lock.Unlock()
 }
 
 // copy from io.reader to packets
@@ -94,7 +99,13 @@ func (pr *PacketReader) packet_reader_loop() {
 	}
 
 	for {
+		if pr.stopped {
+			break
+		}
 		n, err := pr.reader.Read(buf)
+		if pr.stopped {
+			break
+		}
 		if n > 0 {
 			payload := buf[:n]
 			pr.debugf("Read %d bytes:\n%s\n", n, Hexdump("payload: ", payload))
@@ -102,17 +113,29 @@ func (pr *PacketReader) packet_reader_loop() {
 				if stp.AddByte(b) {
 					pkt := stp.ReadPacket()
 					pr.debugf("%s\n", Hexdump("packet:", pkt))
+					pr.stop_lock.Lock()
+					if pr.stopped {
+						pr.stop_lock.Unlock()
+						break
+					}
 					pr.packet_chan <- &readerEvent{payload: pkt}
+					pr.stop_lock.Unlock()
 				}
 			}
 		}
 
 		if err != nil {
+			pr.stop_lock.Lock()
+			if pr.stopped {
+				pr.stop_lock.Unlock()
+				break
+			}
 			pr.packet_chan <- &readerEvent{err: err}
+			pr.stop_lock.Unlock()
 			break
 		}
-
 	}
+	pr.debugf("read_loop stopped\n")
 }
 
 func (stp *PacketReader) debugf(format string, args ...interface{}) {
