@@ -47,6 +47,7 @@ type Linux interface {
 	SetRunForever() // incompatible with setmaxruntime
 	SetAllowConcurrency(bool)
 	SetEnvironment([]string)
+	AddFileDescriptor(fd int)
 }
 
 func NewWithContext(ctx context.Context) Linux {
