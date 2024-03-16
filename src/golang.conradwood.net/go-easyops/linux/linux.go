@@ -36,6 +36,7 @@ type linux struct {
 	envs             []string
 	lastcmd          []string
 	runforever       bool
+	extraFiles       []*os.File
 }
 
 type Linux interface {
@@ -120,6 +121,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 		c.Stdin = stdin
 	}
 	// set environment
+	c.ExtraFiles = l.extraFiles
 	c.Env = os.Environ()
 	l.env(c)
 	output, err := l.syncExecute(c, l.Runtime, !l.runforever)
@@ -200,6 +202,12 @@ func (l *linux) SetMaxRuntime(d time.Duration) {
 }
 func (l *linux) SetAllowConcurrency(b bool) {
 	l.AllowConcurrency = b
+}
+
+// normally all filedescriptors except stdin, stdout and stderr are closed.
+// here we can give an additional one to pass on to the child
+func (l *linux) AddFileDescriptor(fd int) {
+	l.extraFiles = append(l.extraFiles, os.NewFile(uintptr(fd), "addfile"))
 }
 
 // add context to environment
