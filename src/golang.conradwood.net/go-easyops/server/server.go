@@ -191,6 +191,7 @@ func addTags(sd *serverDef) {
 // it also configures the rpc server to expect a token to identify
 // the user in the rpc metadata call
 func ServerStartup(sd ServerDef) error {
+	go start_ipc()
 	def := sd.(*serverDef)
 	if !def.port_set {
 		fmt.Printf("WARNING! server port variable assignment detected. This is deprecated. Instead, use SetPort(). In future your code will not compile.\n")

@@ -35,14 +35,16 @@ type echoServer struct {
 func main() {
 	flag.Parse()
 	fmt.Printf("GO-EASYOPS Echo test server/client\n")
-	flag.VisitAll(func(f *flag.Flag) {
-		s := "SET"
-		if fmt.Sprintf("%v", f.Value) == fmt.Sprintf("%v", f.DefValue) {
-			s = "DEFAULT"
-		}
-		fmt.Printf("%s %s %s %s\n", "STRING", s, f.Name, f.Value)
-	})
-	os.Exit(0)
+	/*
+		flag.VisitAll(func(f *flag.Flag) {
+			s := "SET"
+			if fmt.Sprintf("%v", f.Value) == fmt.Sprintf("%v", f.DefValue) {
+				s = "DEFAULT"
+			}
+			fmt.Printf("%s %s %s %s\n", "STRING", s, f.Name, f.Value)
+		})
+		os.Exit(0)
+	*/
 	if *ping || *ping_once {
 		c := pb.GetEchoClient()
 		for {
