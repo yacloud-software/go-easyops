@@ -1,14 +1,18 @@
 package server
 
 import (
+	"flag"
 	"fmt"
 	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/utils"
+	ad "golang.yacloud.eu/apis/autodeployer2"
 	"golang.yacloud.eu/unixipc"
 	"strconv"
 	"sync"
 )
 
 var (
+	enable_ipc  = flag.Bool("ge_enable_ipc", false, "enable the internal ipc between code and autodeployer")
 	ipc_fd_env  = cmdline.ENV("GE_AUTODEPLOYER_IPC_FD", "if set it is assumed to be a filedescriptor over which an IPC can be initiated with the autodeployer")
 	ipc_lock    sync.Mutex
 	ipc_started = false
@@ -34,6 +38,16 @@ func start_ipc() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to start autodeployer IPC: %s", err))
 	}
-	srv.Send("startup", nil)
-	//fmt.Printf("[go-easyops] Started IPC Server\n")
+}
+func ipc_send_startup(sd *serverDef) error {
+	proto_payload := &ad.INTRPCStartup{}
+	payload, err := utils.MarshalBytes(proto_payload)
+	if err != nil {
+		return err
+	}
+	_, err = srv.Send("startup", payload)
+	if err != nil {
+		return err
+	}
+	return nil
 }
