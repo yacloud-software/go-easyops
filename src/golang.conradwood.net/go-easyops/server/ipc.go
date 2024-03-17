@@ -19,7 +19,17 @@ var (
 	srv         *unixipc.IPCServer
 )
 
+func ipc_enabled() bool {
+	if *enable_ipc {
+		return true
+	}
+	return false
+}
+
 func start_ipc() {
+	if !ipc_enabled() {
+		return
+	}
 	ipc_lock.Lock()
 	defer ipc_lock.Unlock()
 	if ipc_started {
@@ -40,12 +50,37 @@ func start_ipc() {
 	}
 }
 func ipc_send_startup(sd *serverDef) error {
-	proto_payload := &ad.INTRPCStartup{}
+	if !ipc_enabled() {
+		return nil
+	}
+	proto_payload := &ad.INTRPCStartup{
+		ServiceName: sd.name,
+		Port:        uint32(sd.port),
+	}
 	payload, err := utils.MarshalBytes(proto_payload)
 	if err != nil {
 		return err
 	}
 	_, err = srv.Send("startup", payload)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func ipc_send_health(sd *serverDef, h HEALTH) error {
+	if !ipc_enabled() {
+		return nil
+	}
+	proto_payload := &ad.INTRPCHealthz{
+		ServiceName: sd.name,
+		Port:        uint32(sd.port),
+		Healthz:     fmt.Sprintf("%v", h),
+	}
+	payload, err := utils.MarshalBytes(proto_payload)
+	if err != nil {
+		return err
+	}
+	_, err = srv.Send("healthz", payload)
 	if err != nil {
 		return err
 	}
