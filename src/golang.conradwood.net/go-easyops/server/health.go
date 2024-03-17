@@ -21,6 +21,7 @@ func SetHealth(h HEALTH) {
 	if rereg && startup_complete {
 		reRegister()
 	}
+
 }
 
 func getHealthString() string {
