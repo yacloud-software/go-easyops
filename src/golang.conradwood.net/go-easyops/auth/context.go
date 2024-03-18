@@ -82,7 +82,7 @@ func RecreateContextWithTimeout(t time.Duration, bs []byte) (context.Context, er
 	if pctx.IsSerialisedByBuilder(bs) {
 		return pctx.DeserialiseContextWithTimeout(t, bs)
 	}
-	panic("obsolete context to deserialise - context serialised by a version of go easyops no longer supported")
+	return nil, fmt.Errorf("obsolete context to deserialise - context serialised by a version of go easyops no longer supported")
 }
 
 func SerialiseContextToString(ctx context.Context) (string, error) {
