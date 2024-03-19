@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	debug_packetizer = flag.Bool("debug_packetizer", false, "debug mode")
+	debug_packetizer = flag.Bool("ge_debug_packetizer", false, "debug mode")
 )
 
 func check_valid(start, escape, stop byte) error {
