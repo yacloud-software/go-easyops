@@ -299,6 +299,15 @@ func must_reconnect(sa *utils.SlidingAverage) bool {
 	return true
 }
 
+func query_error(ctx context.Context, typ string, name string, query string, err error) {
+	if *sqldebug || *print_errors {
+		fmt.Printf("[go-easyops] [sql] %s %s (%s) failed (%s)\n", typ, name, query, err)
+	}
+	if *sqldebug {
+		utils.PrintStack("query failed")
+	}
+}
+
 /*****
 // wrapping the calls
 /**********/
@@ -325,9 +334,7 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 	}
 	if err != nil {
 		d.failurectr.Add(1, 1)
-		if *sqldebug || *print_errors {
-			fmt.Printf("[go-easyops] [sql] Query %s (%s) failed (%s)\n", name, query, err)
-		}
+		query_error(ctx, "select", name, query, err)
 		sqlFailedQueries.With(l).Inc()
 	} else {
 		d.failurectr.Add(0, 1)
@@ -367,9 +374,7 @@ func (d *DB) execContext(ctx context.Context, report_failure bool, name string, 
 	}
 	if err != nil {
 		d.failurectr.Add(1, 1)
-		if report_failure {
-			fmt.Printf("[go-easyops] [sql] Query %s (%s) failed (%s)\n", name, query, err)
-		}
+		query_error(ctx, "exec", name, query, err)
 		sqlFailedQueries.With(l).Inc()
 	} else {
 		d.failurectr.Add(0, 1)
