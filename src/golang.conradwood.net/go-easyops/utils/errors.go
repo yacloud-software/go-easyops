@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	fw "golang.conradwood.net/apis/framework"
+	goe "golang.conradwood.net/apis/goeasyops"
 	"google.golang.org/grpc/status"
 	"reflect"
 	"strings"
@@ -15,28 +17,69 @@ func ErrorString(err error) string {
 	s := "[STATUS] "
 	deli := ""
 	for _, a := range st.Details() {
+
+		unknown := true
+
 		fmd, ok := a.(*fw.FrameworkMessageDetail)
-		if !ok {
+		if ok {
+			unknown = false
+			s = s + deli + fmd2string(fmd)
+		}
+
+		ge, ok := a.(*goe.GRPCErrorList)
+		if unknown && ok {
+			unknown = false
+			s = s + deli + ge2string(ge)
+		}
+
+		proto, ok := a.(proto.Message)
+		if unknown && ok {
+			unknown = false
+			s = s + deli + "proto:" + proto.String()
+		}
+
+		if unknown {
 			s = s + fmt.Sprintf("%s", reflect.TypeOf(a))
 			s = s + fmt.Sprintf("\"%v\" ", a)
-			continue
 		}
-		for _, ct := range fmd.CallTraces {
-			if ct.Service != "" {
-				spl := strings.SplitN(ct.Service, ".", 2)
-				sn := ct.Service
-				if len(spl) == 2 {
-					sn = spl[1]
-				}
-				s = s + deli + fmt.Sprintf("%s.%s", sn, ct.Method)
-			} else {
-				s = s + deli + fmt.Sprintf("%s", ct.Message)
-			}
-			deli = "->"
-		}
+		deli = "->"
 
 	}
 	s = s + ": " + st.Message() + " [/STATUS]"
 	return s
 
+}
+
+func fmd2string(fmd *fw.FrameworkMessageDetail) string {
+	s := ""
+	for _, ct := range fmd.CallTraces {
+		if ct.Service != "" {
+			spl := strings.SplitN(ct.Service, ".", 2)
+			sn := ct.Service
+			if len(spl) == 2 {
+				sn = spl[1]
+			}
+			s = fmt.Sprintf("%s.%s", sn, ct.Method)
+		} else {
+			s = fmt.Sprintf("%s", ct.Message)
+		}
+	}
+	return s
+}
+
+func ge2string(fmd *goe.GRPCErrorList) string {
+	s := ""
+	for _, ct := range fmd.Errors {
+		if ct.ServiceName != "" {
+			spl := strings.SplitN(ct.ServiceName, ".", 2)
+			sn := ct.ServiceName
+			if len(spl) == 2 {
+				sn = spl[1]
+			}
+			s = fmt.Sprintf("%s.%s", sn, ct.MethodName)
+		} else {
+			s = fmt.Sprintf("%s", ct.LogMessage)
+		}
+	}
+	return s
 }
