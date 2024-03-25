@@ -16,6 +16,7 @@ import (
 	gctx "golang.conradwood.net/go-easyops/ctx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"reflect"
 	"strings"
 )
 
@@ -215,6 +216,7 @@ func ErrorString(err error) string {
 	for _, a := range st.Details() {
 		fmd, ok := a.(*fw.FrameworkMessageDetail)
 		if !ok {
+			s = s + fmt.Sprintf("%s", reflect.TypeOf(a))
 			s = s + fmt.Sprintf("\"%v\" ", a)
 			continue
 		}
