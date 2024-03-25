@@ -32,6 +32,12 @@ func ErrorString(err error) string {
 			s = s + deli + ge2string(ge)
 		}
 
+		ge2, ok := a.(goe.GRPCErrorList)
+		if unknown && ok {
+			unknown = false
+			s = s + deli + ge2string(&ge2)
+		}
+
 		proto, ok := a.(proto.Message)
 		if unknown && ok {
 			unknown = false
