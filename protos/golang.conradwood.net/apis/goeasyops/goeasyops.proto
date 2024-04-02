@@ -79,7 +79,7 @@ message GRPCError {
   string LogMessage=2;
   string MethodName=3; // the method which returned the error
   string ServiceName=4; // the service which returned the error
-  string CallingServiceID=5; // the service which called the method which  returned the error
+  string CallingServiceID=5; // the service which called the method which returned the error
   string CallingServiceEmail=6; // the service which called the service/method which returned the error
 }
 
