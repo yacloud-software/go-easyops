@@ -14,7 +14,8 @@ import (
 	gctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
-	"reflect"
+	proto2 "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/protoadapt"
 	"time"
 )
 
@@ -134,6 +135,20 @@ func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 			gel = mgel
 			break
 		}
+		proto2m, ok := d.(proto2.Message)
+		if ok {
+			msgname := proto2.MessageName(proto2m)
+			//	msg := proto2m.ProtoReflect()
+			pv1 := protoadapt.MessageV1Of(proto2m)
+			//fmt.Printf("Proto2 (%s): %#v %v %v\n", msgname, proto2m, msg, pv1)
+			if msgname == "goeasyops.GRPCErrorList" {
+				xgel, ok := pv1.(*ge.GRPCErrorList)
+				if ok {
+					gel = xgel
+					break
+				}
+			}
+		}
 	}
 	// none found, add a list
 	var stn *status.Status
@@ -151,10 +166,11 @@ func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 		}
 		return st
 	}
-
-	for i, d := range stn.Details() {
-		fmt.Printf("%d: %v %v\n", i+1, d, reflect.TypeOf(d))
-	}
+	/*
+		for i, d := range stn.Details() {
+			fmt.Printf("%d: %v %v\n", i+1, d, reflect.TypeOf(d))
+		}
+	*/
 	return stn
 }
 func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
