@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	fw "golang.conradwood.net/apis/framework"
+	//	fw "golang.conradwood.net/apis/framework"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
@@ -105,12 +105,14 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 
 	// get status from error
 	st := status.Convert(err)
-	fm := &fw.CallTrace{
-		Message: fmt.Sprintf("[go-easyops] GRPC error in method %s.%s()", cs.ServiceName, cs.MethodName),
-		Method:  cs.MethodName,
-		Service: cs.ServiceName,
-	}
-	st = AddStatusDetail(st, fm)
+	/*
+		fm := &fw.CallTrace{
+			Message: fmt.Sprintf("[go-easyops] GRPC error in method %s.%s()", cs.ServiceName, cs.MethodName),
+			Method:  cs.MethodName,
+			Service: cs.ServiceName,
+		}
+		st = AddStatusDetail(st, fm)
+	*/
 	gerr := &ge.GRPCError{
 		LogMessage:  fmt.Sprintf("%s", err),
 		MethodName:  cs.MethodName,

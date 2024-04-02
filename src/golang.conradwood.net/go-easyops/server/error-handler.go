@@ -14,6 +14,7 @@ import (
 	gctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
+	"reflect"
 	"time"
 )
 
@@ -117,27 +118,31 @@ func log(l *le) {
 		els.Log(ctx, e)
 	}
 }
+
+// this will result status detail with grpcerrorlist, with a single GRPCErrorList.
 func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 	// add details (and keep previous)
 	odet := st.Details()
 	if *debug_rpc_serve {
 		fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
 	}
-	add := &ge.GRPCErrorList{}
+	// find existing grpcerrorlist...
+	var gel *ge.GRPCErrorList
 	for _, d := range odet {
-		if *debug_rpc_serve {
-			fancyPrintf("keeping error %v\n", d)
-		}
-		fmd, ok := d.(*ge.GRPCError)
+		mgel, ok := d.(*ge.GRPCErrorList)
 		if ok {
-			add.Errors = append(add.Errors, fmd)
-		} else {
-			add.Errors = append(add.Errors, &ge.GRPCError{LogMessage: fmt.Sprintf("%v", d)})
-
+			gel = mgel
+			break
 		}
 	}
-	add.Errors = append(add.Errors, ct)
-	stn, errx := st.WithDetails(add)
+	// none found, add a list
+	var stn *status.Status
+	if gel == nil {
+		gel = &ge.GRPCErrorList{}
+	}
+	gel.Errors = append(gel.Errors, ct)
+
+	stn, errx := st.WithDetails(gel)
 
 	// if adding details failed, just return the undecorated error message
 	if errx != nil {
@@ -145,6 +150,10 @@ func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 			fancyPrintf("failed to get status with detail: %s", errx)
 		}
 		return st
+	}
+
+	for i, d := range stn.Details() {
+		fmt.Printf("%d: %v %v\n", i+1, d, reflect.TypeOf(d))
 	}
 	return stn
 }

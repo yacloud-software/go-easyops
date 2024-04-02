@@ -70,10 +70,10 @@ func main() {
 		}
 	}
 
-	server.SetHealth(server.STARTING)
+	//	server.SetHealth(server.STARTING)
 	sd := server.NewServerDef()
 	//	sd.SetPublic()
-	sd.DontRegister()
+	//	sd.DontRegister()
 	if *tag != "" {
 		kv := strings.SplitN(*tag, "=", 2)
 		if len(kv) != 2 {
@@ -91,7 +91,7 @@ func main() {
 	if *ping_self {
 		go PingSelf()
 	}
-	sd.AddTag("foo", "bar")
+	//	sd.AddTag("foo", "bar")
 	sd.SetPort(p)
 	sd.SetRegister(server.Register(
 		func(g *grpc.Server) error {
