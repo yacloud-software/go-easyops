@@ -88,3 +88,10 @@ enum Currency {
   EUR = 2;
   USD = 3;
 }
+
+enum Health {
+  UNKNOWN_HEALTH = 0;
+  STARTING=1;
+  READY=2;
+  STOPPING=3;
+}
