@@ -1,18 +1,14 @@
 package server
 
-const (
-	STARTING = 1
-	READY    = 2
-	STOPPING = 3
+import (
+	"golang.conradwood.net/apis/common"
 )
-
-type HEALTH int
 
 var (
-	health = HEALTH(READY)
+	health = common.Health_READY
 )
 
-func SetHealth(h HEALTH) {
+func SetHealth(h common.Health) {
 	rereg := false
 	if h != health {
 		rereg = true
@@ -25,12 +21,6 @@ func SetHealth(h HEALTH) {
 }
 
 func getHealthString() string {
-	if health == STARTING {
-		return "STARTING"
-	} else if health == READY {
-		return "READY"
-	} else if health == STOPPING {
-		return "STOPPING"
-	}
-	return ""
+	s := common.Health_name[int32(health)]
+	return s
 }

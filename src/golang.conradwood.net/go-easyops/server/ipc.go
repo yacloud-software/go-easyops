@@ -3,6 +3,7 @@ package server
 import (
 	"flag"
 	"fmt"
+	"golang.conradwood.net/apis/common"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/utils"
 	ad "golang.yacloud.eu/apis/autodeployer2"
@@ -56,6 +57,7 @@ func ipc_send_startup(sd *serverDef) error {
 	proto_payload := &ad.INTRPCStartup{
 		ServiceName: sd.name,
 		Port:        uint32(sd.port),
+		Healthz:     health,
 	}
 	payload, err := utils.MarshalBytes(proto_payload)
 	if err != nil {
@@ -67,14 +69,14 @@ func ipc_send_startup(sd *serverDef) error {
 	}
 	return nil
 }
-func ipc_send_health(sd *serverDef, h HEALTH) error {
+func ipc_send_health(sd *serverDef, h common.Health) error {
 	if !ipc_enabled() {
 		return nil
 	}
 	proto_payload := &ad.INTRPCHealthz{
 		ServiceName: sd.name,
 		Port:        uint32(sd.port),
-		Healthz:     fmt.Sprintf("%v", h),
+		Healthz:     h,
 	}
 	payload, err := utils.MarshalBytes(proto_payload)
 	if err != nil {
