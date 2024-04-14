@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	enable_ipc  = flag.Bool("ge_enable_ipc", false, "enable the internal ipc between code and autodeployer")
+	enable_ipc  = flag.Bool("ge_enable_ipc", true, "enable the internal ipc between code and autodeployer")
 	ipc_fd_env  = cmdline.ENV("GE_AUTODEPLOYER_IPC_FD", "if set it is assumed to be a filedescriptor over which an IPC can be initiated with the autodeployer")
 	ipc_lock    sync.Mutex
 	ipc_started = false
