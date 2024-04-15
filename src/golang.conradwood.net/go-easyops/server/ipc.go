@@ -51,7 +51,7 @@ func start_ipc() {
 	}
 }
 func ipc_send_startup(sd *serverDef) error {
-	if !ipc_enabled() {
+	if !ipc_enabled() || !ipc_started {
 		return nil
 	}
 	proto_payload := &ad.INTRPCStartup{
@@ -70,7 +70,7 @@ func ipc_send_startup(sd *serverDef) error {
 	return nil
 }
 func ipc_send_health(sd *serverDef, h common.Health) error {
-	if !ipc_enabled() {
+	if !ipc_enabled() || !ipc_started {
 		return nil
 	}
 	proto_payload := &ad.INTRPCHealthz{
