@@ -8,7 +8,7 @@ var (
 	health = common.Health_READY
 )
 
-func SetHealth(h common.Health) {
+func SetHealth(h common.Health) error {
 	rereg := false
 	if h != health {
 		rereg = true
@@ -17,6 +17,13 @@ func SetHealth(h common.Health) {
 	if rereg && startup_complete {
 		reRegister()
 	}
+	for _, svc := range knownServices {
+		err := ipc_send_health(svc, h)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 
 }
 

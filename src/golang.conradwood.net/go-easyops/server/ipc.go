@@ -72,6 +72,7 @@ func ipc_send_startup(sd *serverDef) error {
 }
 func ipc_send_health(sd *serverDef, h common.Health) error {
 	if !ipc_enabled() || !ipc_started {
+		fmt.Printf("[go-easyops] no unixipc to report new health %v to\n", h)
 		return nil
 	}
 	proto_payload := &ad.INTRPCHealthz{
