@@ -36,7 +36,6 @@ func start_ipc() {
 	if ipc_started {
 		return
 	}
-	ipc_started = true
 	if ipc_fd_env.Value() == "" {
 		//fmt.Printf("[go-easyops] no ipc fd\n")
 		return
@@ -49,6 +48,8 @@ func start_ipc() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to start autodeployer IPC: %s", err))
 	}
+	ipc_started = true
+
 }
 func ipc_send_startup(sd *serverDef) error {
 	if !ipc_enabled() || !ipc_started {
