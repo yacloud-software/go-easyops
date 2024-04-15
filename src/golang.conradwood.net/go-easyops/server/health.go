@@ -8,6 +8,20 @@ var (
 	health = common.Health_READY
 )
 
+/*
+Set the health of this service. This is useful for services which have periods where they are unavailable. Typically this is directly after starting, but sometimes also a period where they gather data.
+
+For a service with a delayed startup, the pattern is as follows:
+
+		func main() {
+		 server.SetHealth(common.Health_STARTING)
+	         go do_initialisation()
+		}
+	        func do_initialisation() {
+	            doing_slow_things() // ...
+	            server.SetHealth(common.Health_READY)
+	        }
+*/
 func SetHealth(h common.Health) error {
 	rereg := false
 	if h != health {
