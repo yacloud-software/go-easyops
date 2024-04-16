@@ -93,3 +93,9 @@ message PostgresConfig {
   uint32 MaxConnections=5; // optional: if 0, assumes go-easyops default
   uint32 MaxIdleSecs=6; // optional: if 0, assumes go-easyops default
 }
+
+// send in response to unixipc STOPREQUEST
+message StopUpdate {
+  bool Stopping=1;
+  uint32 ActiveRPCs=2;
+}
