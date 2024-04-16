@@ -48,8 +48,16 @@ func start_ipc() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to start autodeployer IPC: %s", err))
 	}
+	srv.RegisterRequestHandler(ipc_new_packet)
 	ipc_started = true
 
+}
+func ipc_new_packet(req unixipc.Request) ([]byte, error) {
+	if req.RPCName() == "STOPREQUEST" {
+		stop_requested()
+		return nil, nil
+	}
+	return nil, fmt.Errorf("[go-easyops] unipc client does not implement rpc call \"%s\"", req.RPCName())
 }
 func ipc_send_startup(sd *serverDef) error {
 	if !ipc_enabled() || !ipc_started {

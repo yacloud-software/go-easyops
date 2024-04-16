@@ -31,6 +31,8 @@ var (
 func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	pp.ServerRpcEntered()
 	defer pp.ServerRpcDone()
+	startRPC()
+	defer stopRPC()
 	cs := &rpccall{
 		ServiceName: ServiceNameFromUnaryInfo(info),
 		MethodName:  MethodNameFromUnaryInfo(info),

@@ -22,6 +22,8 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	var err error
 	pp.ServerRpcEntered()
 	defer pp.ServerRpcDone()
+	startRPC()
+	defer stopRPC()
 
 	name := ServiceNameFromStreamInfo(info)
 	method := MethodNameFromStreamInfo(info)
