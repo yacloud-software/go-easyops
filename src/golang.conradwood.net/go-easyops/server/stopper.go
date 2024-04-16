@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 	"golang.conradwood.net/apis/common"
+	"golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"sync"
 	"time"
@@ -34,6 +36,17 @@ func stop_requested() {
 			stopping(x)
 			for ActiveRPCs() != 0 {
 				time.Sleep(time.Duration(1) * time.Second)
+				response := &goeasyops.StopUpdate{Stopping: true, ActiveRPCs: uint32(ActiveRPCs())}
+				b, err := utils.MarshalBytes(response)
+				if err != nil {
+					fmt.Printf("[go-easyops] unable to marshal stop response: %s\n", err)
+				} else {
+					_, err = unixipc_srv.Send("STOPREQUEST", b)
+					if err != nil {
+						fmt.Printf("[go-easyops] failed to send update to stoprequest: %s\n", err)
+					}
+				}
+
 			}
 			os.Exit(0)
 		}

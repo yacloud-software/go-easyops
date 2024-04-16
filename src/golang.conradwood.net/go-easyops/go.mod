@@ -10,21 +10,21 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/client_model v0.6.0
-	golang.conradwood.net/apis/auth v1.1.2897
-	golang.conradwood.net/apis/common v1.1.2897
+	golang.conradwood.net/apis/auth v1.1.2901
+	golang.conradwood.net/apis/common v1.1.2901
 	golang.conradwood.net/apis/echoservice v1.1.2878
 	golang.conradwood.net/apis/errorlogger v1.1.2878
 	golang.conradwood.net/apis/framework v1.1.2878
-	golang.conradwood.net/apis/goeasyops v1.1.2897
+	golang.conradwood.net/apis/goeasyops v1.1.2901
 	golang.conradwood.net/apis/objectstore v1.1.2878
 	golang.conradwood.net/apis/registry v1.1.2878
-	golang.org/x/net v0.22.0
-	golang.org/x/sys v0.18.0
+	golang.org/x/net v0.24.0
+	golang.org/x/sys v0.19.0
 	golang.yacloud.eu/apis/autodeployer2 v1.1.2897
-	golang.yacloud.eu/apis/session v1.1.2897
+	golang.yacloud.eu/apis/session v1.1.2901
 	golang.yacloud.eu/apis/urlcacher v1.1.2878
 	golang.yacloud.eu/unixipc v0.1.26120
-	google.golang.org/grpc v1.62.1
+	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -45,7 +45,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.yacloud.eu/apis/fscache v1.1.2897 // indirect
 	golang.yacloud.eu/apis/unixipc v1.1.2878 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240227224415-6ceb2ff114de // indirect
 )
 
 //replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
