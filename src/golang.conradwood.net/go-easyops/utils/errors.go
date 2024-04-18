@@ -102,9 +102,9 @@ func fmd2string(fmd *fw.FrameworkMessageDetail) string {
 			if len(spl) == 2 {
 				sn = spl[1]
 			}
-			s = fmt.Sprintf("%s.%s", sn, ct.Method)
+			s = fmt.Sprintf("(1 %s.%s)", sn, ct.Method)
 		} else {
-			s = fmt.Sprintf("%s", ct.Message)
+			s = fmt.Sprintf("(2 %s)", ct.Message)
 		}
 	}
 	return s
@@ -119,9 +119,9 @@ func ge2string(fmd *goe.GRPCErrorList) string {
 			if len(spl) == 2 {
 				sn = spl[1]
 			}
-			s = fmt.Sprintf("%s.%s", sn, ct.MethodName)
+			s = fmt.Sprintf("(3 %s.%s)", sn, ct.MethodName)
 		} else {
-			s = fmt.Sprintf("%s", ct.LogMessage)
+			s = fmt.Sprintf("(4 %s)", ct.LogMessage)
 		}
 	}
 	return s
