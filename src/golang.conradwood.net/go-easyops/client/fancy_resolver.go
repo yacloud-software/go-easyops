@@ -81,7 +81,10 @@ func (f *FancyResolverBuilder) Build(target resolver.Target, cc resolver.ClientC
 	//fmt.Printf("Authority: %s\n", authority)
 	// authority is the servicename, e.g. "helloworld.HelloWorld")
 	if authority == "" {
-		panic("no target")
+		fmt.Printf("[go-easyops] invalid build options\n")
+		fmt.Printf("[go-easyops] target: %#v\n", target)
+		fmt.Printf("[go-easyops] con: %#v\n", cc)
+		panic("no target authority")
 	}
 	var registry string
 	if !strings.Contains(target.Endpoint(), "@") {
