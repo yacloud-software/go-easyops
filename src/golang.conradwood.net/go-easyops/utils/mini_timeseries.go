@@ -70,10 +70,21 @@ func (mt *MiniTimeSeries) LatestValue() (time.Time, float64) {
 	t := time.Unix(cur_ts, 0)
 	return t, cur_val
 }
+
+// add a value now
 func (mt *MiniTimeSeries) Add(value float64) {
 	mt.Lock()
 	defer mt.Unlock()
 	now := time.Now().Unix()
+	mt.values[now] = value
+
+}
+
+// add a value with timestamp (backfilling)
+func (mt *MiniTimeSeries) AddWithTimestamp(ts time.Time, value float64) {
+	mt.Lock()
+	defer mt.Unlock()
+	now := ts.Unix()
 	mt.values[now] = value
 
 }
