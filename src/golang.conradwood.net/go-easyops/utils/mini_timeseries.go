@@ -88,3 +88,14 @@ func (mt *MiniTimeSeries) AddWithTimestamp(ts time.Time, value float64) {
 	mt.values[now] = value
 
 }
+
+// get all values as a map timestamp->value
+func (mt *MiniTimeSeries) All() map[int64]float64 {
+	mt.Lock()
+	defer mt.Unlock()
+	res := make(map[int64]float64)
+	for k, v := range mt.values {
+		res[k] = v
+	}
+	return res
+}
