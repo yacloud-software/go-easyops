@@ -98,6 +98,9 @@ type open_file struct {
 
 func (of *open_file) Write(path string, buf []byte) error {
 	if of.fd == nil {
+		if strings.Contains(of.filename, "..") {
+			return fmt.Errorf("Error: filename contains '..'")
+		}
 		os.MkdirAll(filepath.Dir(path+"/"+of.filename), 0777)
 		f, err := os.Create(path + "/" + of.filename)
 		if err != nil {
