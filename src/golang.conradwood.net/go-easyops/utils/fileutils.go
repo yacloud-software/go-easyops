@@ -64,6 +64,17 @@ func WriteFile(filename string, content []byte) error {
 	return err
 }
 
+// like ioutil - but with open permissions to share. if necessary creates directories
+func WriteFileCreateDir(filename string, content []byte) error {
+	unix.Umask(000)
+	if strings.Contains(filename, "/") {
+		dir := filepath.Dir(filename)
+		os.MkdirAll(dir, 0777)
+	}
+	err := ioutil.WriteFile(filename, content, 0666)
+	return err
+}
+
 // like ioutil - but with open permissions to share
 func OpenWriteFile(filename string) (*os.File, error) {
 	unix.Umask(000)
