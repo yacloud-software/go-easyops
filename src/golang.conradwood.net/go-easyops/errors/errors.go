@@ -14,7 +14,8 @@ import (
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
 	gctx "golang.conradwood.net/go-easyops/ctx"
-	"golang.conradwood.net/go-easyops/utils"
+	"golang.conradwood.net/go-easyops/errors/shared"
+	//	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -208,6 +209,24 @@ func UnmarshalError(err error) *GEError {
 }
 
 // extracts the PRIVATE and possibly SENSITIVE debug error message from a string
+
 func ErrorString(err error) string {
-	return utils.ErrorString(err)
+	return shared.ErrorString(err)
+}
+
+// create new error, but include "[file: xxx.go:13]"
+func Errorf(format string, args ...interface{}) error {
+	_, st := callingFunction()
+	err := fmt.Errorf(format, args...)
+	me := shared.NewMyError(err, st)
+	return me
+}
+
+func Wrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	_, st := callingFunction()
+	we := shared.NewWrappedError(err, st)
+	return we
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,6 +35,20 @@ func UnmarshalYaml(buf []byte, target interface{}) error {
 	return nil
 }
 
+// marshal 'src' to yaml as bytes
 func MarshalYaml(src interface{}) ([]byte, error) {
 	return yaml.Marshal(src)
+}
+
+// write 'data' as a yaml file to 'filename'
+func WriteYaml(filename string, data interface{}) error {
+	b, err := MarshalYaml(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data for file \"%s\": %w\n", filename, err)
+	}
+	err = WriteFile(filename, b)
+	if err != nil {
+		return err
+	}
+	return nil
 }

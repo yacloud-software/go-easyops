@@ -6,6 +6,7 @@ package utils
 import (
 	"fmt"
 	"github.com/dustin/go-humanize"
+	"golang.conradwood.net/go-easyops/errors/shared"
 	"math/rand"
 	"os"
 	"sync"
@@ -60,7 +61,7 @@ func Bail(txt string, err error) {
 	if err == nil {
 		return
 	}
-	fmt.Printf("%s: %s\n", txt, ErrorString(err))
+	fmt.Printf("%s: %s\n", txt, shared.ErrorStringWithStackTrace(err))
 	os.Exit(10)
 }
 

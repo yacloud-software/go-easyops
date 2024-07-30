@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/errors"
 	"io"
 	"os"
 	"os/exec"
@@ -91,7 +92,7 @@ execute a command within a working directory
 func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) (string, error) {
 	// avoid possible segfaults (afterall it's called 'safely...')
 	if len(cmd) == 0 {
-		return "", fmt.Errorf("no command specified for execute.")
+		return "", errors.Errorf("no command specified for execute.")
 	}
 	l.lastcmd = cmd
 	if !l.AllowConcurrency {
@@ -106,7 +107,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	curCmd = cmd[0]
 	if curCmd == "sudo" {
 		if len(curCmd) < 2 {
-			return "", fmt.Errorf("sudo without parameters not allowed")
+			return "", errors.Errorf("sudo without parameters not allowed")
 		}
 		curCmd = cmd[1]
 	}
@@ -132,7 +133,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	curCmd = ""
 	if err != nil {
 		fmt.Printf("[go-easyops] ---- %s -----\n%s\n---- end output----\n", strings.Join(cmd, " "), output)
-		return output, err
+		return output, errors.Wrap(err)
 	}
 	return output, nil
 }
