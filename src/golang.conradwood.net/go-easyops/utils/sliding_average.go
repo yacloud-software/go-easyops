@@ -125,6 +125,15 @@ func (sa *SlidingAverage) to_be_read() *sacalc {
 	if sa.switched || time.Since(sa.created) < sa.InitialAge {
 		return alt_res
 	}
+	if sa.calc1 == nil && sa.calc2 != nil {
+		return sa.calc2
+	}
+	if sa.calc2 == nil && sa.calc1 != nil {
+		return sa.calc1
+	}
+	if sa.calc1 == nil && sa.calc2 == nil {
+		return nil
+	}
 
 	if sa.calc1.is_fresh && !sa.calc2.is_fresh {
 		alt_res = sa.calc2
