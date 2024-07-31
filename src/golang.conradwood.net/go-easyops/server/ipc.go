@@ -98,12 +98,11 @@ func ipc_send_health(sd *serverDef, h common.Health) error {
 		fmt.Printf("[go-easyops] no unixipc to report new health %v to\n", h)
 		return nil
 	}
-	name := ""
-	if sd != nil {
-		name = sd.name
+	if sd == nil {
+		sd = &serverDef{name: "", port: 0} // default to use if no service def set
 	}
 	proto_payload := &ad.INTRPCHealthz{
-		ServiceName: name,
+		ServiceName: sd.name,
 		Port:        uint32(sd.port),
 		Healthz:     h,
 	}
