@@ -19,20 +19,30 @@ var (
 it is often useful to take the most recent period of time average, for example last minute average.
 however, it is useful to double-buffer this so that there is always a full sample available.
 that is where this struct helps.
+That is, it is guaranteed that the average is always calculated over at least MinAge. Periodically old average numbers are "dropped", so the average is also reflective of fresh values.
+
+The InitialAge value may be set to start providing averages faster than MinAge upon startup.
 */
 type SlidingAverage struct {
 	lock                sync.Mutex
 	calc1               *sacalc
 	calc2               *sacalc
+	InitialAge          time.Duration // time to wait before providing the first averages (after startup)
 	MinAge              time.Duration // minimum age before a counter is valid
 	MinSamples          uint64        // minimum number of samples before a counter is valid
 	updating_number_one bool          // if true updates calc1, otherwise calc2
+	created             time.Time
+	created_via_new     bool // helper to detect instantiation via New()
+	switched            bool // true if switched at least once
 }
 
 func NewSlidingAverage() *SlidingAverage {
 	res := &SlidingAverage{
-		MinAge:     time.Duration(10) * time.Second,
-		MinSamples: 10,
+		InitialAge:      time.Duration(24) * time.Hour,
+		created_via_new: true,
+		created:         time.Now(),
+		MinAge:          time.Duration(10) * time.Second,
+		MinSamples:      10,
 	}
 	return res
 }
@@ -63,6 +73,7 @@ func (sa *SlidingAverage) check_for_switch() {
 	rd := sa.to_be_read()
 	if sa.meetsCriteria(up) {
 		sa.updating_number_one = !sa.updating_number_one
+		sa.switched = true
 		if rd != nil {
 			rd.make_fresh()
 		}
@@ -104,14 +115,34 @@ func (sa *SlidingAverage) to_be_updated() *sacalc {
 	return sa.calc2
 }
 func (sa *SlidingAverage) to_be_read() *sacalc {
+	var alt_res *sacalc
+	// got at least one full buf
 	if sa.updating_number_one {
-		return sa.calc2
+		alt_res = sa.calc2
+	} else {
+		alt_res = sa.calc1
 	}
-	return sa.calc1
+	if sa.switched || time.Since(sa.created) < sa.InitialAge {
+		return alt_res
+	}
+
+	if sa.calc1.is_fresh && !sa.calc2.is_fresh {
+		alt_res = sa.calc2
+	}
+
+	if sa.calc2.is_fresh && !sa.calc1.is_fresh {
+		alt_res = sa.calc1
+	}
+
+	return alt_res
+
 }
 
 // get number of counts
 func (sa *SlidingAverage) GetCounts(counter int) uint64 {
+	if !sa.created_via_new {
+		panic("[go-easyops] SlidingAverage must be created with function NewSlidingAverage()")
+	}
 	sa.lock.Lock()
 	defer sa.lock.Unlock()
 	sc := sa.to_be_read()
@@ -123,6 +154,9 @@ func (sa *SlidingAverage) GetCounts(counter int) uint64 {
 
 // get a counter
 func (sa *SlidingAverage) GetCounter(counter int) uint64 {
+	if !sa.created_via_new {
+		panic("[go-easyops] SlidingAverage must be created with function NewSlidingAverage()")
+	}
 	sa.lock.Lock()
 	defer sa.lock.Unlock()
 	sc := sa.to_be_read()
@@ -131,8 +165,20 @@ func (sa *SlidingAverage) GetCounter(counter int) uint64 {
 	}
 	return sc.getCounter(counter)
 }
-
+func (sa *SlidingAverage) GetAverage(counter int) uint64 {
+	num := sa.GetCounter(counter)
+	counts := sa.GetCounts(counter)
+	if counts == 0 || num == 0 {
+		return 0
+	}
+	res := num / counts
+	sa.printf("result: num=%d, counts=%d -> %d\n", num, counts, res)
+	return res
+}
 func (sa *SlidingAverage) Add(counter int, a uint64) {
+	if !sa.created_via_new {
+		panic("[go-easyops] SlidingAverage must be created with function NewSlidingAverage()")
+	}
 	sa.lock.Lock()
 	defer sa.lock.Unlock()
 	sa.to_be_updated().Add(counter, a)
@@ -160,8 +206,14 @@ func (sc *sacalc) Printf(format string, args ...interface{}) {
 	if !*sliding_avg_debug {
 		return
 	}
-	s := "[" + sc.debug_name + "] " + format
+	s := "[go-easyops " + sc.debug_name + "] " + format
 
 	fmt.Printf(s, args...)
-
+}
+func (sa *SlidingAverage) printf(format string, args ...interface{}) {
+	if !*sliding_avg_debug {
+		return
+	}
+	s := "[go-easyops slidingavg] " + format
+	fmt.Printf(s, args...)
 }
