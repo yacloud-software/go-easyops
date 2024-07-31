@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"golang.conradwood.net/apis/common"
 )
 
@@ -30,6 +31,12 @@ func SetHealth(h common.Health) error {
 	health = h
 	if rereg && startup_complete {
 		reRegister()
+	}
+	if len(knownServices) == 0 {
+		fmt.Printf("[go-easyops] server.SetHealth() must be called after server.ServerStartup().")
+		fmt.Printf("[go-easyops] recommended usage:\n")
+		fmt.Printf("[go-easyops] sd.SetOnStartupCallback(func() { server.SetHealth(common.Health_STARTING) })\n")
+		panic("[go-easyops] attempt to send ipc health before server startup")
 	}
 	for _, svc := range knownServices {
 		err := ipc_send_health(svc, h)
