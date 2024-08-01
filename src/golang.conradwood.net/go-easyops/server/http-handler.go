@@ -265,6 +265,12 @@ func paraHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 			http.Error(w, fmt.Sprintf("Cannot set value of %s to %s: %s\n", name, value, err), errno)
 			return
 		}
+		err = ipc_send_new_para(sd, name, value[0])
+		if err != nil {
+			fmt.Printf("[go-easyops] failed to send parameter change via ipc (%s=%s): %s\n", name, value[0], err)
+			// no further action, considering this somewhat optional for now
+		}
+
 	}
 	pp.ProfilingCheckStart() // make it pick up on changes to flag if any
 	fmt.Fprintf(w, "Done")

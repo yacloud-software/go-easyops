@@ -58,6 +58,8 @@ func start_ipc() {
 	unixipc_srv.RegisterRequestHandler(ipc_new_packet)
 	ipc_ready = true
 }
+
+// packet from server received
 func ipc_new_packet(req unixipc.Request) ([]byte, error) {
 	if req.RPCName() == "STOPREQUEST" {
 		stop_requested()
@@ -87,6 +89,30 @@ func ipc_send_startup(sd *serverDef) error {
 		return err
 	}
 	_, err = unixipc_srv.Send("startup", payload)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func ipc_send_new_para(sd *serverDef, name, value string) error {
+	start_ipc()
+	if !ipc_ready {
+		fmt.Printf("[go-easyops] no unixipc to report new flag %s=%s to\n", name, value)
+		return nil
+	}
+	if sd == nil {
+		sd = &serverDef{name: "", port: 0} // default to use if no service def set
+	}
+	proto_payload := &ad.INTRPCFlagChange{
+		ServiceName: sd.name,
+		FlagName:    name,
+		NewValue:    value,
+	}
+	payload, err := utils.MarshalBytes(proto_payload)
+	if err != nil {
+		return err
+	}
+	_, err = unixipc_srv.Send("flagchange", payload)
 	if err != nil {
 		return err
 	}
