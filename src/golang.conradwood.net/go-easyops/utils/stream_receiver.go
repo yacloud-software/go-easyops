@@ -45,7 +45,7 @@ func (bsr *ByteStreamReceiver) NewData(data StreamData) error {
 	}
 	write_to := bsr.last_file
 	if data.GetFilename() != "" {
-		fmt.Printf("Receiving: \"%s\"\n", data.GetFilename())
+		//		fmt.Printf("Receiving: \"%s\"\n", data.GetFilename())
 		write_to = bsr.get_file_by_name(data.GetFilename())
 		bsr.last_file = write_to
 	}
