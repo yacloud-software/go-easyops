@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 )
@@ -39,7 +40,7 @@ func NewByteStreamReceiver(path string) *ByteStreamReceiver {
 
 // the result of srv.Recv()
 func (bsr *ByteStreamReceiver) NewData(data StreamData) error {
-	if data == nil {
+	if data == nil || reflect.ValueOf(data).IsNil() {
 		return nil
 	}
 	write_to := bsr.last_file
