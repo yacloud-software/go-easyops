@@ -240,3 +240,22 @@ func ChmodR(dir string, dirmask, filemask fs.FileMode) error {
 	}
 	return nil
 }
+
+// return true if file exists and is a directory (uses findfile)
+func IsDir(name string) (bool, error) {
+	fname, err := FindFile(name)
+	if err != nil {
+		return false, err
+	}
+	// This returns an *os.FileInfo type
+	fileInfo, err := os.Stat(fname)
+	if err != nil {
+		return false, err
+	}
+
+	// IsDir is short for fileInfo.Mode().IsDir()
+	if fileInfo.IsDir() {
+		return true, nil
+	}
+	return false, nil
+}
