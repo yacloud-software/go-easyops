@@ -230,3 +230,6 @@ func Wrap(err error) error {
 	we := shared.NewWrappedError(err, st)
 	return we
 }
+func ErrorStringWithStackTrace(err error) string {
+	return shared.ErrorStringWithStackTrace(err)
+}
