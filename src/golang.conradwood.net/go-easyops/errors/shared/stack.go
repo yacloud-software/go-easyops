@@ -35,7 +35,7 @@ func (sp *StackPos) String() string {
 	if sp == nil {
 		return "[no stack]"
 	}
-	return fmt.Sprintf("%s:%d", sp.Function, sp.Line)
+	return fmt.Sprintf("%s:%d", sp.Filename, sp.Line)
 }
 
 func (sp *StackPos) IsFiltered() bool {
