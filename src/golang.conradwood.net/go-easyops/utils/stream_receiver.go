@@ -48,6 +48,10 @@ func (bsr *ByteStreamReceiver) NewData(data StreamData) error {
 		//		fmt.Printf("Receiving: \"%s\"\n", data.GetFilename())
 		write_to = bsr.get_file_by_name(data.GetFilename())
 		bsr.last_file = write_to
+		err := write_to.Write(bsr.path, make([]byte, 0)) //create file
+		if err != nil {
+			return err
+		}
 	}
 	if len(data.GetData()) == 0 {
 		return nil
