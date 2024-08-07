@@ -251,7 +251,7 @@ func stackToString(stack ErrorStackTrace) string {
 			}
 		}
 		starting = false
-		res = res + fmt.Sprintf("%s:%d\n", pos.Function, pos.Line)
+		res = res + fmt.Sprintf("%s:%d\n", pos.Filename, pos.Line)
 		if pos.Function == "main.main" {
 			break
 		}
