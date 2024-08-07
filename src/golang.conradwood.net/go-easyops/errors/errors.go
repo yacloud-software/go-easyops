@@ -230,6 +230,14 @@ func Wrap(err error) error {
 	we := shared.NewWrappedError(err, st)
 	return we
 }
+func Wrapf(err error, format string, args ...interface{}) error {
+	if err == nil {
+		return nil
+	}
+	_, st := callingFunction()
+	we := shared.NewWrappedErrorWithString(err, st, fmt.Sprintf(format, args...))
+	return we
+}
 func ErrorStringWithStackTrace(err error) string {
 	return shared.ErrorStringWithStackTrace(err)
 }

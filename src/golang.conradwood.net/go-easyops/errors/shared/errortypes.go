@@ -17,8 +17,9 @@ type MyError struct {
 }
 
 type WrappedError struct {
-	stack ErrorStackTrace
-	err   error
+	stack        ErrorStackTrace
+	err          error
+	extramessage string
 }
 
 func NewMyError(err error, st ErrorStackTrace) *MyError {
@@ -26,6 +27,9 @@ func NewMyError(err error, st ErrorStackTrace) *MyError {
 }
 func NewWrappedError(err error, st ErrorStackTrace) *WrappedError {
 	return &WrappedError{err: err, stack: st}
+}
+func NewWrappedErrorWithString(err error, st ErrorStackTrace, s string) *WrappedError {
+	return &WrappedError{err: err, stack: st, extramessage: s}
 }
 func (me *MyError) Stack() ErrorStackTrace {
 	return me.stack
@@ -48,7 +52,11 @@ func (we *WrappedError) String() string {
 		return "[noerror]"
 	}
 
-	s := fmt.Sprintf("%v at %s", we.err, first_non_internal_pos(we.Stack().Positions()).String())
+	x := ""
+	if we.extramessage != "" {
+		x = we.extramessage + ": "
+	}
+	s := fmt.Sprintf("%s%v at %s", x, we.err, first_non_internal_pos(we.Stack().Positions()).String())
 	wo, ok := we.err.(*WrappedError)
 	if ok {
 		s = wo.String()
