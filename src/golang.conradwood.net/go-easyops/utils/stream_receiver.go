@@ -49,6 +49,9 @@ func (bsr *ByteStreamReceiver) NewData(data StreamData) error {
 		write_to = bsr.get_file_by_name(data.GetFilename())
 		bsr.last_file = write_to
 	}
+	if len(data.GetData()) == 0 {
+		return nil
+	}
 	if write_to == nil {
 		return fmt.Errorf("premature data received without filename")
 	}
