@@ -9,8 +9,9 @@ type Send_new_file_type func(key, filename string) error
 
 // sends a bunch of bytes down a grpc stream
 type ByteStreamSender struct {
-	new_file  Send_new_file_type
-	send_data Send_data_type
+	new_file     Send_new_file_type
+	send_data    Send_data_type
+	file_counter int
 }
 
 /*
@@ -29,11 +30,18 @@ func NewByteStreamSender(f1 Send_new_file_type, f2 Send_data_type) *ByteStreamSe
 	}
 	return res
 }
+
+// how many files were sent?
+func (bss *ByteStreamSender) FileCount() int {
+	return bss.file_counter
+}
+
 func (bss *ByteStreamSender) SendBytes(key, filename string, b []byte) error {
 	err := bss.new_file(key, filename)
 	if err != nil {
 		return err
 	}
+	bss.file_counter++
 	size := 8192
 	offset := 0
 	for {

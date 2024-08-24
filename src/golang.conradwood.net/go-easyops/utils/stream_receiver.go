@@ -66,6 +66,13 @@ func (bsr *ByteStreamReceiver) NewData(data StreamData) error {
 	}
 	return nil
 }
+
+// how many files were retrieved?
+func (bsr *ByteStreamReceiver) FileCount() int {
+	bsr.Lock()
+	defer bsr.Unlock()
+	return len(bsr.open_files)
+}
 func (bsr *ByteStreamReceiver) Close() error {
 	bsr.Lock()
 	defer bsr.Unlock()
