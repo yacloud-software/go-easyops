@@ -151,7 +151,9 @@ func Error(ctx context.Context, code codes.Code, publicmessage string, logmessag
 		// in case of double-faults there isn't really any other option than to log and exit
 		panic(fmt.Sprintf("Double fault, error in error handler whilst creating error for code=%d, publicmessage=%s, logmessage=%s: %s", code, publicmessage, log, err))
 	}
-	return st.Err()
+	_, cf := callingFunction()
+	me := shared.NewMyError(st.Err(), cf)
+	return me
 }
 func ToHTTPCode(err error) *HTTPError {
 	st := status.Convert(err)
