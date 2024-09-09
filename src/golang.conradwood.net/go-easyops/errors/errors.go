@@ -16,11 +16,13 @@ import (
 	gctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/errors/shared"
 	//	"golang.conradwood.net/go-easyops/utils"
+	"flag"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 var (
+	encapsulate_error = flag.Bool("ge_encapsulate_errors", false, "if true encapsulate errors with stacktrace")
 	// mapping as per https://cloud.google.com/apis/design/errors
 	grpcToHTTPMap = map[codes.Code]*HTTPError{
 		codes.OK:                 {200, "ok", "", ""},
@@ -151,9 +153,12 @@ func Error(ctx context.Context, code codes.Code, publicmessage string, logmessag
 		// in case of double-faults there isn't really any other option than to log and exit
 		panic(fmt.Sprintf("Double fault, error in error handler whilst creating error for code=%d, publicmessage=%s, logmessage=%s: %s", code, publicmessage, log, err))
 	}
-	_, cf := callingFunction()
-	me := shared.NewMyError(st.Err(), cf)
-	return me
+	if *encapsulate_error {
+		_, cf := callingFunction()
+		me := shared.NewMyError(st.Err(), cf)
+		return me
+	}
+	return st.Err()
 }
 func ToHTTPCode(err error) *HTTPError {
 	st := status.Convert(err)
