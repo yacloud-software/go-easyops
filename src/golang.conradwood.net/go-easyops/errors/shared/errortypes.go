@@ -2,6 +2,7 @@ package shared
 
 import (
 	"fmt"
+	"google.golang.org/grpc/status"
 )
 
 type StackError interface {
@@ -39,6 +40,15 @@ func (me *MyError) Error() string {
 }
 func (me *MyError) String() string {
 	return fmt.Sprintf("%s at %s", me.err.Error(), first_non_internal_pos(me.Stack().Positions()).String())
+}
+
+func (me *MyError) GRPCStatus() *status.Status {
+	e, _ := status.FromError(me.err)
+	return e
+}
+func (me *WrappedError) GRPCStatus() *status.Status {
+	e, _ := status.FromError(me.err)
+	return e
 }
 
 func (we *WrappedError) Stack() ErrorStackTrace {
