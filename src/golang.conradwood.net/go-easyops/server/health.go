@@ -52,3 +52,6 @@ func getHealthString() string {
 	s := common.Health_name[int32(health)]
 	return s
 }
+func GetHealth() common.Health {
+	return health
+}
