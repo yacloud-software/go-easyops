@@ -18,3 +18,4 @@ message FrameworkMessageDetail {
   string Message = 2;
   string RequestID = 3;
 }
+
