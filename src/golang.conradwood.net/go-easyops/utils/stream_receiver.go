@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,15 +12,22 @@ import (
 
 type ByteStreamReceiver struct {
 	sync.Mutex
-	open_files map[string]*open_file
-	last_file  *open_file
-	path       string
+	open_files      map[string]*open_file
+	last_file       *open_file
+	path            string
+	custom_function func(filename string, content []byte) error
 }
 
 // the proto must be compatible with this interface
 type StreamData interface {
 	GetFilename() string
 	GetData() []byte
+}
+
+func NewByteStreamReceiverWithFunction(newfile func(filename string, content []byte) error) *ByteStreamReceiver {
+	res := NewByteStreamReceiver("")
+	res.custom_function = newfile
+	return res
 }
 
 func NewByteStreamReceiver(path string) *ByteStreamReceiver {
@@ -93,7 +101,7 @@ func (bsr *ByteStreamReceiver) get_file_by_name(name string) *open_file {
 	if fd {
 		return of
 	}
-	of = &open_file{filename: name}
+	of = &open_file{bsr: bsr, filename: name, content: &bytes.Buffer{}}
 	bsr.open_files[name] = of
 	return of
 
@@ -109,34 +117,51 @@ func (bsr *ByteStreamReceiver) TotalBytesReceived() uint64 {
 }
 
 type open_file struct {
+	bsr      *ByteStreamReceiver
 	filename string
 	size     uint64
 	fd       *os.File
+	content  *bytes.Buffer
 }
 
 func (of *open_file) Write(path string, buf []byte) error {
-	if of.fd == nil {
-		if strings.Contains(of.filename, "..") {
-			return fmt.Errorf("Error: filename contains '..'")
-		}
-		os.MkdirAll(filepath.Dir(path+"/"+of.filename), 0777)
-		f, err := os.Create(path + "/" + of.filename)
+	if of.bsr.custom_function != nil {
+		_, err := of.content.Write(buf)
 		if err != nil {
 			return err
 		}
-		of.fd = f
 	}
-	of.size = of.size + uint64(len(buf))
-	n, err := of.fd.Write(buf)
-	if n != len(buf) {
-		return fmt.Errorf("short write")
-	}
-	if err != nil {
-		return err
+	if of.bsr.path != "" {
+		if of.fd == nil {
+			if strings.Contains(of.filename, "..") {
+				return fmt.Errorf("Error: filename contains '..'")
+			}
+			os.MkdirAll(filepath.Dir(path+"/"+of.filename), 0777)
+			f, err := os.Create(path + "/" + of.filename)
+			if err != nil {
+				return err
+			}
+			of.fd = f
+		}
+		of.size = of.size + uint64(len(buf))
+		n, err := of.fd.Write(buf)
+		if n != len(buf) {
+			return fmt.Errorf("short write")
+		}
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 func (of *open_file) Close() error {
+	cf := of.bsr.custom_function
+	if cf != nil {
+		err := cf(of.filename, of.content.Bytes())
+		if err != nil {
+			return err
+		}
+	}
 	if of.fd != nil {
 		err := of.fd.Close()
 		of.fd = nil
