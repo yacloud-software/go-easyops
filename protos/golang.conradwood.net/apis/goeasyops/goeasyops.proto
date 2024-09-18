@@ -99,3 +99,4 @@ message StopUpdate {
   bool Stopping=1;
   uint32 ActiveRPCs=2;
 }
+
