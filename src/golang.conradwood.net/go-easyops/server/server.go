@@ -222,7 +222,8 @@ func ServerStartup(sd ServerDef) error {
 		if client.GotSig() {
 			break
 		}
-		if time.Since(started) > time.Duration(3)*time.Second {
+		time.Sleep(time.Duration(100) * time.Millisecond)
+		if time.Since(started) > time.Duration(4)*time.Second {
 			fmt.Printf("[go-easyops] WARNING could not retrieve signature in time\n")
 			break
 		}
@@ -527,7 +528,7 @@ func AddRegistry(sd *serverDef) (string, error) {
 		Pid:         cmdline.GetPid(),
 		RoutingInfo: &pb.RoutingInfo{},
 		UserID:      sd.service_user_id,
-		Health: GetHealth(),
+		Health:      GetHealth(),
 	}
 	if sd.asUser != nil {
 		rsr.RoutingInfo.RunningAs = common.VerifySignedUser(sd.asUser)
