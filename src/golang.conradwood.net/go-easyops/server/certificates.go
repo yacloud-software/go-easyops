@@ -20,7 +20,7 @@ var (
 	BuiltinKey     []byte          // set on server startup
 	BuiltinTLSCert tls.Certificate // set on server startup
 	certmap        = &certmapper{}
-	dynamic_certs  = flag.Bool("ge_retrieve_missing_https_certificates", false, "if true, retrieve missing https certificates")
+	dynamic_certs  = flag.Bool("ge_retrieve_missing_https_certificates", true, "if true, retrieve missing https certificates")
 )
 
 type certmapper struct {
