@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+
 	//	fw "golang.conradwood.net/apis/framework"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
@@ -13,10 +14,12 @@ import (
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"google.golang.org/grpc"
+
 	//	"google.golang.org/grpc/metadata"
 	"flag"
-	"google.golang.org/grpc/status"
 	"time"
+
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -79,7 +82,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		"method":      cs.MethodName,
 		"servicename": cs.ServiceName,
 	}).Inc()
-
+	track_inbound_call(cs.ServiceName, cs.MethodName, auth.GetService(outbound_ctx))
 	print_inbound_debug(cs, outbound_ctx)
 	/*************** now call the rpc implementation *****************/
 	i, err := handler(outbound_ctx, req)

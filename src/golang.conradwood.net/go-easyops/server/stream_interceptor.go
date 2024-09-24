@@ -3,10 +3,17 @@ package server
 import (
 	"context"
 	"fmt"
+
 	fw "golang.conradwood.net/apis/framework"
+
 	//	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
+
 	//	"golang.conradwood.net/go-easyops/ctx"
+	"strings"
+	"time"
+
 	"golang.conradwood.net/go-easyops/errors"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
@@ -14,8 +21,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"strings"
-	"time"
 )
 
 func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
@@ -74,6 +79,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	} else {
 		panic("obsolete code path")
 	}
+	track_inbound_call(name, method, auth.GetService(out_ctx))
 	print_inbound_debug(rc, out_ctx)
 
 	nstream := newServerStream(stream, out_ctx)

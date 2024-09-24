@@ -4,12 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"golang.conradwood.net/go-easyops/appinfo"
-	"golang.conradwood.net/go-easyops/client"
-	"golang.conradwood.net/go-easyops/cmdline"
-	"golang.conradwood.net/go-easyops/common"
-	pp "golang.conradwood.net/go-easyops/profiling"
-	"google.golang.org/grpc"
 	"io"
 	"net/http"
 	hpprof "net/http/pprof"
@@ -18,6 +12,13 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+
+	"golang.conradwood.net/go-easyops/appinfo"
+	"golang.conradwood.net/go-easyops/client"
+	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/common"
+	pp "golang.conradwood.net/go-easyops/profiling"
+	"google.golang.org/grpc"
 )
 
 func debugHandler(w http.ResponseWriter, req *http.Request) {
@@ -161,6 +162,7 @@ func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	s = s + "<a href=\"/internal/clearcache\">clearcache</a> (append /name to clear a specific cache)<br/>"
 	s = s + "<a href=\"/internal/parameters\">parameters</a><br/>"
 	s = s + "<a href=\"/internal/service-info/grpc-connections\">GRPC Connections</a><br/>"
+	s = s + "<a href=\"/internal/service-info/grpc-callers\">GRPC Server Caller list (who called this service)</a><br/>"
 	s = s + "<a href=\"/internal/service-info/dependencies\">Registered GRPC Dependencies</a><br/>"
 	s = s + "<a href=\"/internal/debug/info\">Go-Profiler</a><br/>"
 	s = s + "<a href=\"/internal/debug/cpu\">CPU Profiler</a><br/>"
@@ -182,6 +184,8 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		serveVersion(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/grpc-connections") {
 		serveGRPCConnections(w, req, sd)
+	} else if strings.HasPrefix(p, "/internal/service-info/grpc-callers") {
+		serveGRPCCallers(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/dependencies") {
 		serveDependencies(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/metrics") {
@@ -190,6 +194,18 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		m = strings.TrimLeft(m, "/")
 	} else {
 		fmt.Printf("Invalid path: \"%s\"\n", p)
+	}
+}
+
+// serve /internal/service-info/grpc-callers
+func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
+	usage_info := GetUsageInfo()
+	for _, service := range usage_info.Services() {
+		for _, method := range service.Methods() {
+			for _, callers := range method.Callers() {
+				fmt.Fprintf(w, "%s.%s %s\n", service.Name(), method.Name(), callers.String())
+			}
+		}
 	}
 }
 
