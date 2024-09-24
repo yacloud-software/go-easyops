@@ -33,16 +33,17 @@ package cmdline
 import (
 	"flag"
 	"fmt"
-	pb "golang.conradwood.net/apis/goeasyops"
-	"golang.conradwood.net/go-easyops/appinfo"
-	"golang.conradwood.net/go-easyops/common"
-	"golang.conradwood.net/go-easyops/utils"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	pb "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/appinfo"
+	"golang.conradwood.net/go-easyops/common"
+	"golang.conradwood.net/go-easyops/utils"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -58,6 +59,7 @@ var (
 	// annoyingly, not all go-easyops flags start with ge_
 	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
 	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
+	debug_sig             = flag.Bool("ge_debug_signature", false, "debug signature stuff")
 	mlock                 sync.Mutex
 	running_in_datacenter = flag.Bool("AD_started_by_auto_deployer", false, "the autodeployer sets this to true to modify the behaviour to make it suitable for general-availability services in the datacenter")
 
@@ -316,6 +318,9 @@ func GetEnvContext() string {
 		return overridden_env_context
 	}
 	return e_ctx.Value()
+}
+func DebugSignature() bool {
+	return *debug_sig
 }
 func DebugAuth() bool {
 	return *debug_auth

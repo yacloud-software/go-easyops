@@ -15,18 +15,28 @@ func NotImpl(format string, args ...interface{}) {
 
 // print a simpliefied stacktrace (filenames and linenumbers only)
 func PrintStack(format string, args ...interface{}) {
+	s := GetStack(format, args...)
+	fmt.Print(s)
+
+}
+
+// get stack in a human readable format
+func GetStack(format string, args ...interface{}) string {
 	s := fmt.Sprintf("Stacktrace for: "+format+"\n", args...)
 	pc := make([]uintptr, 128)
 	num := runtime.Callers(0, pc)
 	if num == 0 {
-		return
+		return "[nostack]"
 	}
 	pc = pc[:num] // pass only valid pcs to runtime.CallersFrames
 	frames := runtime.CallersFrames(pc)
 
 	more := true
 	var frame runtime.Frame
-
+	ignore_functions := []string{
+		"golang.conradwood.net/go-easyops/utils.PrintStack",
+		"golang.conradwood.net/go-easyops/utils.GetStack",
+	}
 	for {
 		// Check whether there are more frames to process after this one.
 		if !more {
@@ -41,9 +51,17 @@ func PrintStack(format string, args ...interface{}) {
 		if strings.Contains(frame.File, "runtime/") {
 			continue
 		}
-		if strings.Contains(frame.Function, "golang.conradwood.net/go-easyops/utils.PrintStack") {
+		ign := false
+		for _, ifu := range ignore_functions {
+			if strings.Contains(frame.Function, ifu) {
+				ign = true
+				break
+			}
+		}
+		if ign {
 			continue
 		}
+
 		name := frame.Function
 		n := strings.LastIndex(name, ".")
 		if n != -1 {
@@ -57,7 +75,7 @@ func PrintStack(format string, args ...interface{}) {
 		s = s + fmt.Sprintf(" %s in %s:%d\n", name, fname, frame.Line)
 	}
 	s = s + "---end stacktrace\n"
-	fmt.Print(s)
+	return s
 }
 
 // returns a single line with the calling function immedialy preceding the function which invoked this one

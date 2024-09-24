@@ -4,13 +4,14 @@ import (
 	_ "context"
 	"flag"
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"google.golang.org/grpc"
-	"os"
-	"strings"
-	"time"
 )
 
 const (
@@ -153,9 +154,37 @@ func ConnectAt(registryadr string, serviceNameOrPath string) *grpc.ClientConn {
 	return conn
 }
 
+// connect to a service which we KNOW requires no authentication and no signature.
+// it is public because of implementation details, but should not be used by clients of goeasyops
+func ConnectAtNoAuth(registryadr string, serviceNameOrPath string) *grpc.ClientConn {
+	common.AddBlockedServiceName(serviceNameOrPath)
+	conn, err := dialService_noauth(registryadr, serviceNameOrPath)
+	// an error in this case reflects a LOCAL error, such as
+	// no route to host or out-of-memory.
+	// if a service is not available at the time of the call
+	// it will block until one becomes available.
+	// since it is a local error it is appropriate to exit.
+	// a system administrator has to repair the machine before
+	// the software can continue.
+	if err != nil {
+		fmt.Printf("Failed to dial %s: %s\n", serviceNameOrPath, err)
+		os.Exit(10)
+	}
+	if *dialer_debug {
+		fmt.Printf("[go-easyops]Connected to %s\n", serviceNameOrPath)
+	}
+	common.RemoveBlockedServiceName(serviceNameOrPath)
+	return conn
+}
+
 // opens a tcp connection to a path.
 func dialService(registry string, serviceName string) (*grpc.ClientConn, error) {
 	GetSignatureFromAuth() // this is triggered here, because we _must_ have a valid signature later. if it has been called earlier it is a noop
+	return dialService_noauth(registry, serviceName)
+}
+
+// dial a service that does not require authententication (no signature required)
+func dialService_noauth(registry string, serviceName string) (*grpc.ClientConn, error) {
 	if *dialer_debug {
 		fmt.Println("[go-easyops] DialService: Dialling with dialService() " + serviceName + " and blocking until successful connection...")
 	}
