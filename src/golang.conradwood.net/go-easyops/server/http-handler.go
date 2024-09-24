@@ -200,10 +200,22 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 // serve /internal/service-info/grpc-callers
 func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	usage_info := GetUsageInfo()
+	ct_service := 0
+	ct_methods := 0
+	ct_callers := 0
+	for _, service := range usage_info.Services() {
+		ct_service++
+		for _, method := range service.Methods() {
+			ct_methods++
+			ct_callers = ct_callers + len(method.Callers())
+
+		}
+	}
+	fmt.Fprintf(w, "COUNT: services=%d, methods=%d, callers=%d\n", ct_service, ct_methods, ct_callers)
 	for _, service := range usage_info.Services() {
 		for _, method := range service.Methods() {
 			for _, callers := range method.Callers() {
-				fmt.Fprintf(w, "%s.%s %s\n", service.Name(), method.Name(), callers.String())
+				fmt.Fprintf(w, "ENTRY: %s.%s %s\n", service.Name(), method.Name(), callers.String())
 			}
 		}
 	}
