@@ -6,6 +6,15 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"strings"
+	"sync"
+	"syscall"
+	"time"
+
 	pm "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	au "golang.conradwood.net/apis/auth"
@@ -23,20 +32,13 @@ import (
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/standalone"
 	"golang.conradwood.net/go-easyops/tokens"
+	"golang.conradwood.net/go-easyops/utils"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"strings"
-	"sync"
-	"syscall"
-	"time"
 )
 
 const (
@@ -415,6 +417,12 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 		panic(err)
 	}
 
+	// set startup for certmanager thing
+	BuiltinCert = certificates.Certificate()
+	BuiltinKey = certificates.Privatekey()
+	BuiltinTLSCert, err = tls.X509KeyPair(BuiltinCert, BuiltinKey)
+	utils.Bail("failed to create tls cert", err)
+
 	BackendCert := certificates.Certificate()
 	BackendKey := certificates.Privatekey()
 	cert, err := tls.X509KeyPair(BackendCert, BackendKey)
@@ -423,6 +431,7 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 		Addr:    fmt.Sprintf(":%d", sd.port),
 		Handler: grpcHandlerFunc(grpcServer, mux),
 		TLSConfig: &tls.Config{
+			GetCertificate:     getcert,
 			Certificates:       []tls.Certificate{cert},
 			NextProtos:         []string{"h2"},
 			InsecureSkipVerify: true,
