@@ -237,7 +237,7 @@ func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 				sb.WriteString("<ul>")
 				for _, caller := range method.Callers() {
 					sb.WriteString("<li>")
-					sb.WriteString(fmt.Sprintf("called %d times by: %s (last at %s)\n", caller.Usages(), auth.UserIDString(caller.User()), utils.TimeString(caller.LastCallTime())))
+					sb.WriteString(fmt.Sprintf("called %d times by: %s %s (last at %s)\n", caller.Usages(), auth.UserIDString(caller.User()), caller.User().Email, utils.TimeString(caller.LastCallTime())))
 					sb.WriteString("</li>")
 				}
 				sb.WriteString("</ul>")

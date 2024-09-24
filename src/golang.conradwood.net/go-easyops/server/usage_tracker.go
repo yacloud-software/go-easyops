@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	usages_tracking_enabled = flag.Bool("ge_track_usage_per_calling_service", false, "if true track usage per calling service")
+	usages_tracking_enabled = flag.Bool("ge_track_usage_per_calling_service", true, "if true track usage per calling service")
 	usages                  = &usage_info_tracker{usages: make(map[string]*usage_service)}
 )
 
@@ -70,6 +70,9 @@ func (us *usage_service) MethodByName(name string) *usage_method {
 	defer us.Unlock()
 	um := us.usage_method_map[name]
 	if um == nil {
+		if len(us.usage_method_map) > 100 {
+			return nil
+		}
 		um = &usage_method{name: name}
 		us.usage_method_map[name] = um
 	}
@@ -102,6 +105,9 @@ func (um *usage_method) CallerByUser(caller *auth.User) *usage_caller {
 		}
 	}
 	if uc == nil {
+		if len(um.callers) > 200 {
+			return nil
+		}
 		uc = &usage_caller{user: caller}
 		um.callers = append(um.callers, uc)
 	}
@@ -132,8 +138,17 @@ func track_inbound_call(service, method string, caller *auth.User) {
 		return
 	}
 	us := usages.GetServiceByName(service)
+	if us == nil {
+		return
+	}
 	um := us.MethodByName(method)
+	if um == nil {
+		return
+	}
 	uc := um.CallerByUser(caller)
+	if uc == nil {
+		return
+	}
 
 	uc.Lock()
 	uc.calls++
