@@ -14,10 +14,12 @@ import (
 	"strings"
 
 	"golang.conradwood.net/go-easyops/appinfo"
+	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	pp "golang.conradwood.net/go-easyops/profiling"
+	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 )
 
@@ -211,13 +213,39 @@ func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 
 		}
 	}
-	fmt.Fprintf(w, "COUNT: services=%d, methods=%d, callers=%d\n", ct_service, ct_methods, ct_callers)
-	for _, service := range usage_info.Services() {
-		for _, method := range service.Methods() {
-			for _, callers := range method.Callers() {
-				fmt.Fprintf(w, "ENTRY: %s.%s %s\n", service.Name(), method.Name(), callers.String())
+	path := strings.TrimSuffix(req.URL.Path, "/")
+	fmt.Printf("[go-easyops] Path: \"%s\"\n", path)
+	if strings.HasSuffix(path, "/text") {
+		w.Header().Set("content-type", "text/plain")
+		fmt.Fprintf(w, "COUNT: services=%d, methods=%d, callers=%d\n", ct_service, ct_methods, ct_callers)
+		for _, service := range usage_info.Services() {
+			for _, method := range service.Methods() {
+				for _, callers := range method.Callers() {
+					fmt.Fprintf(w, "ENTRY: %s.%s %s\n", service.Name(), method.Name(), callers.String())
+				}
 			}
 		}
+	} else {
+		w.Header().Set("content-type", "text/html")
+		sb := strings.Builder{}
+		sb.WriteString("<a href=\"grpc-callers/text/\">Text version</a>\n")
+		sb.WriteString(fmt.Sprintf("COUNT: services=%d, methods=%d, callers=%d\n", ct_service, ct_methods, ct_callers))
+		for _, service := range usage_info.Services() {
+			sb.WriteString(fmt.Sprintf("<h1>Service: %s</h1>\n", service.Name()))
+			for _, method := range service.Methods() {
+				sb.WriteString(fmt.Sprintf("<h2>Method: %s</h2>\n", method.Name()))
+				sb.WriteString("<ul>")
+				for _, caller := range method.Callers() {
+					sb.WriteString("<li>")
+					sb.WriteString(fmt.Sprintf("called %d times by: %s (last at %s)\n", caller.Usages(), auth.UserIDString(caller.User()), utils.TimeString(caller.LastCallTime())))
+					sb.WriteString("</li>")
+				}
+				sb.WriteString("</ul>")
+			}
+		}
+		x := sb.String()
+		x = strings.ReplaceAll(x, "\n", "<br/>\n")
+		fmt.Fprintf(w, x)
 	}
 }
 
