@@ -228,12 +228,14 @@ func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	} else {
 		w.Header().Set("content-type", "text/html")
 		sb := strings.Builder{}
+		sb.WriteString(`<html><head><link rel="stylesheet" type="text/css" href="https://www.conradwood.net/stylesheet.css"/><title>GRPC Services Info</title><link rel="icon" type="image/ico" href="https://www.yacloud.eu/favicon.ico"/></head><body class="root">`)
+		sb.WriteString(`<section class="white">`)
 		sb.WriteString("<a href=\"grpc-callers/text/\">Text version</a>\n")
 		sb.WriteString(fmt.Sprintf("COUNT: services=%d, methods=%d, callers=%d\n", ct_service, ct_methods, ct_callers))
 		for _, service := range usage_info.Services() {
 			sb.WriteString(fmt.Sprintf("<h1>Service: %s</h1>\n", service.Name()))
 			for _, method := range service.Methods() {
-				sb.WriteString(fmt.Sprintf("<h2>Method: %s</h2>\n", method.Name()))
+				sb.WriteString(fmt.Sprintf("<p>Method: <code>%s</code></p>\n", method.Name()))
 				sb.WriteString("<ul>")
 				for _, caller := range method.Callers() {
 					sb.WriteString("<li>")
@@ -241,8 +243,10 @@ func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 					sb.WriteString("</li>")
 				}
 				sb.WriteString("</ul>")
+				sb.WriteString(`<hr/>`)
 			}
 		}
+		sb.WriteString(`</section></body></html>`)
 		x := sb.String()
 		x = strings.ReplaceAll(x, "\n", "<br/>\n")
 		fmt.Fprintf(w, x)
