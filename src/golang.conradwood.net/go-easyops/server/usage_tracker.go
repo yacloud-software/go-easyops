@@ -33,6 +33,7 @@ type usage_caller struct {
 	sync.Mutex
 	user      *auth.User
 	calls     int
+	errors    int
 	last_call time.Time
 }
 
@@ -121,38 +122,63 @@ func (uc *usage_caller) User() *auth.User {
 func (uc *usage_caller) Usages() int {
 	return uc.calls
 }
+func (uc *usage_caller) Errors() int {
+	return uc.errors
+}
+func (uc *usage_caller) ErrorRate() float64 {
+	if uc.errors == 0 || uc.calls == 0 {
+		return 0.0
+	}
+	res := float64(uc.errors) / float64(uc.calls) * 100.0
+	return res
+}
 
 // when was last time it was called?
 func (uc *usage_caller) LastCallTime() time.Time {
 	return uc.last_call
 }
 func (uc *usage_caller) String() string {
-	return fmt.Sprintf("%s %d %d (%s)", uc.user.ID, uc.calls, uc.last_call.Unix(), uc.user.Email)
+	return fmt.Sprintf("%s %d %d %d (%s)", uc.user.ID, uc.calls, uc.errors, uc.last_call.Unix(), uc.user.Email)
 }
 
-func track_inbound_call(service, method string, caller *auth.User) {
+func track_get_caller(service, method string, caller *auth.User) *usage_caller {
 	if !*usages_tracking_enabled {
-		return
+		return nil
 	}
 	if caller == nil {
-		return
+		return nil
 	}
 	us := usages.GetServiceByName(service)
 	if us == nil {
-		return
+		return nil
 	}
 	um := us.MethodByName(method)
 	if um == nil {
-		return
+		return nil
 	}
 	uc := um.CallerByUser(caller)
 	if uc == nil {
+		return nil
+	}
+	return uc
+}
+func track_inbound_call(service, method string, caller *auth.User) {
+	uc := track_get_caller(service, method, caller)
+	if uc == nil {
 		return
 	}
-
 	uc.Lock()
 	uc.calls++
 	uc.last_call = time.Now()
+	uc.Unlock()
+}
+func track_inbound_error(service, method string, caller *auth.User) {
+	uc := track_get_caller(service, method, caller)
+	if uc == nil {
+		return
+	}
+	uc.Lock()
+	uc.errors++
 	uc.Unlock()
 }
 
