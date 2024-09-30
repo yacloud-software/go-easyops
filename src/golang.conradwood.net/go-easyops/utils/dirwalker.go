@@ -17,6 +17,22 @@ type dirwalker struct {
 	fn func(root string, relative_filename string) error
 }
 
+// returns all files relative to dir
+func DirWalkAllFiles(dir string) ([]string, error) {
+	var res []string
+	err := DirWalk(dir, func(root, rel string) error {
+		if strings.HasSuffix(rel, ".goeasyops-dir") {
+			return nil
+		}
+		res = append(res, rel)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // walk a directory tree and call function for each file (but not each dir)
 func DirWalk(dir string, fn func(root string, relative_filename string) error) error {
 	dw := &dirwalker{root: dir, fn: fn}
