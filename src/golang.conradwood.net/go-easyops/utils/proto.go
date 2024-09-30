@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/base64"
+
 	"github.com/golang/protobuf/proto"
 )
 
@@ -35,5 +36,31 @@ func Unmarshal(b64string string, req proto.Message) error {
 		return err
 	}
 
+	return nil
+}
+
+// write a proto to disk
+func WriteProto(filename string, req proto.Message) error {
+	data, err := proto.Marshal(req)
+	if err != nil {
+		return err
+	}
+	err = WriteFile(filename, data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// read a proto from disk
+func ReadProto(filename string, req proto.Message) error {
+	b, err := ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	err = UnmarshalBytes(b, req)
+	if err != nil {
+		return err
+	}
 	return nil
 }
