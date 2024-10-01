@@ -38,6 +38,11 @@ message MutableContext {
   bool Trace=3; // if trace is enabled for this call
   CTXRoutingTags Tags=4;
   repeated string ServiceIDs=5; // each service adds its ID
+  repeated Experiment Experiments=6;
+}
+message Experiment {
+  string Name=1;
+  bool Enabled=2;
 }
 
 /*
