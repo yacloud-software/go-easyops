@@ -39,7 +39,7 @@ func IsDebug(ctx context.Context) bool {
 	}
 	return ls.Debug()
 }
-func IsExperiment(ctx context.Context, name string) bool {
+func IsExperimentEnabled(ctx context.Context, name string) bool {
 	ls := GetLocalState(ctx)
 	if ls == nil {
 		return false
