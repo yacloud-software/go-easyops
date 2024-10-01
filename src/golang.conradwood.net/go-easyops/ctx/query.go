@@ -2,7 +2,6 @@ package ctx
 
 import (
 	"context"
-	ge "golang.conradwood.net/apis/goeasyops"
 )
 
 // get requestid from context
@@ -51,11 +50,4 @@ func IsExperimentEnabled(ctx context.Context, name string) bool {
 		}
 	}
 	return false
-}
-func GetExperiments(ctx context.Context) []*ge.Experiment {
-	ls := GetLocalState(ctx)
-	if ls == nil {
-		return nil
-	}
-	return ls.Experiments()
 }

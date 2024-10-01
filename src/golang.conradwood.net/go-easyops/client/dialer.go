@@ -11,6 +11,7 @@ import (
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/prometheus"
+	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
 )
 
@@ -20,6 +21,7 @@ const (
 )
 
 var (
+	def_client          = &easyops_client{}
 	known_not_auth_rpcs = []string{
 		"registry.Registry.V2GetTarget",
 		"auth.AuthenticationService.GetPublicSigningKey",
@@ -50,8 +52,12 @@ var (
 	dialer_debug     = flag.Bool("ge_debug_dialer", false, "set to true to debug the grpc dialer")
 )
 
+type easyops_client struct {
+}
+
 func init() {
 	prometheus.MustRegister(grpc_client_sent, grpc_client_failed)
+	utils.Client_connector = def_client
 }
 
 // opens a tcp connection to an ip (no loadbalancing obviously)
@@ -97,7 +103,9 @@ func connectWithIPOptions(servicename string, block bool) (*grpc.ClientConn, err
 	return conn, nil
 
 }
-
+func (ec *easyops_client) Connect(serviceNameOrPath string) *grpc.ClientConn {
+	return Connect(serviceNameOrPath)
+}
 func Connect(serviceNameOrPath string) *grpc.ClientConn {
 	return ConnectAt(cmdline.GetClientRegistryAddress(), serviceNameOrPath)
 }
