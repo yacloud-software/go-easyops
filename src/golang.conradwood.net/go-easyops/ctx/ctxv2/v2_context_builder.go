@@ -70,6 +70,7 @@ func (c *contextBuilder) contextWithLocalState() (context.Context, context.Cance
 			Debug:          c.debug,
 			Trace:          c.trace,
 			Tags:           c.routing_tags,
+			Experiments:    c.experiments,
 		},
 	}
 	b, err := utils.Marshal(inctx)
@@ -336,6 +337,15 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	}
 	if ic.MCtx != nil {
 		cb.WithCallingService(ic.MCtx.CallingService)
+		if ic.MCtx.Debug {
+			cb.WithDebug()
+		}
+		if ic.MCtx.Trace {
+			cb.WithTrace()
+		}
+		for _, e := range ic.MCtx.Experiments {
+			cb.EnableExperiment(e.Name)
+		}
 	}
 	cb.WithTimeout(t)
 	return cb.ContextWithAutoCancel(), nil

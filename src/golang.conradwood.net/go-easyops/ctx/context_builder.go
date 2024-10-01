@@ -109,6 +109,9 @@ func add_context_to_builder(cb shared.ContextBuilder, ctx context.Context) {
 	if ls.Trace() {
 		cb.WithTrace()
 	}
+	for _, e := range ls.Experiments() {
+		cb.EnableExperiment(e.Name)
+	}
 	cb.WithUser(ls.User())
 	cb.WithSession(ls.Session())
 }
