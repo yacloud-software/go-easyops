@@ -8,14 +8,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"time"
+
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
 	"golang.yacloud.eu/apis/session"
 	"google.golang.org/grpc/metadata"
-	"time"
 )
 
 const (
@@ -41,6 +43,7 @@ type contextBuilder struct {
 	routing_tags   *ge.CTXRoutingTags
 	debug          bool
 	trace          bool
+	experiments    []*ge.Experiment
 }
 
 /*
@@ -152,6 +155,14 @@ func (c *contextBuilder) WithDebug() {
 func (c *contextBuilder) WithTrace() {
 	c.trace = true
 }
+func (c *contextBuilder) EnableExperiment(name string) {
+	for _, e := range c.experiments {
+		if e.Name == name {
+			return
+		}
+	}
+	c.experiments = append(c.experiments, &ge.Experiment{Name: name})
+}
 func (c *contextBuilder) WithRoutingTags(tags *ge.CTXRoutingTags) {
 	c.routing_tags = tags
 }
@@ -198,6 +209,9 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	if res.MCtx.Trace {
 		cb.WithTrace()
 	}
+	for _, e := range res.MCtx.Experiments {
+		cb.EnableExperiment(e.Name)
+	}
 	cb.WithRoutingTags(res.MCtx.Tags)
 	cb.WithRequestID(res.ImCtx.RequestID)
 	cb.WithParentContext(ctx)
@@ -208,7 +222,11 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	return ctx, true
 }
 func NewContextBuilder() *contextBuilder {
-	return &contextBuilder{}
+	cb := &contextBuilder{}
+	for _, ex := range cmdline.EnabledExperiments() {
+		cb.EnableExperiment(ex)
+	}
+	return cb
 }
 
 func metadata_to_ctx(md metadata.MD, found bool) (*ge.InContext, error) {
@@ -253,8 +271,10 @@ func Serialise(ctx context.Context) ([]byte, error) {
 			Debug:          ls.Debug(),
 			Trace:          ls.Trace(),
 			Tags:           ls.RoutingTags(),
+			Experiments:    ls.Experiments(),
 		},
 	}
+
 	panic_if_service_account(common.VerifySignedUser(ic.ImCtx.User))
 	var b []byte
 	var err error

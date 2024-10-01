@@ -31,3 +31,23 @@ func GetOrganisationID(ctx context.Context) string {
 	}
 	return org.ID
 }
+
+func IsDebug(ctx context.Context) bool {
+	ls := GetLocalState(ctx)
+	if ls == nil {
+		return false
+	}
+	return ls.Debug()
+}
+func IsExperiment(ctx context.Context, name string) bool {
+	ls := GetLocalState(ctx)
+	if ls == nil {
+		return false
+	}
+	for _, e := range ls.Experiments() {
+		if e.Name == name {
+			return true
+		}
+	}
+	return false
+}

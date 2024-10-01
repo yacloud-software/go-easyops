@@ -3,13 +3,14 @@ package shared
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"time"
+
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
 	"golang.yacloud.eu/apis/session"
-	"reflect"
-	"time"
 )
 
 const (
@@ -26,7 +27,8 @@ type LocalState interface {
 	Session() *session.Session
 	RequestID() string
 	RoutingTags() *ge.CTXRoutingTags
-	Info() string // return (debug) information about this localstate
+	Info() string                  // return (debug) information about this localstate
+	Experiments() []*ge.Experiment // enabled experiments
 }
 
 type ContextBuilder interface {
@@ -69,6 +71,8 @@ type ContextBuilder interface {
 
 	// mark context as with trace
 	WithTrace()
+	// enable experimental feature(s)
+	EnableExperiment(name string)
 	// add routing tags
 	WithRoutingTags(*ge.CTXRoutingTags)
 	//set the requestid

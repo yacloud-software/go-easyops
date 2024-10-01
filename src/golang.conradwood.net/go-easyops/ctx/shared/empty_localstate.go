@@ -27,3 +27,4 @@ func (e *emptyLocalState) Session() *session.Session        { return nil }
 func (e *emptyLocalState) RequestID() string                { return "" }
 func (e *emptyLocalState) RoutingTags() *ge.CTXRoutingTags  { return nil }
 func (e *emptyLocalState) Info() string                     { return "EMPTY_LOCALSTATE" }
+func (e *emptyLocalState) Experiments() []*ge.Experiment    { return nil }

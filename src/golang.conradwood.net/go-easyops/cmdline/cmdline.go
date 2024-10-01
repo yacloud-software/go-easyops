@@ -74,6 +74,7 @@ var (
 	//	context_with_builder   = flag.Bool("ge_context_with_builder", true, "a new (experimental) context messaging method")
 	context_build_version  = flag.Int("ge_context_builder_version", 2, "the version to create by the context builder (0=do not use context builder)")
 	overridden_env_context = ""
+	enabled_experiments    = flag.String("ge_enable_experiments", "", "a comma delimited set of names of experiments to enable with this context")
 )
 
 // in the init function we have not yet defined all the flags
@@ -348,4 +349,18 @@ func GetYACloudDir() string {
 // default timeout for new contexts
 func DefaultTimeout() time.Duration {
 	return *default_timeout
+}
+
+func EnabledExperiments() []string {
+	exs := *enabled_experiments
+	if len(exs) == 0 {
+		return nil
+	}
+	ex := strings.Split(exs, ",")
+	var res []string
+	for _, e := range ex {
+		e = strings.Trim(e, " ")
+		res = append(res, e)
+	}
+	return res
 }

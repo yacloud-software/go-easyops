@@ -18,7 +18,7 @@ func assert_localstate_interface() shared.LocalState {
 	return &localState{this_is_v2_local_state: "v2_localstate"}
 }
 func (ls *localState) CreatorService() *auth.SignedUser {
-	if ls == nil {
+	if ls == nil || ls.builder == nil {
 		return nil
 	}
 	return ls.builder.creatorservice
@@ -35,11 +35,23 @@ func (ls *localState) Info() string {
 	}
 	return "localstate_from_ctxv2_builder"
 }
+func (ls *localState) Experiments() []*ge.Experiment {
+	if ls == nil || ls.builder == nil {
+		return nil
+	}
+	return ls.builder.experiments
+}
 func (ls *localState) Debug() bool {
-	return false
+	if ls == nil || ls.builder == nil {
+		return false
+	}
+	return ls.builder.debug
 }
 func (ls *localState) Trace() bool {
-	return false
+	if ls == nil || ls.builder == nil {
+		return false
+	}
+	return ls.builder.trace
 }
 func (ls *localState) User() *auth.SignedUser {
 	return ls.builder.user
