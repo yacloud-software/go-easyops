@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"time"
+
 	el "golang.conradwood.net/apis/errorlogger"
 	fw "golang.conradwood.net/apis/framework"
 	ge "golang.conradwood.net/apis/goeasyops"
@@ -16,7 +18,6 @@ import (
 	"google.golang.org/grpc/status"
 	proto2 "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/protoadapt"
-	"time"
 )
 
 var (
@@ -124,7 +125,7 @@ func log(l *le) {
 func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 	// add details (and keep previous)
 	odet := st.Details()
-	if *debug_rpc_serve {
+	if cmdline.IsDebugRPCServer() {
 		fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
 	}
 	// find existing grpcerrorlist...
@@ -161,7 +162,7 @@ func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 
 	// if adding details failed, just return the undecorated error message
 	if errx != nil {
-		if *debug_rpc_serve {
+		if cmdline.IsDebugRPCServer() {
 			fancyPrintf("failed to get status with detail: %s", errx)
 		}
 		return st
@@ -179,11 +180,11 @@ func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
 		// add details (and keep previous)
 		add := &fw.FrameworkMessageDetail{Message: ct.Message}
 		odet := st.Details()
-		if *debug_rpc_serve {
+		if cmdline.IsDebugRPCServer() {
 			fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
 		}
 		for _, d := range odet {
-			if *debug_rpc_serve {
+			if cmdline.IsDebugRPCServer() {
 				fancyPrintf("keeping error %v\n", d)
 			}
 			fmd, ok := d.(*fw.FrameworkMessageDetail)
@@ -199,7 +200,7 @@ func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
 
 		// if adding details failed, just return the undecorated error message
 		if errx != nil {
-			if *debug_rpc_serve {
+			if cmdline.IsDebugRPCServer() {
 				fancyPrintf("failed to get status with detail: %s", errx)
 			}
 			return st

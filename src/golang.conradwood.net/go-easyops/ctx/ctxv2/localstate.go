@@ -21,13 +21,13 @@ func (ls *localState) CreatorService() *auth.SignedUser {
 	if ls == nil || ls.builder == nil {
 		return nil
 	}
-	return ls.builder.creatorservice
+	return ls.builder.ge_context.ImCtx.CreatorService
 }
 func (ls *localState) CallingService() *auth.SignedUser {
 	if ls == nil {
 		return nil
 	}
-	return ls.callingservice
+	return ls.builder.ge_context.MCtx.CallingService
 }
 func (ls *localState) Info() string {
 	if ls.builder == nil {
@@ -39,35 +39,41 @@ func (ls *localState) Experiments() []*ge.Experiment {
 	if ls == nil || ls.builder == nil {
 		return nil
 	}
-	return ls.builder.experiments
+	return ls.builder.ge_context.MCtx.Experiments
 }
 func (ls *localState) Debug() bool {
 	if ls == nil || ls.builder == nil {
 		return false
 	}
-	return ls.builder.debug
+	return ls.builder.ge_context.MCtx.Debug
 }
 func (ls *localState) Trace() bool {
 	if ls == nil || ls.builder == nil {
 		return false
 	}
-	return ls.builder.trace
+	return ls.builder.ge_context.MCtx.Trace
 }
 func (ls *localState) User() *auth.SignedUser {
-	return ls.builder.user
+	return ls.builder.ge_context.ImCtx.User
+}
+func (ls *localState) SudoUser() *auth.SignedUser {
+	return ls.builder.ge_context.ImCtx.SudoUser
 }
 func (ls *localState) Session() *session.Session {
 	if ls == nil {
 		return nil
 	}
-	return ls.builder.session
+	return ls.builder.ge_context.ImCtx.Session
 }
 func (ls *localState) RequestID() string {
-	return ls.builder.requestid
+	return ls.builder.ge_context.ImCtx.RequestID
 }
 func (ls *localState) RoutingTags() *ge.CTXRoutingTags {
 	if ls == nil {
 		return nil
 	}
-	return ls.builder.routing_tags
+	return ls.builder.ge_context.MCtx.Tags
+}
+func (ls *localState) Services() []*ge.ServiceTrace {
+	return ls.builder.ge_context.MCtx.Services
 }

@@ -20,30 +20,39 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+/*
+	to add new fields (e.g. from proto), search for:
+
+// ADDING NEW FIELDS HERE
+*/
 const (
 	METANAME = "goeasyops_meta_v2" // in this case a serialised ge.InContext proto
 )
 
 var (
 	ser_prefix = []byte("SER-CTX-V2")
-	debug      = flag.Bool("ge_debug_context_v2", false, "if true debug v2 context builder in more detail")
 	do_panic   = flag.Bool("ge_panic_v2_on_error", false, "if true panic very often")
 )
 
 // build V2 Contexts. That is, a context with metadata serialised into an rpc InContext struct
 type contextBuilder struct {
-	requestid      string
-	timeout        time.Duration
-	parent         context.Context
-	got_parent     bool
-	user           *auth.SignedUser
-	service        *auth.SignedUser
-	creatorservice *auth.SignedUser
-	session        *session.Session
-	routing_tags   *ge.CTXRoutingTags
-	debug          bool
-	trace          bool
-	experiments    []*ge.Experiment
+	requestid  string
+	timeout    time.Duration
+	parent     context.Context
+	got_parent bool
+	/*
+		user           *auth.SignedUser
+		sudouser       *auth.SignedUser
+		callingservice *auth.SignedUser
+		creatorservice *auth.SignedUser
+		session        *session.Session
+		routing_tags   *ge.CTXRoutingTags
+		debug          bool
+		trace          bool
+		experiments    []*ge.Experiment
+		services       []*ge.ServiceTrace
+	*/
+	ge_context *ge.InContext
 }
 
 /*
@@ -58,21 +67,7 @@ func (c *contextBuilder) Context() (context.Context, context.CancelFunc) {
 return the context from this builder based on the options and WithXXX functions
 */
 func (c *contextBuilder) contextWithLocalState() (context.Context, context.CancelFunc, *localState) {
-	inctx := &ge.InContext{
-		ImCtx: &ge.ImmutableContext{
-			RequestID:      c.requestid,
-			CreatorService: c.creatorservice,
-			User:           c.user,
-			Session:        c.session,
-		},
-		MCtx: &ge.MutableContext{
-			CallingService: c.service,
-			Debug:          c.debug,
-			Trace:          c.trace,
-			Tags:           c.routing_tags,
-			Experiments:    c.experiments,
-		},
-	}
+	inctx := c.ge_context
 	b, err := utils.Marshal(inctx)
 	if err != nil {
 		panic(fmt.Sprintf("[go-easyops] unable to marshal context: %s", err))
@@ -82,7 +77,7 @@ func (c *contextBuilder) contextWithLocalState() (context.Context, context.Cance
 	ctx = context.WithValue(ctx, shared.LOCALSTATENAME, ls)
 	newmd := metadata.Pairs(METANAME, b)
 	ctx = metadata.NewOutgoingContext(ctx, newmd)
-	ls.callingservice = c.service
+	ls.callingservice = c.ge_context.MCtx.CallingService
 	panic_if_service_account(common.VerifySignedUser(inctx.ImCtx.User))
 	return ctx, cf, ls
 }
@@ -121,7 +116,11 @@ add a user to context
 */
 func (c *contextBuilder) WithUser(user *auth.SignedUser) {
 	panic_if_service_account(common.VerifySignedUser(user))
-	c.user = user
+	c.ge_context.ImCtx.User = user
+}
+func (c *contextBuilder) WithSudoUser(user *auth.SignedUser) {
+	panic_if_service_account(common.VerifySignedUser(user))
+	c.ge_context.ImCtx.SudoUser = user
 }
 
 /*
@@ -129,7 +128,7 @@ add a creator service to context - v1 does not distinguish between creator and c
 */
 func (c *contextBuilder) WithCreatorService(user *auth.SignedUser) {
 	if user != nil {
-		c.service = user
+		c.ge_context.ImCtx.CreatorService = user
 	}
 }
 
@@ -137,38 +136,38 @@ func (c *contextBuilder) WithCreatorService(user *auth.SignedUser) {
 add a calling service (e.g. "me") to context
 */
 func (c *contextBuilder) WithCallingService(user *auth.SignedUser) {
-	c.service = user
+	c.ge_context.MCtx.CallingService = user
 }
 
 /*
 add a session to the context - v1 does not have sessions
 */
 func (c *contextBuilder) WithSession(sess *session.Session) {
-	c.session = sess
+	c.ge_context.ImCtx.Session = sess
 }
 
 // mark context as with debug
 func (c *contextBuilder) WithDebug() {
-	c.debug = true
+	c.ge_context.MCtx.Debug = true
 }
 
 // mark context as with trace
 func (c *contextBuilder) WithTrace() {
-	c.trace = true
+	c.ge_context.MCtx.Trace = true
 }
 func (c *contextBuilder) EnableExperiment(name string) {
-	for _, e := range c.experiments {
+	for _, e := range c.ge_context.MCtx.Experiments {
 		if e.Name == name {
 			return
 		}
 	}
-	c.experiments = append(c.experiments, &ge.Experiment{Name: name})
+	c.ge_context.MCtx.Experiments = append(c.ge_context.MCtx.Experiments, &ge.Experiment{Name: name})
 }
 func (c *contextBuilder) WithRoutingTags(tags *ge.CTXRoutingTags) {
-	c.routing_tags = tags
+	c.ge_context.MCtx.Tags = tags
 }
 func (c *contextBuilder) WithRequestID(reqid string) {
-	c.requestid = reqid
+	c.ge_context.ImCtx.RequestID = reqid
 }
 func (c *contextBuilder) WithParentContext(context context.Context) {
 	c.parent = context
@@ -182,14 +181,20 @@ func (c *contextBuilder) newLocalState() *localState {
 	return ls
 }
 func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool) {
+	cmdline.DebugfContext("v2 Inbound2Outbound()...\n")
+	if svc == nil {
+		cmdline.DebugfContext("WARNING - inbound2outbound called but not within a service (service==nil)\n")
+	}
 	md, ex := metadata.FromIncomingContext(ctx)
 	if !ex {
 		// no metadata at all
+		cmdline.DebugfContext("v2 Inbound2Outbound() -> no metadata...\n")
 		return nil, false
 	}
 	mdas, fd := md[METANAME]
 	if !fd || mdas == nil || len(mdas) != 1 {
 		// got metadata, but not our key
+		cmdline.DebugfContext("v2 Inbound2Outbound() -> metadata without our key...\n")
 		return nil, false
 	}
 	mds := mdas[0]
@@ -199,22 +204,22 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 		fmt.Printf("[go-easyops] warning invalid inbound v2 context (%s)\n", err)
 		return nil, false
 	}
-	cb := &contextBuilder{}
-	cb.WithUser(res.ImCtx.User)
-	cb.WithCreatorService(res.ImCtx.CreatorService)
-	cb.WithCallingService(svc)
-	cb.WithSession(res.ImCtx.Session)
-	if res.MCtx.Debug {
-		cb.WithDebug()
+	/*
+		imctx_s := shared.Imctx2string("   ", res.ImCtx)
+		mctx_s := shared.Mctx2string("   ", res.MCtx)
+		cmdline.DebugfContext("Unmarshalled context:\nImCtx:\n%s\nMCtx:\n%s\n", string(imctx_s), string(mctx_s))
+	*/
+	cmdline.DebugfContext("Unmarshalled context:\n%s\n", shared.ContextProto2string("   ", res))
+
+	cb := NewContextBuilder()
+	cb.ge_context = res
+
+	if svc != nil {
+		svcu := common.VerifySignedUser(svc)
+		cb.ge_context.MCtx.Services = append(cb.ge_context.MCtx.Services, &ge.ServiceTrace{ID: svcu.ID}) // add "us" to list of services
+		cmdline.DebugfContext("added service \"%s\" to list of services\n", svcu.ID)
 	}
-	if res.MCtx.Trace {
-		cb.WithTrace()
-	}
-	for _, e := range res.MCtx.Experiments {
-		cb.EnableExperiment(e.Name)
-	}
-	cb.WithRoutingTags(res.MCtx.Tags)
-	cb.WithRequestID(res.ImCtx.RequestID)
+
 	cb.WithParentContext(ctx)
 	ctx, _, ls := cb.contextWithLocalState() // always has a parent context, which means it needs no auto-cancel, uses parent cancelfunc
 	// localstate has a different calling service (the original one)
@@ -223,7 +228,10 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	return ctx, true
 }
 func NewContextBuilder() *contextBuilder {
-	cb := &contextBuilder{}
+	cb := &contextBuilder{ge_context: &ge.InContext{
+		ImCtx: &ge.ImmutableContext{}, // avoid segfaults
+		MCtx:  &ge.MutableContext{},
+	}}
 	for _, ex := range cmdline.EnabledExperiments() {
 		cb.EnableExperiment(ex)
 	}
@@ -258,11 +266,17 @@ func get_metadata(ctx context.Context) (*ge.InContext, error) {
 	ic, err = metadata_to_ctx(metadata.FromOutgoingContext(ctx))
 	return ic, err
 }
+
+/*
+convert context to a bytestring
+*/
 func Serialise(ctx context.Context) ([]byte, error) {
 	ls := shared.GetLocalState(ctx)
+	// ADDING NEW FIELDS HERE
 	ic := &ge.InContext{
 		ImCtx: &ge.ImmutableContext{
 			User:           ls.User(),
+			SudoUser:       ls.SudoUser(),
 			CreatorService: ls.CreatorService(),
 			RequestID:      ls.RequestID(),
 			Session:        ls.Session(),
@@ -273,6 +287,7 @@ func Serialise(ctx context.Context) ([]byte, error) {
 			Trace:          ls.Trace(),
 			Tags:           ls.RoutingTags(),
 			Experiments:    ls.Experiments(),
+			Services:       ls.Services(),
 		},
 	}
 
@@ -320,32 +335,23 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 		}
 	}
 	ud := buf[len(ser_prefix):]
-	ctx := context.Background()
-	shared.Debugf(ctx, "a v2deserialise: %s", utils.HexStr(buf))
-	shared.Debugf(ctx, "b v2deserialise: %s", utils.HexStr(ud))
+	cmdline.DebugfContext("a v2deserialise: %s", utils.HexStr(buf))
+	cmdline.DebugfContext("b v2deserialise: %s", utils.HexStr(ud))
 	ic := &ge.InContext{}
 	err := utils.UnmarshalBytes(ud, ic)
 	if err != nil {
 		return nil, err
 	}
-	cb := &contextBuilder{}
+	cb := NewContextBuilder()
+
 	if ic.ImCtx != nil {
 		panic_if_service_account(common.VerifySignedUser(ic.ImCtx.User))
-		cb.WithUser(ic.ImCtx.User)
+		cb.ge_context.ImCtx = ic.ImCtx
 	} else {
 		panic("no imctx")
 	}
 	if ic.MCtx != nil {
-		cb.WithCallingService(ic.MCtx.CallingService)
-		if ic.MCtx.Debug {
-			cb.WithDebug()
-		}
-		if ic.MCtx.Trace {
-			cb.WithTrace()
-		}
-		for _, e := range ic.MCtx.Experiments {
-			cb.EnableExperiment(e.Name)
-		}
+		cb.ge_context.MCtx = ic.MCtx
 	}
 	cb.WithTimeout(t)
 	return cb.ContextWithAutoCancel(), nil

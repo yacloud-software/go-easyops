@@ -42,16 +42,16 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 		"servicename": name,
 	}).Dec()
 
-	if *debug_rpc_serve {
+	if cmdline.IsDebugRPCServer() {
 		fmt.Printf("[go-easyops] Debug-rpc: called streaming rpc %s/%s\n", name, method)
 	}
 	//fmt.Printf("Method: \"%s\"\n", method)
 	if isInternalService(name) {
-		if *debug_rpc_serve {
+		if cmdline.IsDebugRPCServer() {
 			fmt.Printf("Invoking internal service stream handler\n")
 		}
 		res := handler(srv, stream)
-		if *debug_rpc_serve {
+		if cmdline.IsDebugRPCServer() {
 			fmt.Printf("internal service stream handler returned: %s\n", res)
 		}
 		return res
@@ -87,7 +87,7 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 	if err == nil {
 		return nil
 	}
-	if *debug_rpc_serve || *print_errs {
+	if cmdline.IsDebugRPCServer() || *print_errs {
 		fmt.Printf("[go-easyops] Call %s.%s failed: %s\n", def.name, method, errors.ErrorStringWithStackTrace(err))
 	}
 	incFailure(def.name, method, err)

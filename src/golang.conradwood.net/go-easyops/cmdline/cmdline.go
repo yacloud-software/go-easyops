@@ -42,7 +42,6 @@ import (
 	pb "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/appinfo"
 	"golang.conradwood.net/go-easyops/common"
-	"golang.conradwood.net/go-easyops/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -52,10 +51,12 @@ const (
 )
 
 var (
-	default_timeout = flag.Duration("ge_ctx_deadline", time.Duration(10)*time.Second, "the default timeout for contexts. do not change in production")
-	reg_env         = ENV("GE_REGISTRY", "default registry address")
-	e_ctx           = ENV("GE_CTX", "a serialised context to use when creating new ones")
-	config          *pb.Config
+	debug_rpc_client = flag.Bool("ge_debug_rpc_client", false, "set to true to debug remote invokations")
+	debug_rpc_serve  = flag.Bool("ge_debug_rpc_server", false, "debug the grpc server ")
+	default_timeout  = flag.Duration("ge_ctx_deadline", time.Duration(10)*time.Second, "the default timeout for contexts. do not change in production")
+	reg_env          = ENV("GE_REGISTRY", "default registry address")
+	e_ctx            = ENV("GE_CTX", "a serialised context to use when creating new ones")
+	config           *pb.Config
 	// annoyingly, not all go-easyops flags start with ge_
 	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
 	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
@@ -75,6 +76,7 @@ var (
 	context_build_version  = flag.Int("ge_context_builder_version", 2, "the version to create by the context builder (0=do not use context builder)")
 	overridden_env_context = ""
 	enabled_experiments    = flag.String("ge_enable_experiments", "", "a comma delimited set of names of experiments to enable with this context")
+	debug_ctx              = flag.Bool("ge_debug_context", false, "if true debug context stuff")
 )
 
 // in the init function we have not yet defined all the flags
@@ -315,7 +317,7 @@ func GetEnvContext() string {
 		if len(s) > 10 {
 			s = s[:10]
 		}
-		fmt.Printf("[go-easyops] using overriden env context (%s %s)\n", s, utils.HexStr([]byte(s)))
+		fmt.Printf("[go-easyops] using overriden env context (%s )\n", s)
 		return overridden_env_context
 	}
 	return e_ctx.Value()
@@ -339,7 +341,12 @@ func GetYACloudDir() string {
 		"/opt/yacloud/",
 	}
 	for _, res := range dirs {
-		if utils.FileExists(res + "/ctools") {
+		dname := res + "/ctools"
+		st, err := os.Stat(dname)
+		if err != nil {
+			continue
+		}
+		if st.IsDir() {
 			return res
 		}
 	}
@@ -363,4 +370,32 @@ func EnabledExperiments() []string {
 		res = append(res, e)
 	}
 	return res
+}
+
+// print context debug stuff
+func DebugfContext(format string, args ...interface{}) {
+	if !*debug_ctx {
+		return
+	}
+	x := fmt.Sprintf(format, args...)
+	fmt.Printf("[go-easyops/debugctx] %s", x)
+}
+
+// print context debug stuff
+func DebugfRPC(format string, args ...interface{}) {
+	if !*debug_ctx {
+		return
+	}
+	x := fmt.Sprintf(format, args...)
+	fmt.Printf("[go-easyops/rpc] %s", x)
+}
+
+func SetDebugContext() {
+	*debug_ctx = true
+}
+func IsDebugRPCClient() bool {
+	return *debug_rpc_client
+}
+func IsDebugRPCServer() bool {
+	return *debug_rpc_serve
 }

@@ -23,8 +23,10 @@ func (e *emptyLocalState) CallingService() *auth.SignedUser { return nil }
 func (e *emptyLocalState) Debug() bool                      { return false }
 func (e *emptyLocalState) Trace() bool                      { return false }
 func (e *emptyLocalState) User() *auth.SignedUser           { return nil }
+func (e *emptyLocalState) SudoUser() *auth.SignedUser       { return nil }
 func (e *emptyLocalState) Session() *session.Session        { return nil }
 func (e *emptyLocalState) RequestID() string                { return "" }
 func (e *emptyLocalState) RoutingTags() *ge.CTXRoutingTags  { return nil }
 func (e *emptyLocalState) Info() string                     { return "EMPTY_LOCALSTATE" }
 func (e *emptyLocalState) Experiments() []*ge.Experiment    { return nil }
+func (e *emptyLocalState) Services() []*ge.ServiceTrace     { return nil }

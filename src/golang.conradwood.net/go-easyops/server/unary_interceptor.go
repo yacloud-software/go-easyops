@@ -41,7 +41,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		MethodName:  MethodNameFromUnaryInfo(info),
 		Started:     time.Now(),
 	}
-	if *debug_rpc_serve {
+	if cmdline.IsDebugRPCServer() {
 		fmt.Printf("[go-easyops] Debug-rpc called unary rpc \"%s\"\n", info.FullMethod)
 	}
 
@@ -58,13 +58,15 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		if err != nil {
 			return nil, err
 		}
+		cmdline.DebugfContext("(unaryinterceptor) Inbound Context: %s\n%s\n----\n", ctx.Context2String(in_ctx), shared.LocalState2string(ctx.GetLocalState(in_ctx)))
+		cmdline.DebugfContext("(unaryinterceptor) Outound Context: %s\n%s\n----\n", ctx.Context2String(outbound_ctx), shared.LocalState2string(ctx.GetLocalState(outbound_ctx)))
 	} else {
 		panic("obsolete codepath")
 	}
 	if err != nil {
 		return nil, err
 	}
-	if *debug_rpc_serve {
+	if cmdline.IsDebugRPCServer() {
 		fmt.Printf("[go-easyops] context created through path %d\n", ctx_build_by)
 	}
 	//fmt.Printf("LS: %#v\n", ls)
@@ -89,7 +91,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if i == nil && err == nil {
 		fmt.Printf("[go-easyops] BUG: \"%s.%s\" returned no proto and no error\n", cs.ServiceName, cs.MethodName)
 	}
-	if *debug_rpc_serve {
+	if cmdline.IsDebugRPCServer() {
 		//		fmt.Printf("[go-easyops: result: %v %v\n", i, err)
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" timing: %0.2fs\n", cs.ServiceName, cs.MethodName, time.Since(started).Seconds())
 	}
@@ -102,7 +104,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if dur > 5 { // >5 seconds processing time? warn
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" (called from %s) took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), dur, errors.ErrorStringWithStackTrace(err))
 	}
-	if *debug_rpc_serve || *print_errs {
+	if cmdline.IsDebugRPCServer() || *print_errs {
 		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" (called from %s) failed: %s\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), errors.ErrorStringWithStackTrace(err))
 	}
 	incFailure(cs.ServiceName, cs.MethodName, err)
@@ -140,9 +142,7 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 
 func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (context.Context, shared.LocalState, error) {
 	if sd.local_service == nil {
-		if *debug_rpc_serve {
-			fmt.Printf("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
-		}
+		cmdline.DebugfContext("[go-easyops] WARNING, in server.unary_interceptor, we are converting inbound2outbound without a local service account\n")
 	}
 	u := auth.GetUser(in_ctx)
 	if u != nil && u.ServiceAccount {
@@ -152,7 +152,7 @@ func (sd *serverDef) V1inbound2outbound(in_ctx context.Context, rc *rpccall) (co
 	ls := ctx.GetLocalState(octx)
 	err := sd.checkAccess(octx, rc)
 	if err != nil {
-		if *debug_rpc_serve {
+		if cmdline.IsDebugRPCServer() {
 			fmt.Printf("[go-easyops] checkaccess error: %s (peer=%s)\n", err, peerFromContext(octx))
 			fmt.Printf("[go-easyops] Context: %#v\n", ctx.Context2String(octx))
 		}

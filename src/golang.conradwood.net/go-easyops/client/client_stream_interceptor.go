@@ -3,10 +3,12 @@ package client
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/cmdline"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"google.golang.org/grpc"
-	"time"
 )
 
 func unaryStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
@@ -14,7 +16,7 @@ func unaryStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc
 	var err error
 	s := "X"
 	m := "Y"
-	if *debug_rpc_client {
+	if cmdline.IsDebugRPCClient() {
 		s, m, err = splitMethodAndService(method)
 		if err != nil {
 			fmt.Printf("[go-easyops] failed to split method \"%s\": %s\n", method, err)
@@ -25,7 +27,7 @@ func unaryStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc
 	cs, err := streamer(ctx, desc, cc, method, opts...)
 	pp.ClientRpcDone()
 	dur := time.Since(started)
-	if *debug_rpc_client {
+	if cmdline.IsDebugRPCClient() {
 		if err != nil {
 			fmt.Printf("[go-easyops] streaming rpc \"%s/%s\" failed after %0.2fs with error %s\n", s, m, dur.Seconds(), err)
 		} else {

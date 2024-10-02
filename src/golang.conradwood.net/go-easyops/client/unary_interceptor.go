@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
@@ -13,6 +14,7 @@ import (
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/tokens"
 	"golang.conradwood.net/go-easyops/utils"
+
 	//	"reflect"
 	"google.golang.org/grpc"
 	//	"google.golang.org/grpc/metadata"
@@ -39,7 +41,7 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 	if err != nil {
 		fmt.Printf("[go-easyops] invalid fqdn method: \"%s\": %s\n", method, err)
 	}
-	if *debug_rpc_client && !isKnownNotAuthRPCs(s, m) {
+	if cmdline.IsDebugRPCClient() && !isKnownNotAuthRPCs(s, m) {
 		ls := pctx.GetLocalState(ctx)
 		// technically.. this is _wrong_. the CallingService() is the service which called us.
 		if ls.CallingService() == nil && ls.User() == nil {
@@ -73,17 +75,17 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 	dur := time.Since(start)
 	if err != nil {
 		grpc_client_failed.With(prometheus.Labels{"method": m, "servicename": s}).Inc()
-		if *dialer_debug || *debug_rpc_client {
+		if *dialer_debug || cmdline.IsDebugRPCClient() {
 			fmt.Printf("Invoked remote method=%s duration=%0.2fs error=%v (Method: \"%s\" in Service: \"%s\")\n", method, dur.Seconds(), err, m, s)
 		}
-	} else if *debug_rpc_client {
+	} else if cmdline.IsDebugRPCClient() {
 		fmt.Printf("Invoked method %s.%s (%0.2fs)...\n", s, m, dur.Seconds())
 	}
 
 	return err
 }
 func print_debug_client(ictx context.Context, targetname string) {
-	if !*dialer_debug && !*debug_rpc_client {
+	if !*dialer_debug && !cmdline.IsDebugRPCClient() {
 		return
 	}
 	if cmdline.ContextWithBuilder() {

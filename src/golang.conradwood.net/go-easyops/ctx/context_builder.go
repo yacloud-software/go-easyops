@@ -18,6 +18,16 @@ The context returned is ready to be used for outbound calls as-is.
 The context also includes a "value" which is only available locally (does not cross gRPC boundaries) but is used to provide information from the context.
 
 Definition of CallingService: the LocalValue contains the service who called us. The context metadata contains this service definition (which in then is transmitted to downstream services)
+
+Contexts are transformed on each RPC. typically this goes like this:
+
+  - Context is created ( via ContextBuilder() or authremote.Context() ). This context has a localstate and OUTBOUND metadata.
+
+  - Client calls an RPC
+
+  - Server transforms inbound context into a new context and adds itself as callingservice ( ctx.inbound2outbound() ). The inbound context has no localstate and INBOUND metadata. The new context has a localstate and OUTBOUND metadata.
+
+  - Server becomes client, calls another rpc..
 */
 package ctx
 
@@ -26,6 +36,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/cmdline"
@@ -33,10 +44,12 @@ import (
 	"golang.conradwood.net/go-easyops/ctx/ctxv2"
 	"golang.conradwood.net/go-easyops/ctx/shared"
 	"golang.conradwood.net/go-easyops/utils"
+
 	//	"golang.yacloud.eu/apis/session"
-	"google.golang.org/grpc/metadata"
 	"strings"
 	"time"
+
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -85,17 +98,20 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 			if svc != nil {
 				svs = fmt.Sprintf("%s (%s)", svc.ID, svc.Email)
 			}
-			shared.Debugf(in_ctx, "converted inbound (version=%d) to outbound context (me.service=%s)", version, svs)
-			shared.Debugf(in_ctx, "New Context: %s", Context2String(octx))
+			cmdline.DebugfContext("converted inbound (version=%d) to outbound context (me.service=%s)", version, svs)
+			cmdline.DebugfContext("New Context: %s", Context2String(octx))
 			ls := GetLocalState(octx)
 			if ls == nil || shared.IsEmptyLocalState(ls) {
 				utils.PrintStack("[go-easyops] no localstate for newly created context")
 				return nil
 			}
+			cmdline.DebugfContext("Localstate %s: %#v\n", ls.Info(), ls)
+			cmdline.DebugfContext("Localstate Detail:\n%#s\n", shared.LocalState2string(ls))
+
 			return octx
 		}
 	}
-	shared.Debugf(in_ctx, "[go-easyops] could not parse inbound context!")
+	cmdline.DebugfContext("[go-easyops] could not parse inbound context!")
 	return in_ctx
 }
 
@@ -151,13 +167,17 @@ func shortSessionText(ls shared.LocalState, maxlen int) string {
 	return sl
 }
 
+func Context2DetailString(ctx context.Context) string {
+	return "TODO context_builder.go"
+}
+
 // for debugging purposes we can convert a context to a human readable string
 func Context2String(ctx context.Context) string {
 	md, src, version := getMetadataFromContext(ctx)
 
 	ls := GetLocalState(ctx)
 	if ls == nil || shared.IsEmptyLocalState(ls) {
-		return "[no localstate]"
+		return fmt.Sprintf("[no localstate] md[src=%d,version=%d]", src, version)
 	}
 	if ls.User() != nil || ls.CallingService() != nil {
 		sesstxt := shortSessionText(ls, 20)
@@ -172,7 +192,7 @@ func Context2String(ctx context.Context) string {
 		if err != nil {
 			return fmt.Sprintf("v2 %d metadata invalid (%s)", src, err)
 		}
-		return fmt.Sprintf("v2 (%d) metadata: %#v %#v\n,ls=[%s]", src, res.ImCtx, res.MCtx, shared.LocalState2String(ls))
+		return fmt.Sprintf("v2 (%d) metadata: %#v %#v\n,ls=[%s]", src, res.ImCtx, res.MCtx, shared.LocalState2string(ls))
 	} else if version == 1 {
 		panic("unsupported context version")
 	}
@@ -206,9 +226,9 @@ func IsSerialisedByBuilder(buf []byte) bool {
 			return true
 		}
 	*/
-	shared.Debugf(context.Background(), "[go-easyops] Not a ctxbuilder context (%s)", utils.HexStr(buf))
-	//	shared.Debugf(ctx,"a: %s", utils.HexStr(b))
-	//	shared.Debugf(ctx,"b: %s", utils.HexStr(buf[:20]))
+	cmdline.DebugfContext("[go-easyops] Not a ctxbuilder context (%s)", utils.HexStr(buf))
+	//	cmdline.DebugfContext(ctx,"a: %s", utils.HexStr(b))
+	//	cmdline.DebugfContext(ctx,"b: %s", utils.HexStr(buf[:20]))
 	return false
 }
 
@@ -272,7 +292,7 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	if len(buf) < 2 {
 		return nil, fmt.Errorf("invalid byte array to deserialise into a context")
 	}
-	shared.Debugf(context.Background(), "Deserialising %s", utils.HexStr(buf))
+	cmdline.DebugfContext("Deserialising %s", utils.HexStr(buf))
 	tbuf := buf[len(SER_PREFIX_BYT):]
 	s := string(buf)
 	if strings.HasPrefix(s, SER_PREFIX_STR) {
@@ -289,9 +309,9 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	tbuf = tbuf[2:]
 	c := shared.Checksum(tbuf)
 	if c != chk {
-		shared.Debugf(context.Background(), "ERROR IN CHECKSUM (%d vs %d)", c, chk)
+		cmdline.DebugfContext("ERROR IN CHECKSUM (%d vs %d)", c, chk)
 	}
-	shared.Debugf(context.Background(), "deserialising from version %d\n", version)
+	cmdline.DebugfContext("deserialising from version %d\n", version)
 	var err error
 	var res context.Context
 	if version == 1 {
@@ -300,12 +320,12 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 	} else if version == 2 {
 		res, err = ctxv2.DeserialiseContextWithTimeout(t, tbuf)
 	} else {
-		shared.Debugf(context.Background(), "a: %s", utils.HexStr(buf))
+		cmdline.DebugfContext("a: %s", utils.HexStr(buf))
 		utils.PrintStack("incompatible version %d", version)
 		return nil, fmt.Errorf("(2) attempt to deserialise incompatible version (%d) to context", version)
 	}
 	if err != nil {
-		shared.Debugf(context.Background(), "unable to create context (%s)\n", err)
+		cmdline.DebugfContext("unable to create context (%s)\n", err)
 		return nil, err
 	}
 	cerr := res.Err()
@@ -314,7 +334,7 @@ func DeserialiseContextWithTimeout(t time.Duration, buf []byte) (context.Context
 			fmt.Printf("[go-easyops] created faulty context\n")
 		}
 	}
-	shared.Debugf(res, "Deserialised context: %s\n", Context2String(res))
+	cmdline.DebugfContext("Deserialised context: %s\n", Context2String(res))
 	return res, err
 }
 

@@ -2,12 +2,12 @@ package shared
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"time"
 
 	"golang.conradwood.net/apis/auth"
 	ge "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/utils"
 	"golang.yacloud.eu/apis/session"
@@ -24,11 +24,13 @@ type LocalState interface {
 	Debug() bool
 	Trace() bool
 	User() *auth.SignedUser
+	SudoUser() *auth.SignedUser
 	Session() *session.Session
 	RequestID() string
 	RoutingTags() *ge.CTXRoutingTags
 	Info() string                  // return (debug) information about this localstate
 	Experiments() []*ge.Experiment // enabled experiments
+	Services() []*ge.ServiceTrace  // serviceids of services which this context passed through
 }
 
 type ContextBuilder interface {
@@ -50,7 +52,10 @@ type ContextBuilder interface {
 	   add a user to context
 	*/
 	WithUser(user *auth.SignedUser)
-
+	/*
+	   set a sudo user
+	*/
+	WithSudoUser(user *auth.SignedUser)
 	/*
 	   add a creator service to context
 	*/
@@ -106,27 +111,22 @@ func GetLocalState(ctx context.Context) LocalState {
 	}
 	v := ctx.Value(LOCALSTATENAME)
 	if v == nil {
-		if *debug {
-			utils.PrintStack("no localstate")
-		}
-		Debugf(ctx, "[go-easyops] context-builder warning, tried to extract localstate from context which is not a contextbuilder context")
+		/*
+			if *debug {
+				utils.PrintStack("no localstate")
+			}
+		*/
+		cmdline.DebugfContext("[go-easyops] context-builder warning, tried to extract localstate from context which is not a contextbuilder context\n")
 	}
 	res, ok := v.(LocalState)
 	if ok {
 		return res
 	}
-	Debugf(ctx, "could not get localstate from context (caller: %s)", utils.CallingFunction())
+	cmdline.DebugfContext("could not get localstate from context (caller: %s)\n", utils.CallingFunction())
 	return newEmptyLocalState()
 
 }
 
 func isNil(v interface{}) bool {
 	return v == nil || (reflect.ValueOf(v).Kind() == reflect.Ptr && reflect.ValueOf(v).IsNil())
-}
-func LocalState2String(ls LocalState) string {
-	if isNil(ls) {
-		return fmt.Sprintf("NIL")
-	}
-
-	return fmt.Sprintf("requestid=\"%s\",user=%s,callingservice=%s,creatingservice=%s,info=%s", ls.RequestID(), PrettyUser(ls.User()), PrettyUser(ls.CallingService()), PrettyUser(ls.CreatorService()), ls.Info())
 }

@@ -50,7 +50,6 @@ var (
 	never_register_service_as_user = flag.Bool("ge_never_register_service_as_user", false, "if true, do not register service as user, even if it is run locally with a user token")
 	reg_tags                       = flag.String("ge_routing_tags", "", "comma seperated list of key-value pairs. For example -tags=foo=bar,foobar=true")
 	debug_internal_serve           = flag.Bool("ge_debug_internal_server", false, "debug the server @ https://.../internal/... (serving metrics amongst other things)")
-	debug_rpc_serve                = flag.Bool("ge_debug_rpc_server", false, "debug the grpc server ")
 	deployDescriptor               = flag.String("ge_deployment_descriptor", "", "The deployment path by which other programs can refer to this deployment. expected is: a path of the format: \"V1:namespace/groupname/repository/buildid\"")
 	register_refresh               = flag.Int("ge_register_refresh", 10, "registration refresh interval in `seconds`")
 	serverDefs                     = make(map[string]*serverDef)

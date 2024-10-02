@@ -48,8 +48,7 @@ var (
 		},
 		[]string{"servicename", "method"},
 	)
-	debug_rpc_client = flag.Bool("ge_debug_rpc_client", false, "set to true to debug remote invokations")
-	dialer_debug     = flag.Bool("ge_debug_dialer", false, "set to true to debug the grpc dialer")
+	dialer_debug = flag.Bool("ge_debug_dialer", false, "set to true to debug the grpc dialer")
 )
 
 type easyops_client struct {

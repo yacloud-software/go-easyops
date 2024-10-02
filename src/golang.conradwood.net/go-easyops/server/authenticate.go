@@ -2,26 +2,28 @@ package server
 
 import (
 	"context"
-	"flag"
 	"fmt"
+
 	apb "golang.conradwood.net/apis/auth"
 	"golang.conradwood.net/go-easyops/auth"
+
 	//	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/cmdline"
 	//	"golang.conradwood.net/go-easyops/ctx"
+	"sync"
+
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/rpc"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/peer"
-	"sync"
 )
 
 var (
-	debuglock           sync.Mutex
-	gettingrpc          = false
-	rpclock             sync.Mutex
-	disable_interceptor = flag.Bool("ge_disable_interceptor", false, "if true, will not use rpc interceptor for access checks (very experimental!)")
-	verify_interceptor  = flag.Bool("ge_verify_noninterceptor", true, "if true, will compare the non-interceptor with interceptor by doing the actual intercept call and comparing results")
+	debuglock  sync.Mutex
+	gettingrpc = false
+	rpclock    sync.Mutex
+	//	disable_interceptor = flag.Bool("ge_disable_interceptor", false, "if true, will not use rpc interceptor for access checks (very experimental!)")
+	//verify_interceptor  = flag.Bool("ge_verify_noninterceptor", true, "if true, will compare the non-interceptor with interceptor by doing the actual intercept call and comparing results")
 )
 
 /*

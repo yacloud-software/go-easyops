@@ -1,19 +1,16 @@
 package shared
 
 import (
-	"context"
-	"flag"
 	"fmt"
+
+	"golang.conradwood.net/apis/auth"
+	"golang.conradwood.net/go-easyops/common"
 )
 
-var (
-	debug = flag.Bool("ge_debug_context", false, "if true print context debug stuff")
-)
-
-func Debugf(ctx context.Context, format string, args ...interface{}) {
-	if !*debug {
-		return
+func UserIDString(su *auth.SignedUser) string {
+	u := common.VerifySignedUser(su)
+	if u == nil {
+		return "[nouser]"
 	}
-	s := fmt.Sprintf(format, args...)
-	fmt.Printf("[go-easyops] ctx-debug %s\n", s)
+	return fmt.Sprintf("#%s(%s)", u.ID, u.Email)
 }

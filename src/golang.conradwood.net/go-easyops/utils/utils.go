@@ -5,14 +5,23 @@ package utils
 
 import (
 	"fmt"
-	"github.com/dustin/go-humanize"
-	"golang.conradwood.net/go-easyops/errors/shared"
 	"math/rand"
 	"os"
 	"sync"
 	"syscall"
 	"time"
 	"unsafe"
+
+	"github.com/dustin/go-humanize"
+	"golang.conradwood.net/go-easyops/errors/shared"
+
+	_ "golang.conradwood.net/apis/autodeployer"
+	_ "golang.conradwood.net/apis/deploymonkey"
+	_ "golang.conradwood.net/apis/grafanadata"
+
+	//	_ "golang.conradwood.net/apis/h2gproxy"
+	_ "golang.yacloud.eu/apis/fscache"
+	_ "golang.yacloud.eu/apis/unixipc"
 )
 
 var (

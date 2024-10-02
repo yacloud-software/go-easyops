@@ -3,13 +3,14 @@ package server
 import (
 	"context"
 	"fmt"
+
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/ctx"
 )
 
 func print_inbound_debug(rc *rpccall, myctx context.Context) {
-	if !*debug_rpc_serve {
+	if !cmdline.IsDebugRPCServer() {
 		return
 	}
 	s := rc.FullMethod()

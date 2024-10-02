@@ -2,9 +2,10 @@ package profiling
 
 import (
 	"flag"
-	"golang.conradwood.net/go-easyops/prometheus"
 	"sync"
 	"time"
+
+	"golang.conradwood.net/go-easyops/prometheus"
 )
 
 var (
@@ -86,13 +87,13 @@ func ClientRpcDone() {
 }
 func ServerRpcEntered() {
 	prof_lock.Lock()
-	defer prof_lock.Unlock()
 	serverRPCCtr++
+	prof_lock.Unlock()
 }
 func ServerRpcDone() {
 	prof_lock.Lock()
-	defer prof_lock.Unlock()
 	serverRPCCtr--
+	prof_lock.Unlock()
 }
 func SqlEntered() {
 	prof_lock.Lock()

@@ -2,6 +2,8 @@ package server
 
 import (
 	"sync"
+
+	"golang.conradwood.net/go-easyops/cmdline"
 )
 
 var (
@@ -12,7 +14,8 @@ var (
 func startRPC() {
 	active_rpc_lock.Lock()
 	active_rpcs++
-	defer active_rpc_lock.Unlock()
+	active_rpc_lock.Unlock()
+	cmdline.DebugfRPC("------------------ RPC ENTERED (%d)  --------------------\n", active_rpcs)
 }
 func stopRPC() {
 	active_rpc_lock.Lock()
@@ -20,7 +23,8 @@ func stopRPC() {
 		panic("[go-easyops] active_rpcs must never be negative")
 	}
 	active_rpcs--
-	defer active_rpc_lock.Unlock()
+	active_rpc_lock.Unlock()
+	cmdline.DebugfRPC("------------------ RPC COMPLETE (%d) --------------------\n", active_rpcs)
 }
 func ActiveRPCs() int {
 	return active_rpcs
