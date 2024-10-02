@@ -11,8 +11,8 @@ replace golang.conradwood.net/apis/goeasyops => ../apis/goeasyops
 replace golang.conradwood.net/apis/getestservice => ../apis/getestservice
 
 require (
-	golang.conradwood.net/apis/auth v1.1.3229
-	golang.conradwood.net/apis/common v1.1.3229
+	golang.conradwood.net/apis/auth v1.1.3232
+	golang.conradwood.net/apis/common v1.1.3232
 	golang.conradwood.net/apis/echoservice v1.1.3229
 	golang.conradwood.net/apis/getestservice v1.1.2099
 	golang.conradwood.net/apis/gitserver v1.1.3057
@@ -51,8 +51,8 @@ require (
 	golang.yacloud.eu/apis/autodeployer2 v1.1.3229 // indirect
 	golang.yacloud.eu/apis/faultindicator v1.1.3229 // indirect
 	golang.yacloud.eu/apis/fscache v1.1.3227 // indirect
-	golang.yacloud.eu/apis/session v1.1.3229 // indirect
-	golang.yacloud.eu/apis/unixipc v1.1.3227 // indirect
+	golang.yacloud.eu/apis/session v1.1.3232 // indirect
+	golang.yacloud.eu/apis/unixipc v1.1.3232 // indirect
 	golang.yacloud.eu/apis/urlcacher v1.1.3229 // indirect
 	golang.yacloud.eu/unixipc v0.1.26852 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240604185151-ef581f913117 // indirect
