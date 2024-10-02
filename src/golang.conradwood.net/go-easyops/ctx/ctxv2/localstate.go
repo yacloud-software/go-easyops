@@ -27,7 +27,8 @@ func (ls *localState) CallingService() *auth.SignedUser {
 	if ls == nil {
 		return nil
 	}
-	return ls.builder.ge_context.MCtx.CallingService
+	return ls.callingservice
+	//	return ls.builder.ge_context.MCtx.CallingService // NOTE: this is always 'us' (the service we are running at, because the inbound2outbound makes it so)
 }
 func (ls *localState) Info() string {
 	if ls.builder == nil {
