@@ -102,10 +102,13 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	// it failed!
 	dur := time.Since(cs.Started).Seconds()
 	if dur > 5 { // >5 seconds processing time? warn
-		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" (called from %s) took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), dur, errors.ErrorStringWithStackTrace(err))
+		fmt.Printf("[go-easyops] Debug-rpc Timeout: \"%s.%s\" (called from %s) took rather long: %0.2fs (and failed: %s)\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), dur, errors.ErrorStringWithStackTrace(err))
 	}
 	if cmdline.IsDebugRPCServer() || *print_errs {
-		fmt.Printf("[go-easyops] Debug-rpc Request: \"%s.%s\" (called from %s) failed: %s\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), errors.ErrorStringWithStackTrace(err))
+		us := auth.UserIDString(auth.GetUser(outbound_ctx))
+		fmt.Printf("[go-easyops] Debug-rpc Fail: \"%s %s\" (called from %s as user %s) failed:\n", cs.ServiceName, cs.MethodName, auth.UserIDString(auth.GetService(outbound_ctx)), us)
+		fmt.Printf("[go-easyops] Debug-rpc Fail:    %s\n", errors.ErrorStringWithStackTrace(err))
+		fmt.Printf("[go-easyops] Debug-rpc Fail:    %s\n", err)
 	}
 	incFailure(cs.ServiceName, cs.MethodName, err)
 	//stdMetrics.grpc_failed_requests.With(prometheus.Labels{"method": method, "servicename": def.name}).Inc()

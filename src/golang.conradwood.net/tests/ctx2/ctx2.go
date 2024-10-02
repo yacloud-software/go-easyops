@@ -20,6 +20,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	ACTION_CALL_YOURSELF      = 1
+	ACTION_SEND_ACCESS_DENIED = 2
+)
+
 var (
 	TEST_SERVICE_IDS = []string{"33", "31", "22", "29", "27", "35", "57", "39"}
 )
@@ -42,7 +47,8 @@ func main() {
 func run_tests() {
 	fmt.Printf("Starting tests...\n")
 	ctx := authremote.Context()
-	trr := &ge.TriggerRPCRequest{Action: ge.ACTION_CALL_YOURSELF}
+	trr := &ge.TriggerRPCRequest{Action: ACTION_SEND_ACCESS_DENIED}
+	//	trr := &ge.TriggerRPCRequest{Action: ACTION_CALL_YOURSELF}
 	_, err := ge.GetCtx2TestClient().TriggerRPC(ctx, trr)
 	utils.Bail("test failed", err)
 	fmt.Printf("Tests completed\n")
@@ -55,7 +61,10 @@ func (ges *geServer) TriggerRPC(ctx context.Context, req *ge.TriggerRPCRequest) 
 	cmdline.SetDebugContext()
 	fmt.Printf("------------------------------- In TRIGGERRPC %d --------------------\n", req.Counter)
 	fmt.Printf("LocalState: %s\n", shared.LocalState2string(gctx.GetLocalState(ctx)))
-	if req.Action == ge.ACTION_CALL_YOURSELF {
+	if req.Action == ACTION_SEND_ACCESS_DENIED {
+		return nil, errors.AccessDenied(ctx, "told to return access denied")
+	}
+	if req.Action == ACTION_CALL_YOURSELF {
 		if req.Counter == 0 {
 			ctx = buildContext(req.Counter)
 		}

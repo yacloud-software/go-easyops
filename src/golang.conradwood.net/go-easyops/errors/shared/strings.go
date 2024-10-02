@@ -3,6 +3,8 @@ package shared
 import (
 	goerrors "errors"
 	"fmt"
+	"strings"
+
 	"github.com/golang/protobuf/proto"
 	"golang.conradwood.net/apis/common"
 	fw "golang.conradwood.net/apis/framework"
@@ -10,11 +12,9 @@ import (
 	"google.golang.org/grpc/status"
 	proto2 "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/protoadapt"
-	"strings"
 )
 
 // extracts the PRIVATE and possibly SENSITIVE debug error message from a string
-// obsolete - use errors.ErrorString(err)
 // the reason this is so convoluted with different types, is that different versions of grpc
 // encapsulate status details in different messages.
 func ErrorString(err error) string {
@@ -30,7 +30,7 @@ func ErrorString(err error) string {
 		msgname := proto2.MessageName(proto2m)
 		//	msg := proto2m.ProtoReflect()
 		pv1 := protoadapt.MessageV1Of(proto2m)
-		//fmt.Printf("Proto2 (%s): %#v %v %v\n", msgname, proto2m, msg, pv1)
+		//	fmt.Printf("Proto2 (%s): %#v %v \n", msgname, proto2m, pv1)
 		if msgname == "goeasyops.GRPCErrorList" {
 			xgel, ok := pv1.(*goe.GRPCErrorList)
 			if ok {
@@ -86,10 +86,20 @@ func ErrorString(err error) string {
 
 	}
 	s = s + ": " + st.Message() + " [/STATUS]"
-	if cstatus == nil || gel == nil {
+	//	fmt.Printf("cstatus=%v\n", cstatus)
+	if cstatus == nil && gel == nil {
 		return s
 	}
-	s = fmt.Sprintf("%d(%s): ", cstatus.ErrorCode, cstatus.ErrorDescription) + ge2string(gel)
+	gel_s := ""
+	if gel != nil {
+		gel_s = ge2string(gel)
+	}
+	cs_s := ""
+	if cstatus != nil {
+		cs_s = fmt.Sprintf("code=%d(%s)", cstatus.ErrorCode, cstatus.ErrorDescription)
+	}
+	// THIS IS THE NORMAL NEW wayy of doing it...
+	s = fmt.Sprintf("(N) %s %s", cs_s, gel_s)
 	return s
 
 }
@@ -128,87 +138,6 @@ func ge2string(fmd *goe.GRPCErrorList) string {
 	return s
 }
 
-// extracts the PRIVATE and possibly SENSITIVE debug error message from a string
-// obsolete - use errors.ErrorString(err)
-// the reason this is so convoluted with different types, is that different versions of grpc
-// encapsulate status details in different messages.
-func ErrorString2(err error) string {
-	st := status.Convert(err)
-	s := "[STATUS] "
-	deli := ""
-	var cstatus *common.Status
-	var gel *goe.GRPCErrorList
-	for _, a := range st.Details() {
-		unknown := true
-
-		proto2m := a.(proto2.Message)
-		msgname := proto2.MessageName(proto2m)
-		//	msg := proto2m.ProtoReflect()
-		pv1 := protoadapt.MessageV1Of(proto2m)
-		//fmt.Printf("Proto2 (%s): %#v %v %v\n", msgname, proto2m, msg, pv1)
-		if msgname == "goeasyops.GRPCErrorList" {
-			xgel, ok := pv1.(*goe.GRPCErrorList)
-			if ok {
-				gel = xgel
-				s = s + deli + ge2string(xgel)
-				continue
-			}
-		} else if msgname == "common.Status" {
-			st, ok := pv1.(*common.Status)
-			if ok {
-				cstatus = st
-				continue
-			}
-		}
-
-		fmd, ok := a.(*fw.FrameworkMessageDetail)
-		if ok {
-			unknown = false
-			s = s + deli + fmd2string(fmd)
-		}
-
-		ge, ok := a.(*goe.GRPCErrorList)
-		if unknown && ok {
-			unknown = false
-			s = s + deli + ge2string(ge)
-		}
-
-		ge2, ok := a.(goe.GRPCErrorList)
-		if unknown && ok {
-			unknown = false
-			s = s + deli + ge2string(&ge2)
-		}
-
-		x, ok := a.(goe.GRPCError)
-		if unknown && ok {
-			unknown = false
-			s = s + deli + fmt.Sprintf("CALLTRACE: %v", x)
-		}
-
-		x2, ok := a.(*fw.CallTrace)
-		if unknown && ok {
-			unknown = false
-			s = s + deli + fmt.Sprintf("CALLTRACE: %v", x2)
-		}
-
-		proto, ok := a.(proto.Message)
-		if unknown && ok {
-			unknown = false
-			s = s + deli + "proto:" + proto.String()
-		}
-
-		deli = "->"
-
-	}
-	s = s + ": " + st.Message() + " [/STATUS]"
-	if cstatus == nil || gel == nil {
-		return s
-	}
-	s = fmt.Sprintf("%d(%s): ", cstatus.ErrorCode, cstatus.ErrorDescription) + ge2string(gel)
-	return s
-
-}
-
 func ErrorStringWithStackTrace(err error) string {
 	// given some error, first find those with stack traces
 	var stacks []StackError
@@ -231,13 +160,18 @@ func ErrorStringWithStackTrace(err error) string {
 		}
 		e = goerrors.Unwrap(e)
 	}
+	has_stacktrace := false
 	st := "(no stacktrace)"
 	if len(stacks) > 0 {
+		has_stacktrace = true
 		stack := stacks[len(stacks)-1]
 		st = stackToString(stack.Stack())
 	}
 
-	s := fmt.Sprintf("Error: %s\nStackTrace:\n%s\n", err, st)
+	s := fmt.Sprintf("Error (no stacktrace): \"%s\", Log: \"%s\"", err, ErrorString(err))
+	if has_stacktrace {
+		s = fmt.Sprintf("Error: \"%s\", Log: \"%s\"\nStackTrace:\n%s", err, ErrorString(err), st)
+	}
 	return s
 }
 

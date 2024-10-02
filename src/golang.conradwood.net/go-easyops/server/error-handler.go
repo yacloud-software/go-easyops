@@ -14,6 +14,7 @@ import (
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	gctx "golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/status"
 	proto2 "google.golang.org/protobuf/proto"
@@ -126,7 +127,7 @@ func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 	// add details (and keep previous)
 	odet := st.Details()
 	if cmdline.IsDebugRPCServer() {
-		fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
+		fancyPrintf("errorhandler Error %s (%s) (%s)\n", st.Err(), st.Message(), errors.ErrorString(st.Err()))
 	}
 	// find existing grpcerrorlist...
 	var gel *ge.GRPCErrorList

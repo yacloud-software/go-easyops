@@ -180,6 +180,7 @@ func (m *MutableContext) GetServices() []*ServiceTrace {
 	return nil
 }
 
+// each service that receives an RPC adds itself to the servicetrace, potentially with a stacktrace or so
 type ServiceTrace struct {
 	ID string `protobuf:"bytes,1,opt,name=ID" json:"ID,omitempty"`
 }

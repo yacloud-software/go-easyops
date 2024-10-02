@@ -10,13 +10,15 @@ package errors
 import (
 	"context"
 	"fmt"
+
 	"golang.conradwood.net/apis/common"
 	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
-	gctx "golang.conradwood.net/go-easyops/ctx"
 	"golang.conradwood.net/go-easyops/errors/shared"
+
 	//	"golang.conradwood.net/go-easyops/utils"
 	"flag"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -120,29 +122,29 @@ func InvalidArgs(ctx context.Context, publicmessage string, logmessage string, a
 func stdText(ctx context.Context) string {
 	user := auth.CurrentUserString(ctx)
 	svc := auth.GetService(ctx)
-	ls := gctx.GetLocalState(ctx)
+	//	ls := gctx.GetLocalState(ctx)
 	caller := "nil"
-	callee := "nil"
-	callee = ls.Info()
+	callee, _ := callingFunction()
+	//	callee = ls.Info()
 	if svc == nil {
 		caller = fmt.Sprintf("[noservice]")
 	} else {
-		caller = fmt.Sprintf("%s(%s)", svc.ID, svc.Email)
+		caller = fmt.Sprintf("(#%s %s)", svc.ID, svc.Email)
 	}
-	res := fmt.Sprintf("[%s called %s as user=%s", caller, callee, user)
+	res := fmt.Sprintf("[ %s called %s as user=%s", caller, callee, user)
 	if svc == nil {
 		res = res + ", noservice"
 	} else {
 		res = res + ", service=" + svc.ID + " (" + svc.Email + ")"
 	}
-	res = res + "]"
+	res = res + " ]"
 	return res
 }
 
 // really returns a status.Status
 func Error(ctx context.Context, code codes.Code, publicmessage string, logmessage string, a ...interface{}) error {
 	var err error
-	logmessage = stdText(ctx) + logmessage
+	logmessage = fmt.Sprintf("%s \"%s\"", stdText(ctx), logmessage)
 	log := fmt.Sprintf(logmessage, a...)
 	st := status.New(code, publicmessage)
 	// encapsulate "status" with logmessage
