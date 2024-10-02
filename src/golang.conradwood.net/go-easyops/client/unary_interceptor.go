@@ -9,6 +9,7 @@ import (
 	"golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/ctx"
 	pctx "golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/ctx/shared"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/prometheus"
 	"golang.conradwood.net/go-easyops/rpc"
@@ -98,7 +99,9 @@ func print_debug_client(ictx context.Context, targetname string) {
 		us := auth.UserIDString(common.VerifySignedUser(ls.User()))
 		sv := auth.UserIDString(common.VerifySignedUser(ls.CallingService()))
 		fmt.Printf("Invoking method %s as %s (service %s)...\n", targetname, us, sv)
-		fmt.Printf("Outbound context: %#v\n", ctx.Context2String(ictx))
+		fmt.Printf("Outbound context:\n")
+		fmt.Printf("Localstate:\n", shared.LocalState2string(ls))
+
 		return
 	}
 	cs := rpc.CallStateFromContext(ictx)
