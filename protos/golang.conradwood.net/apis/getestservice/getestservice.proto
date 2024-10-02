@@ -112,6 +112,20 @@ service CtxTest {
   rpc CallStreamFromUnary(RequiredContext)returns(common.Void);
   rpc Sleep(SleepRequest)returns(common.Void);
 }
+
+enum ACTION {
+  UNDEFINED=0;
+  CALL_YOURSELF=1;
+}
+message TriggerRPCRequest {
+  ACTION Action=1;
+  uint32 Counter=2;
+}
+
+service Ctx2Test {
+  rpc TriggerRPC(TriggerRPCRequest) returns (common.Void);
+}
+
 message Chain {
   int32 Position = 1;
   repeated Call Calls = 2;

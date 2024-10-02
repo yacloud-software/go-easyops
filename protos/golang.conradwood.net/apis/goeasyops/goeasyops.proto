@@ -37,8 +37,14 @@ message MutableContext {
   bool Debug=2; // if debug is enabled for this call
   bool Trace=3; // if trace is enabled for this call
   CTXRoutingTags Tags=4;
-  repeated string ServiceIDs=5; // each service adds its ID
+  repeated string ServiceIDs=5; // OBSOLETE each service adds its ID
   repeated Experiment Experiments=6;
+  repeated ServiceTrace Services=7; // each service adds its ID
+}
+
+// each service that receives an RPC adds itself to the servicetrace, potentially with a stacktrace or so
+message ServiceTrace {
+  string ID=1;
 }
 message Experiment {
   string Name=1;
