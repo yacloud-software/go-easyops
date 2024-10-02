@@ -113,12 +113,8 @@ service CtxTest {
   rpc Sleep(SleepRequest)returns(common.Void);
 }
 
-enum ACTION {
-  UNDEFINED=0;
-  CALL_YOURSELF=1;
-}
 message TriggerRPCRequest {
-  ACTION Action=1;
+  uint32 Action=1;
   uint32 Counter=2;
 }
 
