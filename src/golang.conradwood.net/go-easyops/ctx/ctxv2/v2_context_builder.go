@@ -204,6 +204,8 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 		fmt.Printf("[go-easyops] warning invalid inbound v2 context (%s)\n", err)
 		return nil, false
 	}
+
+	calling_me := res.MCtx.CallingService // we "reset" this later in localstate
 	/*
 		imctx_s := shared.Imctx2string("   ", res.ImCtx)
 		mctx_s := shared.Mctx2string("   ", res.MCtx)
@@ -215,6 +217,7 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	cb.ge_context = res
 
 	if svc != nil {
+		cb.ge_context.MCtx.CallingService = svc
 		svcu := common.VerifySignedUser(svc)
 		cb.ge_context.MCtx.Services = append(cb.ge_context.MCtx.Services, &ge.ServiceTrace{ID: svcu.ID}) // add "us" to list of services
 		cmdline.DebugfContext("added service \"%s\" to list of services\n", svcu.ID)
@@ -223,7 +226,7 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	cb.WithParentContext(ctx)
 	ctx, _, ls := cb.contextWithLocalState() // always has a parent context, which means it needs no auto-cancel, uses parent cancelfunc
 	// localstate has a different calling service (the original one)
-	ls.callingservice = res.MCtx.CallingService
+	ls.callingservice = calling_me
 	panic_if_service_account(common.VerifySignedUser(res.ImCtx.User))
 	return ctx, true
 }

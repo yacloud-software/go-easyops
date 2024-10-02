@@ -47,8 +47,8 @@ func main() {
 func run_tests() {
 	fmt.Printf("Starting tests...\n")
 	ctx := authremote.Context()
-	trr := &ge.TriggerRPCRequest{Action: ACTION_SEND_ACCESS_DENIED}
-	//	trr := &ge.TriggerRPCRequest{Action: ACTION_CALL_YOURSELF}
+	//trr := &ge.TriggerRPCRequest{Action: ACTION_SEND_ACCESS_DENIED}
+	trr := &ge.TriggerRPCRequest{Action: ACTION_CALL_YOURSELF}
 	_, err := ge.GetCtx2TestClient().TriggerRPC(ctx, trr)
 	utils.Bail("test failed", err)
 	fmt.Printf("Tests completed\n")
