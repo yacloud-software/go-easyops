@@ -106,7 +106,7 @@ func Inbound2Outbound(in_ctx context.Context, local_service *auth.SignedUser) co
 				return nil
 			}
 			cmdline.DebugfContext("Localstate %s: %#v\n", ls.Info(), ls)
-			cmdline.DebugfContext("Localstate Detail:\n%#s\n", shared.LocalState2string(ls))
+			cmdline.DebugfContext("Localstate Detail:\n%s\n", shared.LocalState2string(ls))
 
 			return octx
 		}

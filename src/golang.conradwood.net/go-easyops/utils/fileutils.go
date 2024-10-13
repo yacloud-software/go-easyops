@@ -14,11 +14,12 @@ import (
 )
 
 var (
-	extra_dir       = flag.String("ge_findfile_additional_dir", "", "if set, findfile will search this directory as well")
-	debug_find_file = flag.Bool("ge_debug_find_file", false, "debug fuzzy filename matches")
-	find_file_cache = make(map[string]string)
-	ffclock         sync.Mutex
-	workingdir      string
+	safely_write_lock sync.Mutex
+	extra_dir         = flag.String("ge_findfile_additional_dir", "", "if set, findfile will search this directory as well")
+	debug_find_file   = flag.Bool("ge_debug_find_file", false, "debug fuzzy filename matches")
+	find_file_cache   = make(map[string]string)
+	ffclock           sync.Mutex
+	workingdir        string
 )
 
 func init() {
@@ -55,6 +56,32 @@ func MakeSafeFilename(name string) string {
 		res = res + fmt.Sprintf("%c", x)
 	}
 	return res
+}
+
+// write a file to a temporary file, then rename it afterwards
+func SafelyWriteFile(filename string, content []byte) error {
+	unix.Umask(000)
+	safely_write_lock.Lock()
+	defer safely_write_lock.Unlock()
+	tmpfile := ""
+	i := 0
+	for {
+		tmpfile = filename + fmt.Sprintf("_tmp_%d", i)
+		if !FileExists(tmpfile) {
+			break
+		}
+		i++
+	}
+	err := ioutil.WriteFile(tmpfile, content, 0666)
+	if err != nil {
+		return err
+	}
+	err = os.Rename(tmpfile, filename)
+	if err != nil {
+		os.Remove(tmpfile)
+		return err
+	}
+	return nil
 }
 
 // like ioutil - but with open permissions to share

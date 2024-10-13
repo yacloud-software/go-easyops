@@ -100,7 +100,7 @@ func print_debug_client(ictx context.Context, targetname string) {
 		sv := auth.UserIDString(common.VerifySignedUser(ls.CallingService()))
 		fmt.Printf("Invoking method %s as %s (service %s)...\n", targetname, us, sv)
 		fmt.Printf("Outbound context:\n")
-		fmt.Printf("Localstate:\n", shared.LocalState2string(ls))
+		fmt.Printf("Localstate: %s\n", shared.LocalState2string(ls))
 
 		return
 	}
