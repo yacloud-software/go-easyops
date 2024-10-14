@@ -24,6 +24,8 @@ type StreamData interface {
 	GetData() []byte
 }
 
+// report each file to the function. This usually happens when Close() is called, prior to that the
+// receiver has no means of telling if the file is completed. Perhaps a flaw in the protocol?
 func NewByteStreamReceiverWithFunction(newfile func(filename string, content []byte) error) *ByteStreamReceiver {
 	res := NewByteStreamReceiver("")
 	res.custom_function = newfile
