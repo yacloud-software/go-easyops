@@ -37,6 +37,7 @@ func (cm *ConnectionManager) GetCurrentTargets(ctx context.Context) []*Connectio
 	var res []*ConnectionTarget
 	if cm.use_all {
 		res = cm.getCurrentRegistrationsAsTargets(ctx)
+		res = append(res, cm.getCurrentTargets(ctx)...)
 	} else {
 		res = cm.getCurrentTargets(ctx)
 	}
@@ -123,16 +124,18 @@ func (c *Connection) Close() {
 }
 
 func (cm *ConnectionManager) filter(input []*ConnectionTarget) []*ConnectionTarget {
-	if !cm.one_per_ip {
-		return input
-	}
 	ipmap := make(map[string]*ConnectionTarget)
 	for _, ct := range input {
-		_, fd := ipmap[ct.ip]
+		key := ct.ip
+		if !cm.one_per_ip {
+			key = fmt.Sprintf("%s:%d", ct.ip, ct.port)
+		}
+
+		_, fd := ipmap[key]
 		if fd {
 			continue
 		}
-		ipmap[ct.ip] = ct
+		ipmap[key] = ct
 	}
 	var res []*ConnectionTarget
 	for _, v := range ipmap {
