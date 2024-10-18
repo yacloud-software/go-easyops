@@ -180,6 +180,9 @@ out:
 func (fp *fanout_router_processor) address() string {
 	return fp.target.Address()
 }
+func (p *ProcessRequest) GetObject() interface{} {
+	return p.req.o
+}
 func (p *ProcessRequest) GRPCConnection() *grpc.ClientConn {
 	rcon, err := p.proc.target.Connection()
 	if err != nil {
