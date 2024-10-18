@@ -180,7 +180,7 @@ out:
 func (fp *fanout_router_processor) address() string {
 	return fp.target.Address()
 }
-func (p *ProcessRequest) GetObject() interface{} {
+func (p *ProcessRequest) Object() interface{} {
 	return p.req.o
 }
 func (p *ProcessRequest) GRPCConnection() *grpc.ClientConn {
@@ -197,10 +197,10 @@ func (p *ProcessRequest) GRPCConnection() *grpc.ClientConn {
 	return gcon
 
 }
-func (p *CompletionNotification) GetError() error {
+func (p *CompletionNotification) Error() error {
 	return p.err
 }
-func (p *CompletionNotification) GetObject() interface{} {
+func (p *CompletionNotification) Object() interface{} {
 	return p.pr.req.o
 }
 
