@@ -1,3 +1,8 @@
+/*
+	The FanoutRouter distributes work (evenly) between available instances, dynamically adjusting to instances coming and going.
+
+fanoutrouter maintains a go-routine per instance. each go-routine listens on a channel for work, if received it calls a function with a grpcConnection as parameter. The result is passed to another channel the number of go-routines changes dynamically as instances come and go each go-routine, if it has work to do, will call a "processor" (a user defined function) with a ProcessRequest. Once the processor completed its work, the result will be send to a function (perhaps even multi-threaded!)
+*/
 package router
 
 import (
@@ -15,11 +20,6 @@ const (
 	state_Stopped  = 3
 )
 
-/*
-	The FanoutRouter distributes work (evenly) between available instances, dynamically adjusting to instances coming and going.
-
-fanoutrouter maintains a go-routine per instance. each go-routine listens on a channel for work, if received it calls a function with a grpcConnection as parameter. The result is passed to another channel the number of go-routines changes dynamically as instances come and go each go-routine, if it has work to do, will call a "processor" (a user defined function) with a ProcessRequest. Once the processor completed its work, the result will be send to a function (perhaps even multi-threaded!)
-*/
 type FanoutRouter struct {
 	cm             *ConnectionManager
 	requests       chan *fanout_router_process_request
