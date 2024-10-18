@@ -30,6 +30,9 @@ type Connection struct {
 func NewConnectionManager(servicename string) *ConnectionManager {
 	return &ConnectionManager{use_all: true, one_per_ip: true, servicename: servicename}
 }
+func (cm *ConnectionManager) ServiceName() string {
+	return cm.servicename
+}
 func (cm *ConnectionManager) AllowMultipleInstancesPerIP() {
 	cm.one_per_ip = false
 }

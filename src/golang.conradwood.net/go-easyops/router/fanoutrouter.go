@@ -68,6 +68,12 @@ func NewFanoutRouter(cm *ConnectionManager, processor func(*ProcessRequest) erro
 	return res
 }
 func (fr *FanoutRouter) SubmitWork(object interface{}) {
+	if fr.stopping {
+		fr.debugf("WARNING - submitted work to fanoutrouter, which is in the process of stopping\n")
+	}
+	if len(fr.cur_processors) == 0 {
+		fr.debugf("WARNING - submitted work to fanoutrouter, which has no backends atm\n")
+	}
 	pr := &fanout_router_process_request{o: object}
 	fr.requests <- pr
 }
@@ -206,7 +212,7 @@ func (p *CompletionNotification) Object() interface{} {
 
 /**************** debugf *********************/
 func (fr *FanoutRouter) debugf(format string, args ...interface{}) {
-	s := "[fanoutrouter] "
+	s := fmt.Sprintf("[fanoutrouter for %s] ", fr.cm.ServiceName())
 	s2 := fmt.Sprintf(format, args...)
 	fmt.Printf("%s%s", s, s2)
 }
