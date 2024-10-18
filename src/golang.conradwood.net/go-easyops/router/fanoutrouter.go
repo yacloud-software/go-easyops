@@ -197,6 +197,12 @@ func (p *ProcessRequest) GRPCConnection() *grpc.ClientConn {
 	return gcon
 
 }
+func (p *CompletionNotification) GetError() error {
+	return p.err
+}
+func (p *CompletionNotification) GetObject() interface{} {
+	return p.pr.req.o
+}
 
 /**************** debugf *********************/
 func (fr *FanoutRouter) debugf(format string, args ...interface{}) {
