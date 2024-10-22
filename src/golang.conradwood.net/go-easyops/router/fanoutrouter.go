@@ -184,6 +184,7 @@ func (fp *fanout_router_processor) process_requests() {
 
 	}
 out:
+	fp.target.Close()
 	fp.fr.debugf("%sFinished (after %d requests)\n", prefix, fp.processed)
 	fp.fr.processor_wg.Done()
 	fp.state = state_Stopped

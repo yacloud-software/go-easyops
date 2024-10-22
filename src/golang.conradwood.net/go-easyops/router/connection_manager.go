@@ -151,7 +151,15 @@ func (cm *ConnectionManager) debugf(format string, args ...interface{}) {
 	if !*debug {
 		return
 	}
-	prefix := fmt.Sprintf("[go-easyops cntmgr %s]", cm.servicename)
+	prefix := fmt.Sprintf("[go-easyops router/cntmgr %s]", cm.servicename)
 	txt := fmt.Sprintf(format, args...)
 	fmt.Printf(prefix + txt)
+}
+func (ct *ConnectionTarget) Close() {
+	ct.lock.Lock()
+	defer ct.lock.Unlock()
+	if ct.connection == nil {
+		return
+	}
+	ct.connection.Close()
 }
