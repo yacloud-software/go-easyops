@@ -146,3 +146,12 @@ func (cm *ConnectionManager) filter(input []*ConnectionTarget) []*ConnectionTarg
 	}
 	return res
 }
+
+func (cm *ConnectionManager) debugf(format string, args ...interface{}) {
+	if !*debug {
+		return
+	}
+	prefix := fmt.Sprintf("[go-easyops cntmgr %s]", cm.servicename)
+	txt := fmt.Sprintf(format, args...)
+	fmt.Printf(prefix + txt)
+}
