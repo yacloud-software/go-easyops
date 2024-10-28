@@ -35,7 +35,7 @@ func GetText() map[string]string {
 		s := ""
 		ivs := ip.f()
 		for _, iv := range ivs {
-			x := fmt.Sprintf("%s:%0.2f", iv.Name, iv.Value)
+			x := fmt.Sprintf("%s:%0.2f\n", iv.Name, iv.Value)
 			s = s + x
 		}
 	}
