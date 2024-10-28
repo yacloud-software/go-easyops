@@ -18,6 +18,7 @@ import (
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
+	gcom "golang.conradwood.net/go-easyops/common"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
@@ -163,6 +164,7 @@ func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	s = s + "<a href=\"/internal/service-info/metrics\">metrics</a><br/>"
 	s = s + "<a href=\"/internal/clearcache\">clearcache</a> (append /name to clear a specific cache)<br/>"
 	s = s + "<a href=\"/internal/parameters\">parameters</a><br/>"
+	s = s + "<a href=\"/internal/info\">Registered Info providers</a><br/>"
 	s = s + "<a href=\"/internal/service-info/grpc-connections\">GRPC Connections</a><br/>"
 	s = s + "<a href=\"/internal/service-info/grpc-callers\">GRPC Server Caller list (who called this service)</a><br/>"
 	s = s + "<a href=\"/internal/service-info/dependencies\">Registered GRPC Dependencies</a><br/>"
@@ -190,6 +192,8 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		serveGRPCCallers(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/dependencies") {
 		serveDependencies(w, req, sd)
+	} else if strings.HasPrefix(p, "/internal/info") {
+		serveInfo(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/metrics") {
 		fmt.Printf("Request path: \"%s\"\n", p)
 		m := strings.TrimPrefix(p, "/internal/service-info/metrics")
@@ -197,6 +201,20 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	} else {
 		fmt.Printf("Invalid path: \"%s\"\n", p)
 	}
+}
+
+// serve /internal/service-info/grpc-callers
+func serveInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
+	w.Header().Set("content-type", "text/plain")
+	ms := gcom.GetText()
+	sb := strings.Builder{}
+
+	for v, s := range ms {
+		sb.WriteString("-------------------- " + v + "\n")
+		sb.WriteString(s + "\n")
+	}
+	fmt.Fprintf(w, sb.String())
+
 }
 
 // serve /internal/service-info/grpc-callers
