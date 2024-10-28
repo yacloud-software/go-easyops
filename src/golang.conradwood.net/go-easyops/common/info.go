@@ -38,6 +38,7 @@ func GetText() map[string]string {
 			x := fmt.Sprintf("%s:%0.2f\n", iv.Name, iv.Value)
 			s = s + x
 		}
+		res[ip.name] = s
 	}
 	infolock.Unlock()
 	return res
