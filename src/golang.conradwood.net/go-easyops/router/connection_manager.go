@@ -110,6 +110,9 @@ func (ct *ConnectionTarget) Connection() (*Connection, error) {
 func (c *Connection) GRPCConnection() (*grpc.ClientConn, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	if c.gcon != nil {
+		return c.gcon, nil
+	}
 	gcon, err := client.ConnectWithIP(c.address)
 	if err != nil {
 		return nil, err

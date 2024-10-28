@@ -12,6 +12,7 @@ import (
 
 	"flag"
 	"golang.conradwood.net/go-easyops/authremote"
+	"golang.conradwood.net/go-easyops/common"
 	"google.golang.org/grpc"
 )
 
@@ -24,6 +25,10 @@ const (
 var (
 	debug = flag.Bool("ge_debug_router", false, "debug the fanoutrouter")
 )
+
+func init() {
+	common.RegisterInfoProvider("fanoutrouter", infoprovider)
+}
 
 type FanoutRouter struct {
 	cm             *ConnectionManager
@@ -225,4 +230,8 @@ func (fr *FanoutRouter) debugf(format string, args ...interface{}) {
 	prefix := fmt.Sprintf("[go-easyops router/fanout %s]", fr.cm.ServiceName())
 	txt := fmt.Sprintf(format, args...)
 	fmt.Printf(prefix + txt)
+}
+
+func infoprovider() []*common.InfoValue {
+	return nil
 }
