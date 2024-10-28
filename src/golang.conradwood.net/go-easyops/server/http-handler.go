@@ -164,7 +164,7 @@ func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	s = s + "<a href=\"/internal/service-info/metrics\">metrics</a><br/>"
 	s = s + "<a href=\"/internal/clearcache\">clearcache</a> (append /name to clear a specific cache)<br/>"
 	s = s + "<a href=\"/internal/parameters\">parameters</a><br/>"
-	s = s + "<a href=\"/internal/info\">Registered Info providers</a><br/>"
+	s = s + "<a href=\"/internal/service-info/infoproviders\">Registered Info providers</a><br/>"
 	s = s + "<a href=\"/internal/service-info/grpc-connections\">GRPC Connections</a><br/>"
 	s = s + "<a href=\"/internal/service-info/grpc-callers\">GRPC Server Caller list (who called this service)</a><br/>"
 	s = s + "<a href=\"/internal/service-info/dependencies\">Registered GRPC Dependencies</a><br/>"
@@ -192,7 +192,7 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		serveGRPCCallers(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/dependencies") {
 		serveDependencies(w, req, sd)
-	} else if strings.HasPrefix(p, "/internal/info") {
+	} else if strings.HasPrefix(p, "/internal/service-info/infoproviders") {
 		serveInfo(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/metrics") {
 		fmt.Printf("Request path: \"%s\"\n", p)
