@@ -10,9 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"flag"
 	"golang.conradwood.net/go-easyops/authremote"
-	"golang.conradwood.net/go-easyops/common"
 	"google.golang.org/grpc"
 )
 
@@ -21,14 +19,6 @@ const (
 	state_Started  = 2
 	state_Stopped  = 3
 )
-
-var (
-	debug = flag.Bool("ge_debug_router", false, "debug the fanoutrouter")
-)
-
-func init() {
-	common.RegisterInfoProvider("fanoutrouter", infoprovider)
-}
 
 type FanoutRouter struct {
 	cm             *ConnectionManager
@@ -126,8 +116,8 @@ func (fr *FanoutRouter) poll_target_list() {
 		fr.debugf("got %d targets\n", len(ct))
 		fr.compare_current_targets(ct)
 		fr.stop_lock.Unlock()
-
 	}
+	fr.debugf("polling stopped\n")
 }
 func (fr *FanoutRouter) compare_current_targets(ct []*ConnectionTarget) {
 	targets := make(map[string]*ConnectionTarget)
@@ -165,7 +155,7 @@ func (fr *FanoutRouter) start_processor(pr *fanout_router_processor) {
 }
 func (fp *fanout_router_processor) process_requests() {
 	prefix := fmt.Sprintf("[%s] ", fp.address())
-	fp.fr.debugf("%sstarted\n", prefix)
+	fmt.Printf("%sstarted\n", prefix)
 	fp.state = state_Started
 	for {
 		select {
@@ -178,9 +168,9 @@ func (fp *fanout_router_processor) process_requests() {
 				goto out
 			}
 			pr := &ProcessRequest{proc: fp, req: req}
-			fp.fr.debugf("%sprocessing...\n", prefix)
+			fmt.Printf("%sprocessing...\n", prefix)
 			err := fp.fr.proc(pr)
-			fp.fr.debugf("%scomplete...\n", prefix)
+			fmt.Printf("%scomplete...\n", prefix)
 			cn := &CompletionNotification{pr: pr, err: err}
 			fp.processed++
 			fp.fr.cn(cn)
@@ -189,8 +179,7 @@ func (fp *fanout_router_processor) process_requests() {
 
 	}
 out:
-	fp.target.Close()
-	fp.fr.debugf("%sFinished (after %d requests)\n", prefix, fp.processed)
+	fmt.Printf("%sFinished (after %d requests)\n", prefix, fp.processed)
 	fp.fr.processor_wg.Done()
 	fp.state = state_Stopped
 }
@@ -222,16 +211,8 @@ func (p *CompletionNotification) Object() interface{} {
 }
 
 /**************** debugf *********************/
-
 func (fr *FanoutRouter) debugf(format string, args ...interface{}) {
-	if !*debug {
-		return
-	}
-	prefix := fmt.Sprintf("[go-easyops router/fanout %s]", fr.cm.ServiceName())
-	txt := fmt.Sprintf(format, args...)
-	fmt.Printf(prefix + txt)
-}
-
-func infoprovider() []*common.InfoValue {
-	return nil
+	s := fmt.Sprintf("[fanoutrouter for %s] ", fr.cm.ServiceName())
+	s2 := fmt.Sprintf(format, args...)
+	fmt.Printf("%s%s", s, s2)
 }

@@ -110,9 +110,6 @@ func (ct *ConnectionTarget) Connection() (*Connection, error) {
 func (c *Connection) GRPCConnection() (*grpc.ClientConn, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if c.gcon != nil {
-		return c.gcon, nil
-	}
 	gcon, err := client.ConnectWithIP(c.address)
 	if err != nil {
 		return nil, err
@@ -148,21 +145,4 @@ func (cm *ConnectionManager) filter(input []*ConnectionTarget) []*ConnectionTarg
 		res = append(res, v)
 	}
 	return res
-}
-
-func (cm *ConnectionManager) debugf(format string, args ...interface{}) {
-	if !*debug {
-		return
-	}
-	prefix := fmt.Sprintf("[go-easyops router/cntmgr %s]", cm.servicename)
-	txt := fmt.Sprintf(format, args...)
-	fmt.Printf(prefix + txt)
-}
-func (ct *ConnectionTarget) Close() {
-	ct.lock.Lock()
-	defer ct.lock.Unlock()
-	if ct.connection == nil {
-		return
-	}
-	ct.connection.Close()
 }
