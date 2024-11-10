@@ -26,7 +26,12 @@ func ErrorString(err error) string {
 	for _, a := range st.Details() {
 		unknown := true
 
-		proto2m := a.(proto2.Message)
+		proto2m, okconv := a.(proto2.Message)
+		if !okconv {
+			fmt.Printf("[go-easyops] Failed to convert error message (%v)\n", a)
+			s = s + fmt.Sprintf(" =%v= ", a)
+			continue
+		}
 		msgname := proto2.MessageName(proto2m)
 		//	msg := proto2m.ProtoReflect()
 		pv1 := protoadapt.MessageV1Of(proto2m)
