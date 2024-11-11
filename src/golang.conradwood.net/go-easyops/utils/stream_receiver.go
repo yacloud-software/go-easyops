@@ -16,7 +16,7 @@ type ByteStreamReceiver struct {
 	last_file       *open_file
 	path            string
 	custom_function func(filename string, content []byte) error
-	files           map[string]int //filename->size
+	files           map[string]uint64 //filename->size
 }
 
 // the proto must be compatible with this interface
@@ -45,11 +45,11 @@ func NewByteStreamReceiver(path string) *ByteStreamReceiver {
 	res := &ByteStreamReceiver{
 		path:       p,
 		open_files: make(map[string]*open_file),
-		files:      make(map[string]int),
+		files:      make(map[string]uint64),
 	}
 	return res
 }
-func (bsr *ByteStreamReceiver) Files() map[string]int {
+func (bsr *ByteStreamReceiver) Files() map[string]uint64 {
 	return bsr.files
 }
 
@@ -133,6 +133,7 @@ type open_file struct {
 
 func (of *open_file) Write(path string, buf []byte) error {
 	if of.bsr.custom_function != nil {
+		of.size = of.size + uint64(len(buf))
 		_, err := of.content.Write(buf)
 		if err != nil {
 			return err
@@ -162,11 +163,10 @@ func (of *open_file) Write(path string, buf []byte) error {
 	return nil
 }
 func (of *open_file) Close() error {
-	ct := of.content.Bytes()
-	of.bsr.files[of.filename] = len(ct)
+	of.bsr.files[of.filename] = of.size
 	cf := of.bsr.custom_function
 	if cf != nil {
-		err := cf(of.filename, ct)
+		err := cf(of.filename, of.content.Bytes())
 		if err != nil {
 			return err
 		}
