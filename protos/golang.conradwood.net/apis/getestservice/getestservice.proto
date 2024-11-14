@@ -24,6 +24,7 @@ message PingRequest {
   uint32 SequenceNumber = 1;
   string Payload = 2;
   uint32 TTL=3; // if non-zero, server will ping other server until 0
+  bool PleaseFail=4; // if true, server will throw an rpc error
 }
 
 message PingResponse {
