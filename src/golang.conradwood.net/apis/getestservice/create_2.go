@@ -4,7 +4,7 @@
 */
 
 /* geninfo:
-   filename  : protos/golang.conradwood.net/apis/getestservice/getestservice.proto
+   filename  : golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_1
    clientfunc: GetEchoStreamService

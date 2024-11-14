@@ -635,14 +635,14 @@ func StartFakeService(name string) {
 		panic(s)
 	}
 	sd := NewServerDef().(*serverDef)
-	sd.port = port
-	sd.register = Register(
+	sd.SetPort(port)
+	sd.SetRegister(
 		func(server *grpc.Server) error {
 			e := new(echoServer)
 			echo.RegisterEchoServiceServer(server, e)
 			return nil
-		},
-	)
+		})
+
 	sd.name = name
 	go ServerStartup(sd)
 }

@@ -3,11 +3,13 @@ package shared
 import (
 	goerrors "errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"golang.conradwood.net/apis/common"
 	fw "golang.conradwood.net/apis/framework"
+	"golang.conradwood.net/apis/goeasyops"
 	goe "golang.conradwood.net/apis/goeasyops"
 	"google.golang.org/grpc/status"
 	proto2 "google.golang.org/protobuf/proto"
@@ -17,6 +19,8 @@ import (
 // extracts the PRIVATE and possibly SENSITIVE debug error message from a string
 // the reason this is so convoluted with different types, is that different versions of grpc
 // encapsulate status details in different messages.
+// also note the message between "google.golang.org/protobuf/proto" and	"github.com/golang/protobuf/proto"
+
 func ErrorString(err error) string {
 	st := status.Convert(err)
 	s := "[STATUS] "
@@ -26,9 +30,23 @@ func ErrorString(err error) string {
 	for _, a := range st.Details() {
 		unknown := true
 
+		st, ok := a.(*common.Status)
+		if ok {
+			cstatus = st
+			continue
+		}
+		lgel, ok := a.(*goeasyops.GRPCErrorList)
+		if ok {
+			gel = lgel
+			s = s + deli + ge2string(lgel)
+			continue
+		}
+
+		// check newer proto messages now
 		proto2m, okconv := a.(proto2.Message)
 		if !okconv {
-			fmt.Printf("[go-easyops] Failed to convert error message (%v)\n", a)
+			z := fmt.Sprintf("[type=%v]", reflect.TypeOf(a))
+			fmt.Printf("[go-easyops] Failed to convert error message (%v %v)\n", a, z)
 			s = s + fmt.Sprintf(" =%v= ", a)
 			continue
 		}
