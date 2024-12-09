@@ -2,17 +2,21 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"os"
+	"sync"
+	"time"
+
 	"golang.conradwood.net/apis/echoservice"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/objectstore"
 	"golang.conradwood.net/go-easyops/utils"
-	"os"
-	"sync"
-	"time"
 )
 
 func main() {
+	flag.Parse()
+	TestIPs()
 	TestTime()
 	td, err := utils.TerminalSize()
 	utils.Bail("failed to get terminal dimensions", err)

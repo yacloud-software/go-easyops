@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 )
@@ -47,4 +48,72 @@ func ParseIP(ip_s string) (string, uint32, int, error) {
 		return "", 0, 0, err
 	}
 	return ip, uint32(port), 6, nil
+}
+
+// error if not a valid ip
+// true if it is a non-routeable IP, such as link-local, loopback, or rfc 1918
+func IsPrivateIP(ip_s string) (bool, error) {
+	ip, masksize, err := GetIPAndNet(ip_s)
+	if err != nil {
+		return false, err
+	}
+	ipa, _, err := net.ParseCIDR(fmt.Sprintf("%s/%d", ip, masksize))
+	if err != nil {
+		return false, err
+	}
+
+	if ipa.IsPrivate() {
+		return true, nil
+	}
+	if ipa.IsLoopback() {
+		return true, nil
+	}
+	if ipa.IsLinkLocalUnicast() {
+		return true, nil
+	}
+	if ipa.IsLinkLocalMulticast() {
+		return true, nil
+	}
+	if ipa.IsInterfaceLocalMulticast() {
+		return true, nil
+	}
+	return false, nil
+
+}
+
+/*
+splits things like so:
+
+		172.29.1.0/24  => "172.29.1.0" and 24
+		172.29.1.5:5000  => "172.29.1.5" and 32
+	        2a01:4b00:ab0f:5100:5::5/64 => "2a01:4b00:ab0f:5100:5::5" and 64
+*/
+func GetIPAndNet(ip_s string) (string, int, error) {
+	if strings.Contains(ip_s, "/") {
+		// with CIDR
+		ip, ipnet, err := net.ParseCIDR(ip_s)
+		if err != nil {
+			return "", 0, err
+		}
+		ones, _ := ipnet.Mask.Size()
+		return ip.String(), ones, nil
+	}
+	// no mask (but possibly with port)
+	ip_ns := ""
+	host, _, err := net.SplitHostPort(ip_s)
+	if err == nil {
+		ip_ns = host
+	} else {
+		ip_ns = ip_s
+	}
+	ip, _, t, err := ParseIP(ip_ns)
+	if err != nil {
+		return "", 0, err
+	}
+	if t == 4 {
+		return ip, 32, nil
+	} else if t == 6 {
+		return ip, 128, nil
+	}
+	return "", 0, fmt.Errorf("invalid ip type %d for \"%s\"", t, ip_s)
 }
