@@ -11,16 +11,18 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	pq "github.com/lib/pq"
-	pb "golang.conradwood.net/apis/goeasyops"
-	"golang.conradwood.net/go-easyops/cmdline"
-	pp "golang.conradwood.net/go-easyops/profiling"
-	"golang.conradwood.net/go-easyops/prometheus"
-	"golang.conradwood.net/go-easyops/utils"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	pq "github.com/lib/pq"
+	pb "golang.conradwood.net/apis/goeasyops"
+	"golang.conradwood.net/go-easyops/cmdline"
+	"golang.conradwood.net/go-easyops/errors"
+	pp "golang.conradwood.net/go-easyops/profiling"
+	"golang.conradwood.net/go-easyops/prometheus"
+	"golang.conradwood.net/go-easyops/utils"
 )
 
 const (
@@ -161,7 +163,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 	var err error
 	var now string
 	if dbdb == "" {
-		return nil, fmt.Errorf("Please specify -dbdb flag")
+		return nil, errors.Errorf("Please specify -dbdb flag")
 	}
 	dbinfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=require", dbhost, dbuser, dbpw, dbdb)
 
@@ -200,7 +202,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 		if *failure_action == "quit" {
 			os.Exit(10)
 		} else if *failure_action == "report" {
-			return nil, fmt.Errorf("failed to open database \"%s\" on host \"%s\" as \"%s\": %w", dbdb, dbhost, dbuser, err)
+			return nil, errors.Errorf("failed to open database \"%s\" on host \"%s\" as \"%s\": %w", dbdb, dbhost, dbuser, err)
 		} else if *failure_action == "retry" {
 			time.Sleep(time.Duration(2) * time.Second)
 		} else {
@@ -215,7 +217,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 	err = dbcon.QueryRow("SELECT NOW() as now").Scan(&now)
 	if err != nil {
 		fmt.Printf("[go-easyops] Failed to query db %s: %s\n", dbdb, err)
-		return nil, fmt.Errorf("failed to open database \"%s\" on host \"%s\" as \"%s\": %w", dbdb, dbhost, dbuser, err)
+		return nil, errors.Errorf("failed to open database \"%s\" on host \"%s\" as \"%s\": %w", dbdb, dbhost, dbuser, err)
 	}
 	if *sqldebug {
 		fmt.Printf("[go-easyops] sql now query returned: \"%s\"\n", now)
@@ -336,6 +338,7 @@ func (d *DB) QueryContext(ctx context.Context, name string, query string, args .
 		d.failurectr.Add(1, 1)
 		query_error(ctx, "select", name, query, err)
 		sqlFailedQueries.With(l).Inc()
+		err = errors.Wrap(err)
 	} else {
 		d.failurectr.Add(0, 1)
 	}
@@ -376,6 +379,7 @@ func (d *DB) execContext(ctx context.Context, report_failure bool, name string, 
 		d.failurectr.Add(1, 1)
 		query_error(ctx, "exec", name, query, err)
 		sqlFailedQueries.With(l).Inc()
+		err = errors.Wrap(err)
 	} else {
 		d.failurectr.Add(0, 1)
 	}
