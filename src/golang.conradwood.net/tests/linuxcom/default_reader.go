@@ -6,11 +6,12 @@ import (
 )
 
 type comDefaultReader struct {
-	pipe io.ReadCloser
+	pipe            io.ReadCloser
+	notused_printer *LinePrefixPipe
 }
 
 func newDefaultReader(pipe io.ReadCloser) *comDefaultReader {
-	c := &comDefaultReader{pipe: pipe}
+	c := &comDefaultReader{pipe: pipe, notused_printer: NewLinePrefixPipe(pipe)}
 	go c.read_loop()
 	return nil
 }

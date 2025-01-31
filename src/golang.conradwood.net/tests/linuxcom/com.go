@@ -6,11 +6,29 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/user"
+	"strconv"
 	"sync"
+	"syscall"
 
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/utils"
+	"golang.org/x/sys/unix"
 )
+
+/*
+   CGROUP Permissions:
+
+   clone3 returns -EACCESS (permission denied) unless:
+   the user has write access to cgroup.procs in the nearest common ancestor director of calling process and cgroup of new process.
+
+   EXAMPLES: (assuming only LINUXCOM and below is user-writeable)
+   | CALLING_PROC                    | NEW_PROC                           | Result   |
+   +---------------------------------+------------------------------------+----------+
+   | /sys/fs/cgroup/LINUXCOM/me/     | /sys/fs/cgroup/LINUXCOM/com_1/     | EACCESS  |
+   | /sys/fs/cgroup/LINUXCOM/foo/me/ | /sys/fs/cgroup/LINUXCOM/com_1/     | EACCESS  |
+   | /sys/fs/cgroup/LINUXCOM/foo/me/ | /sys/fs/cgroup/LINUXCOM/foo/com_1/ | OK       |
+*/
 
 var (
 	ctr     = 0
@@ -39,7 +57,7 @@ type cominstance struct {
 
 func NewCommand() *command {
 	return &command{
-		cgroupdir: "/sys/fs/cgroup/LINUXCOM",
+		cgroupdir: "/sys/fs/cgroup/LINUXCOM/ancestor/",
 	}
 }
 
@@ -70,10 +88,32 @@ func (c *command) Start(ctx context.Context, com ...string) (*cominstance, error
 		return nil, err
 	}
 	ci := &cominstance{command: c, cgroupdir_cmd: cgroupdir_cmd}
+	c.instance = ci
 	return ci, ci.start(ctx, com...)
 }
 func (ci *cominstance) start(ctx context.Context, com ...string) error {
-	var err error
+	u, err := user.Current()
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	uid, err := strconv.Atoi(u.Uid)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	gid, err := strconv.Atoi(u.Gid)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	// open cgroup filedescriptor
+	cgroup_fd_path := ci.cgroupdir_cmd
+	cgroup_fd, err := syscall.Open(cgroup_fd_path, unix.O_PATH, 0)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+	fmt.Printf("CgroupFD for \"%s\": %d\n", cgroup_fd_path, cgroup_fd)
 	ci.com = exec.CommandContext(ctx, com[0], com[1:]...)
 	ci.stdout_pipe, err = ci.com.StdoutPipe()
 	if err != nil {
@@ -86,6 +126,15 @@ func (ci *cominstance) start(ctx context.Context, com ...string) error {
 	}
 	ci.defStderrReader = newDefaultReader(ci.stdout_pipe)
 
+	ci.com.SysProcAttr = &syscall.SysProcAttr{
+		Credential: &syscall.Credential{
+			Uid:         uint32(uid),
+			Gid:         uint32(gid),
+			NoSetGroups: true,
+		},
+		UseCgroupFD: true,
+		CgroupFD:    cgroup_fd,
+	}
 	err = ci.com.Start()
 	if err != nil {
 		return errors.Wrap(err)
@@ -106,9 +155,31 @@ func (c *command) ExitCode() int {
 func (c *command) CombinedOutput() []byte {
 	return nil
 }
-func (c *command) SigInt() { // -2
+func (c *command) SigInt() error { // -2
+	fmt.Printf("sending sigint\n")
+	return c.sendsig(syscall.SIGINT)
 }
-func (c *command) SigKill() { // -9
+func (c *command) SigKill() error { // -9
+	fmt.Printf("sending sigkill\n")
+	return c.sendsig(syscall.SIGKILL)
+}
+
+func (c *command) sendsig(sig syscall.Signal) error {
+	ci := c.instance
+	pids, err := get_pids_for_cgroup(ci.cgroupdir_cmd)
+	if err != nil {
+		fmt.Printf("Could not get pids for cgroup \"%s\": %s\n", ci.cgroupdir_cmd, err)
+		return err
+	}
+	fmt.Printf("Cgroupdir \"%s\" has %d pids\n", ci.cgroupdir_cmd, len(pids))
+	for _, pid := range pids {
+		fmt.Printf("Sending signal %v to pid %d\n", sig, pid)
+		err = syscall.Kill(int(pid), sig)
+		if err != nil {
+			return errors.Wrap(err)
+		}
+	}
+	return nil
 }
 
 func newctr() int {
