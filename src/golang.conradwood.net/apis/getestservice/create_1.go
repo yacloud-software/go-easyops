@@ -4,6 +4,7 @@
 */
 
 /* geninfo:
+   rendererv : 2
    filename  : golang.conradwood.net/apis/getestservice/getestservice.proto
    gopackage : golang.conradwood.net/apis/getestservice
    importname: ai_0
