@@ -18,8 +18,7 @@ import (
 	pm "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	au "golang.conradwood.net/apis/auth"
-	cm "golang.conradwood.net/apis/common"
-	echo "golang.conradwood.net/apis/echoservice"
+	echo "golang.conradwood.net/apis/getestservice"
 	pb "golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/auth"
 	ar "golang.conradwood.net/go-easyops/authremote"
@@ -649,9 +648,9 @@ func StartFakeService(name string) {
 
 type echoServer struct{}
 
-func (e *echoServer) Ping(ctx context.Context, req *cm.Void) (*echo.PingResponse, error) {
+func (e *echoServer) Ping(ctx context.Context, req *echo.PingRequest) (*echo.PingResponse, error) {
 	fancyPrintf("I was pinged\n")
-	resp := &echo.PingResponse{Response: "goeasyops-server"}
+	resp := &echo.PingResponse{Response: req}
 	return resp, nil
 }
 

@@ -4,17 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"golang.conradwood.net/apis/common"
-	pb "golang.conradwood.net/apis/echoservice"
+	"os"
+	"strings"
+	"time"
+
+	pb "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/sql"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
-	"os"
-	"strings"
-	"time"
 )
 
 /*
@@ -92,7 +92,7 @@ func main() {
 	utils.Bail("Unable to start server", err)
 }
 
-func (e *echoServer) Ping(ctx context.Context, req *common.Void) (*pb.PingResponse, error) {
+func (e *echoServer) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
 	u := auth.GetUser(ctx)
 	fmt.Printf("    %d Pinged by %s\n", ctr, auth.Description(u))
 	ctr++

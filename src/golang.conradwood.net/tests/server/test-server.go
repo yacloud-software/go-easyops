@@ -4,17 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"golang.conradwood.net/apis/common"
-	pb "golang.conradwood.net/apis/echoservice"
+	"os"
+	"strings"
+	"time"
+
+	pb "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
-	"os"
-	"strings"
-	"time"
 )
 
 var (
@@ -54,7 +54,7 @@ func main() {
 			ctx = authremote.Context()
 			u := auth.GetUser(ctx)
 			fmt.Printf("   pinging as %s\n", auth.Description(u))
-			_, err := c.Ping(ctx, &common.Void{})
+			_, err := c.Ping(ctx, &pb.PingRequest{})
 			s := "Pinged"
 			if err != nil {
 				fmt.Printf("Error :%s\n", utils.ErrorString(err))
@@ -110,7 +110,7 @@ func PingSelf() {
 		u := auth.GetUser(ctx)
 		fmt.Printf("pinging as %s\n", auth.Description(u))
 		c := pb.GetEchoClient()
-		_, err := c.Ping(ctx, &common.Void{})
+		_, err := c.Ping(ctx, &pb.PingRequest{})
 		if err != nil {
 			fmt.Printf("Error :%s\n", utils.ErrorString(err))
 		} else {
@@ -119,7 +119,7 @@ func PingSelf() {
 
 	}
 }
-func (e *echoServer) Ping(ctx context.Context, req *common.Void) (*pb.PingResponse, error) {
+func (e *echoServer) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
 	u := auth.GetUser(ctx)
 	s := auth.GetService(ctx)
 	fmt.Printf("   %03d Pinged by user %s, service %s\n", ctr, auth.Description(u), auth.Description(s))

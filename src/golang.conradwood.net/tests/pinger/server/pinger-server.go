@@ -4,14 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"golang.conradwood.net/apis/common"
-	pb "golang.conradwood.net/apis/echoservice"
 	"time"
+
+	pb "golang.conradwood.net/apis/getestservice"
+
 	//	"golang.conradwood.net/go-easyops/errors"
+	"os"
+
 	"golang.conradwood.net/go-easyops/server"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
-	"os"
 )
 
 var (
@@ -40,10 +42,10 @@ func main() {
 type echoserver struct {
 }
 
-func (e *echoserver) Ping(ctx context.Context, req *common.Void) (*pb.PingResponse, error) {
+func (e *echoserver) Ping(ctx context.Context, req *pb.PingRequest) (*pb.PingResponse, error) {
 	if *verbose {
 		fmt.Printf("%s Pinged\n", utils.TimeString(time.Now()))
 	}
-	res := &pb.PingResponse{Response: "servertext"}
+	res := &pb.PingResponse{Response: req}
 	return res, nil
 }

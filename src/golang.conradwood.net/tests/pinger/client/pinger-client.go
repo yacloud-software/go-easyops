@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"golang.conradwood.net/apis/common"
-	pb "golang.conradwood.net/apis/echoservice"
+	"time"
+
+	pb "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/utils"
-	"time"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 	for {
 
 		ctx := authremote.Context()
-		response, err := pb.GetEchoServiceClient().Ping(ctx, &common.Void{})
+		response, err := pb.GetEchoServiceClient().Ping(ctx, &pb.PingRequest{})
 		utils.Bail("failed to ping", err)
 		fmt.Printf("%s Response: %#v\n", utils.TimeString(time.Now()), response)
 		time.Sleep(1 * time.Second)

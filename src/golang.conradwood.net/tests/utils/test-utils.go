@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"golang.conradwood.net/apis/echoservice"
+	echoservice "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/objectstore"
 	"golang.conradwood.net/go-easyops/utils"
