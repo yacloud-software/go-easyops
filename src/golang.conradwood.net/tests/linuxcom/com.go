@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"golang.conradwood.net/go-easyops/errors"
-	"golang.conradwood.net/go-easyops/utils"
 	"io"
 	"os"
+	"os/exec"
 	"sync"
+
+	"golang.conradwood.net/go-easyops/errors"
+	"golang.conradwood.net/go-easyops/utils"
 )
 
 var (
@@ -17,12 +20,21 @@ var (
 type Command interface {
 }
 type command struct {
-	exe           []string
-	cgroupdir     string
-	cgroupdir_cmd string
-	stdinwriter   io.Writer
-	stdoutreader  io.Reader
-	stderrreader  io.Reader
+	cgroupdir    string
+	stdinwriter  io.Writer
+	stdoutreader io.Reader
+	stderrreader io.Reader
+	instance     *cominstance
+}
+type cominstance struct {
+	exe             []string
+	command         *command
+	cgroupdir_cmd   string
+	com             *exec.Cmd
+	stdout_pipe     io.ReadCloser
+	stderr_pipe     io.ReadCloser
+	defStdoutReader *comDefaultReader
+	defStderrReader *comDefaultReader
 }
 
 func NewCommand() *command {
@@ -34,10 +46,6 @@ func NewCommand() *command {
 // e.g. /sys/fs/cgroup/LINUXCOM
 func (c *command) SetCGroupDir(dir string) {
 	c.cgroupdir = dir
-}
-
-func (c *command) SetExecutable(com ...string) {
-	c.exe = com
 }
 
 func (c *command) StdinWriter(r io.Writer) {
@@ -54,20 +62,43 @@ func (c *command) IsRunning() bool {
 }
 
 // failed to start, then error
-func (c *command) Start() error {
+func (c *command) Start(ctx context.Context, com ...string) (*cominstance, error) {
 	n := newctr()
-	c.cgroupdir_cmd = fmt.Sprintf("%s/com_%d", c.cgroupdir, n)
-	err := mkdir(c.cgroupdir_cmd + "/tasks")
+	cgroupdir_cmd := fmt.Sprintf("%s/com_%d", c.cgroupdir, n)
+	err := mkdir(cgroupdir_cmd + "/tasks")
+	if err != nil {
+		return nil, err
+	}
+	ci := &cominstance{command: c, cgroupdir_cmd: cgroupdir_cmd}
+	return ci, ci.start(ctx, com...)
+}
+func (ci *cominstance) start(ctx context.Context, com ...string) error {
+	var err error
+	ci.com = exec.CommandContext(ctx, com[0], com[1:]...)
+	ci.stdout_pipe, err = ci.com.StdoutPipe()
 	if err != nil {
 		return err
 	}
+	ci.defStdoutReader = newDefaultReader(ci.stdout_pipe)
+	ci.stderr_pipe, err = ci.com.StderrPipe()
+	if err != nil {
+		return err
+	}
+	ci.defStderrReader = newDefaultReader(ci.stdout_pipe)
 
+	err = ci.com.Start()
+	if err != nil {
+		return errors.Wrap(err)
+	}
 	return nil
 }
 
-// if unable to wait, it returns error
-func (c *command) Wait() error {
-	return nil
+func (ci *cominstance) Wait(ctx context.Context) error {
+	if ci.com == nil {
+		return nil
+	}
+	err := ci.com.Wait()
+	return err
 }
 func (c *command) ExitCode() int {
 	return 0
