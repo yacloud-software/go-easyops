@@ -40,6 +40,7 @@ type Command interface {
 	SetStdoutReader(r io.Reader)
 	SetStderrReader(r io.Reader)
 	IsRunning() bool
+	SetDebug(bool)
 	Start(ctx context.Context, com ...string) (ComInstance, error)
 }
 type ComInstance interface {
@@ -53,9 +54,9 @@ type command struct {
 	stdoutreader io.Reader
 	stderrreader io.Reader
 	instance     *cominstance
+	debug        bool
 }
 type cominstance struct {
-	debug           bool
 	exe             []string
 	command         *command
 	cgroupdir_cmd   string
@@ -68,6 +69,9 @@ type cominstance struct {
 
 func NewCommand() Command {
 	return &command{}
+}
+func (c *command) SetDebug(b bool) {
+	c.debug = b
 }
 func (c *cominstance) GetCommand() Command {
 	return c.command
@@ -94,6 +98,7 @@ func (c *command) Start(ctx context.Context, com ...string) (ComInstance, error)
 	if err != nil {
 		return nil, err
 	}
+	c.debugf("Created cgroup \"%s\"\n", cgroupdir_cmd)
 	err = mkdir(cgroupdir_cmd + "/tasks")
 	if err != nil {
 		return nil, err
@@ -266,10 +271,21 @@ func mkdir(dir string) error {
 }
 
 func (ci *cominstance) debugf(format string, args ...any) {
-	if !ci.debug {
+	if !ci.command.debug {
 		return
 	}
 	x := fmt.Sprintf(format, args...)
-	prefix := fmt.Sprintf("[%s]", ci.exe[0])
+	prefix := fmt.Sprintf("[%s] ", ci.exe[0])
+	fmt.Printf("%s%s", prefix, x)
+}
+func (c *command) debugf(format string, args ...any) {
+	if !c.debug {
+		return
+	}
+	x := fmt.Sprintf(format, args...)
+	prefix := "[no instance] "
+	if c.instance.exe != nil {
+		prefix = fmt.Sprintf("[%s] ", c.instance.exe[0])
+	}
 	fmt.Printf("%s%s", prefix, x)
 }
