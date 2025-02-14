@@ -45,6 +45,8 @@ type Command interface {
 type ComInstance interface {
 	Wait(ctx context.Context) error    // waits for main command to exit. might leave fork'ed children running
 	WaitAll(ctx context.Context) error // waits for all children to exit as well
+	Signal(signal syscall.Signal) error
+	GetCommand() Command
 }
 type command struct {
 	stdinwriter  io.Writer
@@ -66,6 +68,9 @@ type cominstance struct {
 
 func NewCommand() Command {
 	return &command{}
+}
+func (c *cominstance) GetCommand() Command {
+	return c.command
 }
 
 func (c *command) SetStdinWriter(r io.Writer) {
@@ -213,15 +218,23 @@ func (c *command) CombinedOutput() []byte {
 }
 func (c *command) SigInt() error { // -2
 	fmt.Printf("sending sigint\n")
-	return c.sendsig(syscall.SIGINT)
+	ci := c.instance
+	if ci == nil {
+		return errors.Errorf("no instance to send signal to")
+	}
+	return ci.Signal(syscall.SIGINT)
+
 }
 func (c *command) SigKill() error { // -9
 	fmt.Printf("sending sigkill\n")
-	return c.sendsig(syscall.SIGKILL)
+	ci := c.instance
+	if ci == nil {
+		return errors.Errorf("no instance to send signal to")
+	}
+	return ci.Signal(syscall.SIGKILL)
 }
 
-func (c *command) sendsig(sig syscall.Signal) error {
-	ci := c.instance
+func (ci *cominstance) Signal(sig syscall.Signal) error {
 	pids, err := get_pids_for_cgroup(ci.cgroupdir_cmd)
 	if err != nil {
 		fmt.Printf("Could not get pids for cgroup \"%s\": %s\n", ci.cgroupdir_cmd, err)
