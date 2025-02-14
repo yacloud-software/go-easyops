@@ -1,4 +1,4 @@
-package main
+package linux
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"os/user"
 	"strconv"
-	"sync"
 	"syscall"
+	"time"
 
 	"golang.conradwood.net/go-easyops/errors"
 	"golang.conradwood.net/go-easyops/utils"
@@ -28,23 +28,32 @@ import (
    | /sys/fs/cgroup/LINUXCOM/me/     | /sys/fs/cgroup/LINUXCOM/com_1/     | EACCESS  |
    | /sys/fs/cgroup/LINUXCOM/foo/me/ | /sys/fs/cgroup/LINUXCOM/com_1/     | EACCESS  |
    | /sys/fs/cgroup/LINUXCOM/foo/me/ | /sys/fs/cgroup/LINUXCOM/foo/com_1/ | OK       |
+
+   to move a process (e.g. bash) into a new cgroup, use:
+   echo [PID] >/sys/fs/cgroup/LINUXCOM/foo/me/cgroup.procs
 */
 
-var (
-	ctr     = 0
-	ctrlock sync.Mutex
-)
-
 type Command interface {
+	SigInt() error  // -2
+	SigKill() error // -9
+	SetStdinWriter(r io.Writer)
+	SetStdoutReader(r io.Reader)
+	SetStderrReader(r io.Reader)
+	IsRunning() bool
+	Start(ctx context.Context, com ...string) (ComInstance, error)
+}
+type ComInstance interface {
+	Wait(ctx context.Context) error    // waits for main command to exit. might leave fork'ed children running
+	WaitAll(ctx context.Context) error // waits for all children to exit as well
 }
 type command struct {
-	cgroupdir    string
 	stdinwriter  io.Writer
 	stdoutreader io.Reader
 	stderrreader io.Reader
 	instance     *cominstance
 }
 type cominstance struct {
+	debug           bool
 	exe             []string
 	command         *command
 	cgroupdir_cmd   string
@@ -55,24 +64,17 @@ type cominstance struct {
 	defStderrReader *comDefaultReader
 }
 
-func NewCommand() *command {
-	return &command{
-		cgroupdir: "/sys/fs/cgroup/LINUXCOM/ancestor/",
-	}
+func NewCommand() Command {
+	return &command{}
 }
 
-// e.g. /sys/fs/cgroup/LINUXCOM
-func (c *command) SetCGroupDir(dir string) {
-	c.cgroupdir = dir
-}
-
-func (c *command) StdinWriter(r io.Writer) {
+func (c *command) SetStdinWriter(r io.Writer) {
 	c.stdinwriter = r
 }
-func (c *command) StdoutReader(r io.Reader) {
+func (c *command) SetStdoutReader(r io.Reader) {
 	c.stdoutreader = r
 }
-func (c *command) StderrReader(r io.Reader) {
+func (c *command) SetStderrReader(r io.Reader) {
 	c.stderrreader = r
 }
 func (c *command) IsRunning() bool {
@@ -80,10 +82,14 @@ func (c *command) IsRunning() bool {
 }
 
 // failed to start, then error
-func (c *command) Start(ctx context.Context, com ...string) (*cominstance, error) {
-	n := newctr()
-	cgroupdir_cmd := fmt.Sprintf("%s/com_%d", c.cgroupdir, n)
-	err := mkdir(cgroupdir_cmd + "/tasks")
+func (c *command) Start(ctx context.Context, com ...string) (ComInstance, error) {
+	//	n := newctr()
+	//	cgroupdir_cmd := fmt.Sprintf("%s/com_%d", c.cgroupdir, n)
+	cgroupdir_cmd, err := CreateStandardAdjacentCgroup()
+	if err != nil {
+		return nil, err
+	}
+	err = mkdir(cgroupdir_cmd + "/tasks")
 	if err != nil {
 		return nil, err
 	}
@@ -147,8 +153,58 @@ func (ci *cominstance) Wait(ctx context.Context) error {
 		return nil
 	}
 	err := ci.com.Wait()
+	pids, err := get_pids_for_cgroup(ci.cgroupdir_cmd)
+	if err == nil && len(pids) == 0 {
+		remove_cgroup(ci.cgroupdir_cmd)
+	}
 	return err
 }
+func (ci *cominstance) WaitAll(ctx context.Context) error {
+	com_err := ci.Wait(ctx)
+	sig := syscall.SIGINT
+	wait_started := time.Now()
+	for {
+		if time.Since(wait_started) > time.Duration(5)*time.Second {
+			sig = syscall.SIGKILL
+		}
+		pids, err := get_pids_for_cgroup(ci.cgroupdir_cmd)
+		if err != nil {
+			fmt.Printf("Could not get pids for cgroup \"%s\": %s\n", ci.cgroupdir_cmd, err)
+			return err
+		}
+		if len(pids) == 0 {
+			break
+		}
+		for _, pid := range pids {
+			ci.debugf("Sending signal %v to pid %d\n", sig, pid)
+			err = syscall.Kill(int(pid), sig)
+		}
+
+		ci.debugf("Waiting for pid(s): %v\n", pids)
+		waited := false
+		proc, err := os.FindProcess(int(pids[0]))
+		if err != nil {
+			fmt.Printf("Failed to find proc: %s\n", err)
+		} else {
+			_, err := proc.Wait()
+			if err != nil {
+				ci.debugf("failed to wait for proc: %s\n", err)
+			} else {
+				waited = true
+			}
+		}
+		if !waited {
+			time.Sleep(time.Duration(1) * time.Second)
+		}
+	}
+	if com_err != nil {
+		return com_err
+	}
+	fmt.Printf("All processes exited, now removing cgroup dir (%s)\n", ci.cgroupdir_cmd)
+	remove_cgroup(ci.cgroupdir_cmd)
+	return nil
+}
+
 func (c *command) ExitCode() int {
 	return 0
 }
@@ -182,14 +238,6 @@ func (c *command) sendsig(sig syscall.Signal) error {
 	return nil
 }
 
-func newctr() int {
-	ctrlock.Lock()
-	ctr++
-	res := ctr
-	ctrlock.Unlock()
-	return res
-}
-
 func mkdir(dir string) error {
 	if utils.FileExists(dir) {
 		return nil
@@ -202,4 +250,13 @@ func mkdir(dir string) error {
 		return errors.Errorf("failed to create \"%s\"", dir)
 	}
 	return nil
+}
+
+func (ci *cominstance) debugf(format string, args ...any) {
+	if !ci.debug {
+		return
+	}
+	x := fmt.Sprintf(format, args...)
+	prefix := fmt.Sprintf("[%s]", ci.exe[0])
+	fmt.Printf("%s%s", prefix, x)
 }
