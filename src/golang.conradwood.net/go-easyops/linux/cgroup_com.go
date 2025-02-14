@@ -284,7 +284,7 @@ func (c *command) debugf(format string, args ...any) {
 	}
 	x := fmt.Sprintf(format, args...)
 	prefix := "[no instance] "
-	if c.instance.exe != nil {
+	if c.instance != nil && c.instance.exe != nil {
 		prefix = fmt.Sprintf("[%s] ", c.instance.exe[0])
 	}
 	fmt.Printf("%s%s", prefix, x)
