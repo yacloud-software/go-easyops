@@ -130,6 +130,7 @@ func (ci *cominstance) start(ctx context.Context, com ...string) error {
 		return errors.Wrap(err)
 	}
 	fmt.Printf("CgroupFD for \"%s\": %d\n", cgroup_fd_path, cgroup_fd)
+	fmt.Printf("Uid=%d, Gid=%d\n", uid, gid)
 	ci.com = exec.CommandContext(ctx, com[0], com[1:]...)
 	ci.stdout_pipe, err = ci.com.StdoutPipe()
 	if err != nil {
@@ -151,6 +152,12 @@ func (ci *cominstance) start(ctx context.Context, com ...string) error {
 		UseCgroupFD: true,
 		CgroupFD:    cgroup_fd,
 	}
+
+	// so weird. sometimes one needs .Credential (especially .Credential.NoSetGroups),
+	// and sometimes it generates -EPERM
+	// not entirely certain why just yet
+	ci.com.SysProcAttr.Credential = nil
+
 	err = ci.com.Start()
 	if err != nil {
 		return errors.Wrap(err)
@@ -210,7 +217,7 @@ func (ci *cominstance) WaitAll(ctx context.Context) error {
 	if com_err != nil {
 		return com_err
 	}
-	fmt.Printf("All processes exited, now removing cgroup dir (%s)\n", ci.cgroupdir_cmd)
+	fmt.Printf("[go-easyops] All processes exited, now removing cgroup dir (%s)\n", ci.cgroupdir_cmd)
 	remove_cgroup(ci.cgroupdir_cmd)
 	return nil
 }
@@ -222,7 +229,7 @@ func (c *command) CombinedOutput() []byte {
 	return nil
 }
 func (c *command) SigInt() error { // -2
-	fmt.Printf("sending sigint\n")
+	fmt.Printf("[go-easyops] sending sigint\n")
 	ci := c.instance
 	if ci == nil {
 		return errors.Errorf("no instance to send signal to")
@@ -231,7 +238,7 @@ func (c *command) SigInt() error { // -2
 
 }
 func (c *command) SigKill() error { // -9
-	fmt.Printf("sending sigkill\n")
+	fmt.Printf("[go-easyops] sending sigkill\n")
 	ci := c.instance
 	if ci == nil {
 		return errors.Errorf("no instance to send signal to")
@@ -245,9 +252,9 @@ func (ci *cominstance) Signal(sig syscall.Signal) error {
 		fmt.Printf("Could not get pids for cgroup \"%s\": %s\n", ci.cgroupdir_cmd, err)
 		return err
 	}
-	fmt.Printf("Cgroupdir \"%s\" has %d pids\n", ci.cgroupdir_cmd, len(pids))
+	fmt.Printf("[go-easyops] Cgroupdir \"%s\" has %d pids\n", ci.cgroupdir_cmd, len(pids))
 	for _, pid := range pids {
-		fmt.Printf("Sending signal %v to pid %d\n", sig, pid)
+		fmt.Printf("[go-easyops] Sending signal %v to pid %d\n", sig, pid)
 		err = syscall.Kill(int(pid), sig)
 		if err != nil {
 			return errors.Wrap(err)

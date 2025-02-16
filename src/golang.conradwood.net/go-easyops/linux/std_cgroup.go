@@ -45,9 +45,12 @@ func CreateStandardAdjacentCgroup() (string, error) {
 	for {
 		ctr++
 		name = fmt.Sprintf("/sys/fs/cgroup/%s/com_%d", ancestor, ctr)
-		if !utils.FileExists(name) {
+		_, err := os.Stat(name)
+		if err != nil {
+			//fmt.Printf("Stat for \"%s\" failed: %s\n", name, err)
 			break
 		}
+		//	fmt.Printf("Found cgroup: \"%s\" (%v)\n", name, st)
 	}
 	if name == "" {
 		return "", errors.Errorf("Unable to determine adjacent cgroup")
