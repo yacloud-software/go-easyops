@@ -60,6 +60,9 @@ func CreateStandardAdjacentCgroup() (string, error) {
 }
 
 func CreateStandardCgroup(dir string) error {
+	if utils.FileExists(dir) {
+		return errors.Errorf("dir \"%s\" exists already", dir)
+	}
 	err := mkdir(dir)
 	if err != nil {
 		return errors.Errorf("failed to create parent cgroup (%s): %s", dir, err)
