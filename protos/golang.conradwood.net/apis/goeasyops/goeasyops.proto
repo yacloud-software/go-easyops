@@ -30,7 +30,7 @@ message ImmutableContext {
   auth.SignedUser User=3; // the user making this RPC call
   auth.SignedUser SudoUser=4; // the permissions to use for this RPC call
   session.Session Session=5; // this session, may be nil if this is not a "session"
-  repeated string AuthTag=6; // a tag set by whatever authenticates it (usually h2gproxy)
+  repeated string AuthTags=6; // a tag set by whatever authenticates it (usually h2gproxy)
 }
 // this may change. fields are not guaranteed to be preserved
 message MutableContext {
