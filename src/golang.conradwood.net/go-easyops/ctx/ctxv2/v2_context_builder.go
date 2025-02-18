@@ -176,10 +176,14 @@ func (c *contextBuilder) WithParentContext(context context.Context) {
 func (c *contextBuilder) WithTimeout(t time.Duration) {
 	c.timeout = t
 }
+func (c *contextBuilder) WithAuthTag(tag string) {
+	c.ge_context.ImCtx.AuthTags = append(c.ge_context.ImCtx.AuthTags, tag)
+}
 func (c *contextBuilder) newLocalState() *localState {
 	ls := &localState{builder: c}
 	return ls
 }
+
 func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedUser) (context.Context, bool) {
 	cmdline.DebugfContext("v2 Inbound2Outbound()...\n")
 	if svc == nil {

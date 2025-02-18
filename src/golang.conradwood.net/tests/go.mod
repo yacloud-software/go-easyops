@@ -12,11 +12,11 @@ replace golang.conradwood.net/apis/getestservice => ../apis/getestservice
 
 require (
 	golang.conradwood.net/apis/apitest v1.1.3359
-	golang.conradwood.net/apis/auth v1.1.3655
-	golang.conradwood.net/apis/common v1.1.3655
+	golang.conradwood.net/apis/auth v1.1.3659
+	golang.conradwood.net/apis/common v1.1.3659
 	golang.conradwood.net/apis/getestservice v1.1.3625
 	golang.conradwood.net/apis/gitserver v1.1.3625
-	golang.conradwood.net/apis/goeasyops v1.1.3625
+	golang.conradwood.net/apis/goeasyops v1.1.3659
 	golang.conradwood.net/apis/helloworld v1.1.3625
 	golang.conradwood.net/apis/registry v1.1.3625
 	golang.conradwood.net/go-easyops v0.1.34140
@@ -46,17 +46,17 @@ require (
 	golang.conradwood.net/apis/h2gproxy v1.1.3625 // indirect
 	golang.conradwood.net/apis/objectstore v1.1.3625 // indirect
 	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.yacloud.eu/apis/autodeployer2 v1.1.3625 // indirect
 	golang.yacloud.eu/apis/faultindicator v1.1.3625 // indirect
 	golang.yacloud.eu/apis/fscache v1.1.3625 // indirect
-	golang.yacloud.eu/apis/session v1.1.3655 // indirect
+	golang.yacloud.eu/apis/session v1.1.3659 // indirect
 	golang.yacloud.eu/apis/unixipc v1.1.3625 // indirect
 	golang.yacloud.eu/apis/urlcacher v1.1.3625 // indirect
 	golang.yacloud.eu/unixipc v0.1.31725 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
-	google.golang.org/protobuf v1.36.1 // indirect
+	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

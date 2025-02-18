@@ -6,9 +6,9 @@ toolchain go1.23.3
 
 require (
 	github.com/golang/protobuf v1.5.4
-	golang.conradwood.net/apis/auth v1.1.3655
-	golang.conradwood.net/apis/common v1.1.3655
-	golang.yacloud.eu/apis/session v1.1.3655
+	golang.conradwood.net/apis/auth v1.1.3659
+	golang.conradwood.net/apis/common v1.1.3659
+	golang.yacloud.eu/apis/session v1.1.3659
 )
 
 require (

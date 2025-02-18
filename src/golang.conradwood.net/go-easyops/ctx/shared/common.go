@@ -31,6 +31,7 @@ type LocalState interface {
 	Info() string                  // return (debug) information about this localstate
 	Experiments() []*ge.Experiment // enabled experiments
 	Services() []*ge.ServiceTrace  // serviceids of services which this context passed through
+	GetAuthTags() []string         // get the authtags from context
 }
 
 type ContextBuilder interface {
@@ -86,6 +87,8 @@ type ContextBuilder interface {
 	WithTimeout(time.Duration)
 	// set a parent context for cancellation propagation (does not transfer metadata to the new context!)
 	WithParentContext(context context.Context)
+	// add an authtag. may be called multiple times
+	WithAuthTag(tag string)
 }
 
 func PrettyUser(su *auth.SignedUser) string {

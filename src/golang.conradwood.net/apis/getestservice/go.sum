@@ -48,12 +48,12 @@ go.opentelemetry.io/otel/sdk/metric v1.32.0 h1:rZvFnvmvawYb0alrYkjraqJq0Z4ZUJAiy
 go.opentelemetry.io/otel/sdk/metric v1.32.0/go.mod h1:PWeZlq0zt9YkYAp3gjKZ0eicRYvOh1Gd+X99x6GHpCQ=
 go.opentelemetry.io/otel/trace v1.32.0 h1:WIC9mYrXf8TmY/EXuULKc8hR17vE+Hjv2cssQDe03fM=
 go.opentelemetry.io/otel/trace v1.32.0/go.mod h1:+i4rkvCraA+tG6AzwloGaCtkx53Fa+L+V8e9a7YvhT8=
-golang.conradwood.net/apis/auth v1.1.3655 h1:Yk+yhl5Un+UmCfxAgDCJSyCqakfTUth9CPZhsXPEAeE=
-golang.conradwood.net/apis/auth v1.1.3655/go.mod h1:y5Xp8Wj5yF2dIsXTqaB2jwQ1mL4F7RSjoNya3scpj0c=
+golang.conradwood.net/apis/auth v1.1.3659 h1:YEcrFJ7ewHVGjVL7dPHNAUtj97aZSKyNzyhxmGBvY0A=
+golang.conradwood.net/apis/auth v1.1.3659/go.mod h1:jI/wQg7QtgwUhQtIQP2sTPZVoCl7fnNClFVJZdH1TUI=
 golang.conradwood.net/apis/autodeployer v1.1.3625 h1:oPHb9M0LH4ME4s6ZIXjBSiaGi/zAM16bof8grGftepo=
 golang.conradwood.net/apis/autodeployer v1.1.3625/go.mod h1:sYXp7XgkNGQ7o0h8QjGinLUGpbKujEGKDeOqVJZ9Lgc=
-golang.conradwood.net/apis/common v1.1.3655 h1:3nIeNmSV8MvHu79XaXRuFHpYWrXg8iQio/nxYITlkeg=
-golang.conradwood.net/apis/common v1.1.3655/go.mod h1:Za/8YovdpiKVzH7Tw84HX4Icq8sM2zovrJ5QKDhRSX8=
+golang.conradwood.net/apis/common v1.1.3659 h1:XLcVHAEwNbWi8AyH1ezJNi4ketB0bQGg5Rv4r2P971g=
+golang.conradwood.net/apis/common v1.1.3659/go.mod h1:7oOqIn2DY+JjjeO6m6k2ezfwRiWkYdxaBXnoSouX5nw=
 golang.conradwood.net/apis/deploymonkey v1.1.3625 h1:qiSPGmvcx+poZG1z0+Ik6KN9aFJBrtAjFHgoB/9fbRY=
 golang.conradwood.net/apis/deploymonkey v1.1.3625/go.mod h1:fydetvTrJw+Gta7qPSVjweiFHCgQlcvvNBKzycQzwAc=
 golang.conradwood.net/apis/framework v1.1.3625 h1:yD+BPUEp7zqy8RQJ+R81l9e3FW6wjgOXxe0HaQv/wRI=
