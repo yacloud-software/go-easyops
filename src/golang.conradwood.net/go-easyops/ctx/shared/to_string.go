@@ -22,6 +22,7 @@ func LocalState2string(ls LocalState) string {
 	s = s + fmt.Sprintf("  Trace           : %v\n", ls.Trace())
 	s = s + fmt.Sprintf("  RequestID       : %s\n", ls.RequestID())
 	s = s + fmt.Sprintf("  RoutingTags     : %v\n", ls.RoutingTags())
+	s = s + fmt.Sprintf("  AuthTags        : %v\n", ls.GetAuthTags())
 
 	return s
 
