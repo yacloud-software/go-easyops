@@ -2,8 +2,27 @@ package ctx
 
 import (
 	"context"
+
 	ge "golang.conradwood.net/apis/goeasyops"
 )
+
+// get authtags from context
+func GetAuthTags(ctx context.Context) []string {
+	ls := GetLocalState(ctx)
+	return ls.GetAuthTags()
+}
+
+// true if context has given authtag
+func HasAuthTag(ctx context.Context, tag string) bool {
+	ls := GetLocalState(ctx)
+	tags := ls.GetAuthTags()
+	for _, t := range tags {
+		if tag == t {
+			return true
+		}
+	}
+	return false
+}
 
 // get requestid from context
 func GetRequestID(ctx context.Context) string {
