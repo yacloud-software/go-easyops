@@ -7,15 +7,15 @@ import (
 )
 
 // get authtags from context
-func GetAuthTags(ctx context.Context) []string {
+func AuthTags(ctx context.Context) []string {
 	ls := GetLocalState(ctx)
-	return ls.GetAuthTags()
+	return ls.AuthTags()
 }
 
 // true if context has given authtag
 func HasAuthTag(ctx context.Context, tag string) bool {
 	ls := GetLocalState(ctx)
-	tags := ls.GetAuthTags()
+	tags := ls.AuthTags()
 	for _, t := range tags {
 		if tag == t {
 			return true

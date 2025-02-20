@@ -31,7 +31,7 @@ type LocalState interface {
 	Info() string                  // return (debug) information about this localstate
 	Experiments() []*ge.Experiment // enabled experiments
 	Services() []*ge.ServiceTrace  // serviceids of services which this context passed through
-	GetAuthTags() []string         // get the authtags from context
+	AuthTags() []string            // get the authtags from context
 }
 
 type ContextBuilder interface {

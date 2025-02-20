@@ -78,6 +78,6 @@ func (ls *localState) RoutingTags() *ge.CTXRoutingTags {
 func (ls *localState) Services() []*ge.ServiceTrace {
 	return ls.builder.ge_context.MCtx.Services
 }
-func (ls *localState) GetAuthTags() []string {
+func (ls *localState) AuthTags() []string {
 	return ls.builder.ge_context.ImCtx.AuthTags
 }

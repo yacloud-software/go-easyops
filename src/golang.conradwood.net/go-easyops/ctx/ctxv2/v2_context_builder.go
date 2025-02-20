@@ -287,7 +287,7 @@ func Serialise(ctx context.Context) ([]byte, error) {
 			CreatorService: ls.CreatorService(),
 			RequestID:      ls.RequestID(),
 			Session:        ls.Session(),
-			AuthTags:       ls.GetAuthTags(),
+			AuthTags:       ls.AuthTags(),
 		},
 		MCtx: &ge.MutableContext{
 			CallingService: ls.CallingService(),
