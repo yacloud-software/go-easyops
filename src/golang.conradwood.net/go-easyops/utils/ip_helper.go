@@ -117,3 +117,30 @@ func GetIPAndNet(ip_s string) (string, int, error) {
 	}
 	return "", 0, fmt.Errorf("invalid ip type %d for \"%s\"", t, ip_s)
 }
+
+// return true if this is a IPv6 link local ip
+func IsLinkLocal(s string) bool {
+	ips, _, version, err := ParseIP(s)
+	if err != nil {
+		panic(fmt.Sprintf("invalid ip %s", s))
+	}
+	if version != 6 {
+		return false
+	}
+	if strings.HasPrefix(ips, "fe80:") {
+		return true
+	}
+	return false
+}
+
+// returns true if this is an IPv4 or IPv6 loopback address
+func IsLoopback(s string) bool {
+	s = strings.ToLower(s)
+	if strings.HasPrefix(s, "127.") {
+		return true
+	}
+	if s == "::1" {
+		return true
+	}
+	return false
+}
