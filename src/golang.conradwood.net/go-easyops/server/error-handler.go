@@ -42,7 +42,7 @@ func (sd *serverDef) logError(ctx context.Context, rc *rpccall, err error) {
 		fmt.Printf("[go-easyops] ERROR: %s\n", err)
 	}
 	if len(logChan) > 100 {
-		fmt.Printf("[go-easyops] Dropping errorlog\n")
+		fmt.Printf("[go-easyops] Dropping errorlog (not logging \"%s\")\n", err)
 		return
 	}
 	l := &le{sd: sd, ctx: ctx, rc: rc, err: err, ts: time.Now()}
