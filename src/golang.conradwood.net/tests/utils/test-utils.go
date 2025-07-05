@@ -14,6 +14,10 @@ import (
 	"golang.conradwood.net/go-easyops/utils"
 )
 
+var (
+	fs = utils.FlagStrings("test_action_flag", "this is just a test", map[string]string{"on": "turn something on", "off": "turn something off", "auto": "turn something on/off depending on something else"})
+)
+
 func main() {
 	flag.Parse()
 	TestIPs()
