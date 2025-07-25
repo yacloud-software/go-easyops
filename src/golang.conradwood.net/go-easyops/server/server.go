@@ -191,8 +191,16 @@ func addTags(sd *serverDef) {
 // it also configures the rpc server to expect a token to identify
 // the user in the rpc metadata call
 func ServerStartup(sd ServerDef) error {
-	start_ipc()
 	def := sd.(*serverDef)
+
+	// do this first to catch the common "address in use" error early before registration of other stuff
+	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", def.port))
+	if err != nil {
+		return err
+	}
+
+	start_ipc()
+
 	ipc_send_startup(def)
 	if !def.port_set {
 		fmt.Printf("WARNING! server port variable assignment detected. This is deprecated. Instead, use SetPort(). In future your code will not compile.\n")
@@ -358,25 +366,18 @@ func ServerStartup(sd ServerDef) error {
 	start_profiling(def)
 	// Serve and Listen
 	// Blocking call!
-	err = startHttpServe(def, grpcServer)
-
+	err = startHttpServe(def, grpcServer, conn)
+	if err != nil {
+		return err
+	}
 	// Create the channel to listen on
 	// I don't think this is ever called!
 	fancyPrintf("INTERNAL BUG - we should have never, ever arrived here\n")
-	os.Exit(3)
-	lis, err := net.Listen("tcp", listenAddr)
-	if err != nil {
-		return fmt.Errorf("could not listen on %s: %s", listenAddr, err)
-	}
-	fancyPrintf("Starting service %s...\n", def.name)
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		return fmt.Errorf("grpc serve error: %s", err)
-	}
 	return nil
 }
 
-func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
+func startHttpServe(sd *serverDef, grpcServer *grpc.Server, conn net.Listener) error {
+	var err error
 	mux := http.NewServeMux()
 	if !sd.public {
 		mux.HandleFunc("/internal/service-info/", func(w http.ResponseWriter, req *http.Request) {
@@ -409,10 +410,6 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server) error {
 		h := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{})
 		mux.Handle("/internal/service-info/metrics", h)
 		//	mux.Handle("/internal/service-info/metrics", promhttp.Handler())
-	}
-	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", sd.port))
-	if err != nil {
-		panic(err)
 	}
 
 	// set startup for certmanager thing
