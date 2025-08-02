@@ -192,16 +192,22 @@ func addTags(sd *serverDef) {
 // the user in the rpc metadata call
 func ServerStartup(sd ServerDef) error {
 	def := sd.(*serverDef)
-
-	// do this first to catch the common "address in use" error early before registration of other stuff
-	conn, err := net.Listen("tcp", fmt.Sprintf(":%d", def.port))
-	if err != nil {
-		return err
+	var conn net.Listener
+	var err error
+	if !*auto_kill {
+		// do this first to catch the common "address in use" error early before registration of other stuff
+		conn, err = net.Listen("tcp", fmt.Sprintf(":%d", def.port))
+		if err != nil {
+			return err
+		}
 	}
+	//	fmt.Printf("[go-easyops] Starting ipc...\n")
 
 	start_ipc()
-
 	ipc_send_startup(def)
+
+	//	fmt.Printf("[go-easyops] ipc started.\n")
+
 	if !def.port_set {
 		fmt.Printf("WARNING! server port variable assignment detected. This is deprecated. Instead, use SetPort(). In future your code will not compile.\n")
 		fmt.Printf("Program will continue in 3 seconds\n")
@@ -220,7 +226,15 @@ func ServerStartup(sd ServerDef) error {
 				time.Sleep(time.Duration(300) * time.Millisecond)
 			}
 		}
+		fmt.Printf("Autokill on port %d complete\n", def.port)
+
+		// do this first to catch the common "address in use" error early before registration of other stuff
+		conn, err = net.Listen("tcp", fmt.Sprintf(":%d", def.port))
+		if err != nil {
+			return err
+		}
 	}
+
 	addTags(def)
 	go client.GetSignatureFromAuth() // init pubkey
 	go error_handler_startup()
