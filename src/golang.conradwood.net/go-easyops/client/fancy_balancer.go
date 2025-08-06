@@ -3,15 +3,16 @@ package client
 import (
 	"flag"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
+
 	"golang.conradwood.net/apis/registry"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/resolver"
-	"strings"
-	"sync"
-	"time"
 )
 
 func init() {
@@ -310,6 +311,12 @@ func (f *FancyBalancer) Check() {
 func (f *FancyBalancer) ServiceName() string {
 	return f.target
 }
+func (f *FancyBalancer) ExitIdle() {
+	fmt.Printf("[go-easyops] *********** warning ******** \n")
+	fmt.Printf("[go-easyops] client->FancyBalancer.ExitIdle() called but not implemented\n")
+	fmt.Printf("[go-easyops] *********** end warning ******** \n")
+}
+
 func (f *FancyBuilder) ServiceName() string {
 	return "fancy_builder.go"
 }
