@@ -58,7 +58,7 @@ var (
 	e_ctx            = ENV("GE_CTX", "a serialised context to use when creating new ones")
 	config           *pb.Config
 	// annoyingly, not all go-easyops flags start with ge_
-	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer"}
+	internal_flag_names   = []string{"token", "registry", "registry_resolver", "AD_started_by_auto_deployer", "X"}
 	debug_auth            = flag.Bool("ge_debug_auth", false, "debug auth stuff")
 	debug_sig             = flag.Bool("ge_debug_signature", false, "debug signature stuff")
 	mlock                 sync.Mutex
@@ -398,4 +398,17 @@ func IsDebugRPCClient() bool {
 }
 func IsDebugRPCServer() bool {
 	return *debug_rpc_serve
+}
+
+// is this a flag defined and used by go-easyops?
+func IsEasyopsFlag(name string) bool {
+	if strings.HasPrefix(name, "ge_") {
+		return true
+	}
+	for _, ifn := range internal_flag_names {
+		if ifn == name {
+			return true
+		}
+	}
+	return false
 }
