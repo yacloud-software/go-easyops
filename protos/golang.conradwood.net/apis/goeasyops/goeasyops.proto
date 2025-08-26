@@ -17,7 +17,6 @@ this package is imported by goeasyops packages
 // what follows is data within a context
 //******************************************************************
 
-
 // this is transported within the Context of a call. This proto is on-purpose very brief and static so that old versions of go-easyops can handle it
 message InContext {
   ImmutableContext ImCtx=1;
