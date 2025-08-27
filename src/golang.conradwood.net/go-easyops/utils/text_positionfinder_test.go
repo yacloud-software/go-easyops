@@ -23,7 +23,7 @@ line4
 
 	ct := []byte(testval)
 	nct := []byte(new_testval)
-	pf := NewPositionFinder(ct).(*textPositionFinder)
+	pf := NewTextPositionFinder(ct).(*textPositionFinder)
 	x := pf.Content()
 	if !bytes.Equal(x, ct) {
 		t.Fatalf("content mismatch before any modification")
@@ -52,7 +52,7 @@ line4
 
 	ct := []byte(testval)
 	nct := []byte(new_testval)
-	pf := NewPositionFinder(ct).(*textPositionFinder)
+	pf := NewTextPositionFinder(ct).(*textPositionFinder)
 	x := pf.Content()
 	if !bytes.Equal(x, ct) {
 		t.Fatalf("content mismatch before any modification")
@@ -78,7 +78,7 @@ line4b
 
 	ct := []byte(testval)
 	nct := []byte(new_testval)
-	pf := NewPositionFinder(ct).(*textPositionFinder)
+	pf := NewTextPositionFinder(ct).(*textPositionFinder)
 	x := pf.Content()
 	if !bytes.Equal(x, ct) {
 		t.Fatalf("content mismatch before any modification")
@@ -107,7 +107,7 @@ line4
 
 	ct := []byte(testval)
 	nct := []byte(new_testval)
-	pf := NewPositionFinder(ct).(*textPositionFinder)
+	pf := NewTextPositionFinder(ct).(*textPositionFinder)
 	x := pf.Content()
 	if !bytes.Equal(x, ct) {
 		t.Fatalf("content mismatch before any modification")

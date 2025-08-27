@@ -23,7 +23,7 @@ type textPositionFinder struct {
 /*
 a position finder helps finding certain positions in pieces of text. for example: find the '}' after the first occurence of line "foo" and "bar". Each call advances the position further. AddLine inserts a new line at current position.
 */
-func NewPositionFinder(ct []byte) TextPositionFinder {
+func NewTextPositionFinder(ct []byte) TextPositionFinder {
 	lines := strings.Split(string(ct), "\n")
 	res := &textPositionFinder{lines: lines}
 	return res
