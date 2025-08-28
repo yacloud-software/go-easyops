@@ -91,7 +91,10 @@ func (pr *PacketReader) Close() {
 	pr.packet_chan <- &readerEvent{err: io.EOF}
 	pr.stopped = true
 	pr.stop_lock.Lock()
-	close(pr.packet_chan)
+	if !pr.stopped {
+		close(pr.packet_chan)
+		pr.stopped = true
+	}
 	pr.stop_lock.Unlock()
 }
 
