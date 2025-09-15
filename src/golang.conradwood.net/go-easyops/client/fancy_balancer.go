@@ -312,9 +312,11 @@ func (f *FancyBalancer) ServiceName() string {
 	return f.target
 }
 func (f *FancyBalancer) ExitIdle() {
-	fmt.Printf("[go-easyops] *********** warning ******** \n")
-	fmt.Printf("[go-easyops] client->FancyBalancer.ExitIdle() called but not implemented\n")
-	fmt.Printf("[go-easyops] *********** end warning ******** \n")
+	/*
+		fmt.Printf("[go-easyops] *********** warning ******** \n")
+		fmt.Printf("[go-easyops] client->FancyBalancer.ExitIdle() called but not implemented\n")
+		fmt.Printf("[go-easyops] *********** end warning ******** \n")
+	*/
 }
 
 func (f *FancyBuilder) ServiceName() string {
