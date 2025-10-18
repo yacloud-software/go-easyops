@@ -87,8 +87,15 @@ func (sh *Shifter) SetUint32(pos int, b uint32) {
 	sh.buf[pos+2] = byte(0xFF & (b >> 16))
 	sh.buf[pos+3] = byte(0xFF & (b >> 24))
 }
+
+// return ALL bytes
 func (sh *Shifter) Bytes() []byte {
 	return sh.buf
+}
+
+// return remaining bytes
+func (sh *Shifter) RemainingBytes() []byte {
+	return sh.buf[sh.consumed_bytes:]
 }
 func (sh *Shifter) Error() error {
 	return sh.err
