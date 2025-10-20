@@ -2,9 +2,10 @@ package cache
 
 import (
 	"context"
-	"golang.conradwood.net/go-easyops/prometheus"
 	"sync"
 	"time"
+
+	"golang.conradwood.net/go-easyops/prometheus"
 )
 
 var (
@@ -27,6 +28,8 @@ type CachingResolver interface {
 	SetRefreshAfter(time.Duration)
 	SetAsyncRetriever(fr func(string) (interface{}, error))
 	Evict(key string)
+	Clear()
+	Keys() []string
 }
 
 type cachingResolver struct {
@@ -85,17 +88,19 @@ This function _does not_ take a context as parameter.
 the resolver might retrieve a value asynchronously whilst synchronously serving from cache
 if so, the context might get cancelled before the async retrieval has completed.
 ** Example: **
-o,err :=c.Retrieve("foo", func(k string) (interface{}, error) {
-		return "bar",nil
-	})
+
+	o,err :=c.Retrieve("foo", func(k string) (interface{}, error) {
+			return "bar",nil
+		})
+
 ** Example With Async Retrieval: **
 c.SetAsyncRetriever(get_by_key)
 o,err :=c.Retrieve("foo",get_by_key)
-func get_by_key(key string) (interface{}, error) {
- return "bar",nil
+
+	func get_by_key(key string) (interface{}, error) {
+	 return "bar",nil
+
 "
-
-
 */
 func (cr *cachingResolver) Retrieve(key string, fr func(string) (interface{}, error)) (interface{}, error) {
 	ctx := context.Background()
@@ -175,4 +180,10 @@ func (cr *cachingResolver) SetAsyncRetriever(fr func(string) (interface{}, error
 
 func (cr *cachingResolver) Evict(key string) {
 	cr.gccache.Evict(key)
+}
+func (cr *cachingResolver) Clear() {
+	cr.gccache.Clear()
+}
+func (cr *cachingResolver) Keys() []string {
+	return cr.gccache.Keys()
 }
