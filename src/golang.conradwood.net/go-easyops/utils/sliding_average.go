@@ -190,6 +190,9 @@ func (sa *SlidingAverage) GetRate(counter int) float64 {
 	sa.lock.Lock()
 	defer sa.lock.Unlock()
 	sc := sa.to_be_read()
+	if sc == nil {
+		return 0.0
+	}
 	num := float64(sc.getCounter(counter))
 	secs := time.Since(sc.started).Seconds()
 	if num == 0 || secs == 0 {
@@ -220,9 +223,15 @@ func (sc *sacalc) Add(counter int, a uint64) {
 	sc.Printf("added: %d to counter #%d, now %d\n", a, counter, sc.counter[counter])
 }
 func (sc *sacalc) getCounter(counter int) uint64 {
+	if sc == nil {
+		return 0
+	}
 	return sc.counter[counter]
 }
 func (sc *sacalc) getCounts(counter int) uint64 {
+	if sc == nil {
+		return 0
+	}
 	return sc.counts[counter]
 }
 
