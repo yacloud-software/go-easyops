@@ -250,3 +250,6 @@ func Wrapf(err error, format string, args ...interface{}) error {
 func ErrorStringWithStackTrace(err error) string {
 	return shared.ErrorStringWithStackTrace(err)
 }
+func ShortMessage(err error) string {
+	return shared.ShortMessage(err)
+}

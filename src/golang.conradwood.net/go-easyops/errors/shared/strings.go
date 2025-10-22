@@ -216,3 +216,26 @@ func stackToString(stack ErrorStackTrace) string {
 	return res
 
 }
+
+func ShortMessage(err error) string {
+	e1, ok := err.(*MyError)
+	if ok {
+		return fmt.Sprintf("%s", e1.err)
+	}
+	e2, ok := err.(*WrappedError)
+	if ok {
+		// cannot do recursion here, beacuse of potential infinity
+		unwrap := e2
+		for i := 0; i < 10; i++ {
+			fmt.Printf("UNWRAP: %s\n", unwrap)
+			x, ok := unwrap.err.(*WrappedError)
+			if !ok {
+				return ShortMessage(unwrap.err)
+			}
+			unwrap = x
+		}
+		return fmt.Sprintf("%s", e2.err)
+	}
+
+	return fmt.Sprintf("%s", err)
+}
