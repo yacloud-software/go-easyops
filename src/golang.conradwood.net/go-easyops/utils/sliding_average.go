@@ -174,16 +174,31 @@ func (sa *SlidingAverage) GetCounter(counter int) uint64 {
 	}
 	return sc.getCounter(counter)
 }
-func (sa *SlidingAverage) GetAverage(counter int) uint64 {
+func (sa *SlidingAverage) GetAverage(counter int) float64 {
 	num := sa.GetCounter(counter)
 	counts := sa.GetCounts(counter)
 	if counts == 0 || num == 0 {
 		return 0
 	}
-	res := num / counts
-	sa.printf("result: num=%d, counts=%d -> %d\n", num, counts, res)
+	res := float64(num) / float64(counts)
+	sa.printf("result: num=%0.1f, counts=%0.1f -> %0.1f\n", num, counts, res)
 	return res
 }
+
+// per second added rate
+func (sa *SlidingAverage) GetRate(counter int) float64 {
+	sa.lock.Lock()
+	defer sa.lock.Unlock()
+	sc := sa.to_be_read()
+	num := float64(sc.getCounter(counter))
+	secs := time.Since(sc.started).Seconds()
+	if num == 0 || secs == 0 {
+		return 0.0
+	}
+	res := num / secs
+	return res
+}
+
 func (sa *SlidingAverage) Add(counter int, a uint64) {
 	if !sa.created_via_new {
 		panic("[go-easyops] SlidingAverage must be created with function NewSlidingAverage()")
