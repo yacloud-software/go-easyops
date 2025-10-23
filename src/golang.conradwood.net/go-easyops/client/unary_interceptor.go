@@ -78,6 +78,7 @@ func ClientMetricsUnaryInterceptor(ctx context.Context, method string, req, repl
 		grpc_client_failed.With(prometheus.Labels{"method": m, "servicename": s}).Inc()
 		if *dialer_debug || cmdline.IsDebugRPCClient() {
 			fmt.Printf("Invoked remote method=%s duration=%0.2fs error=%v (Method: \"%s\" in Service: \"%s\")\n", method, dur.Seconds(), err, m, s)
+			utils.PrintStack("method %s/%s invoked at:\n", s, m)
 		}
 	} else if cmdline.IsDebugRPCClient() {
 		fmt.Printf("Invoked method %s.%s (%0.2fs)...\n", s, m, dur.Seconds())
@@ -98,9 +99,9 @@ func print_debug_client(ictx context.Context, targetname string) {
 		*/
 		us := auth.UserIDString(common.VerifySignedUser(ls.User()))
 		sv := auth.UserIDString(common.VerifySignedUser(ls.CallingService()))
-		fmt.Printf("Invoking method %s as %s (service %s)...\n", targetname, us, sv)
-		fmt.Printf("Outbound context:\n")
-		fmt.Printf("Localstate: %s\n", shared.LocalState2string(ls))
+		cmdline.DebugfContext("Invoking method %s as %s (service %s)...\n", targetname, us, sv)
+		cmdline.DebugfContext("Outbound context:\n")
+		cmdline.DebugfContext("Loccalstate: %s\n", shared.LocalState2string(ls))
 
 		return
 	}
