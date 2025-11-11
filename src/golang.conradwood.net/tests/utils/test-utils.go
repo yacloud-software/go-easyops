@@ -20,6 +20,7 @@ var (
 
 func main() {
 	flag.Parse()
+	TestMulti()
 	TestIPs()
 	TestTime()
 	td, err := utils.TerminalSize()
