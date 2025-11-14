@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	ge "golang.conradwood.net/apis/getestservice"
 	"golang.conradwood.net/go-easyops/authremote"
 	"golang.conradwood.net/go-easyops/cmdline"
-	"sync"
-	"time"
 )
 
 var (
@@ -66,7 +67,7 @@ func waitForSleepTests() {
 }
 
 func sleepTest1(dur time.Duration) {
-	t := NewTest(fmt.Sprintf("sleep test 1 for %0.2fs", dur.Seconds()))
+	t := NewTest("sleep test 1 for %0.2fs", dur.Seconds())
 	ctx := authremote.ContextWithTimeout(dur)
 	sl_seecs := dur.Seconds() - 2.0
 	_, err := ge.GetCtxTestClient().Sleep(ctx, &ge.SleepRequest{Seconds: sl_seecs})
@@ -75,7 +76,7 @@ func sleepTest1(dur time.Duration) {
 	sleep_wg.Done()
 }
 func sleepTest2(dur time.Duration) {
-	t := NewTest(fmt.Sprintf("sleep test 2 for %0.2fs", dur.Seconds()))
+	t := NewTest("sleep test 2 for %0.2fs", dur.Seconds())
 	sl_seecs := dur.Seconds() - 2.0
 	ctx := authremote.ContextWithTimeout(dur)
 	ctx = authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)
@@ -94,7 +95,7 @@ func sleepTest2(dur time.Duration) {
 // check if it _actually_ times out
 func sleepTest3() {
 	sl_seecs := 20.0
-	t := NewTest(fmt.Sprintf("sleep test 3 for %0.2fs", sl_seecs))
+	t := NewTest("sleep test 3 for %0.2fs", sl_seecs)
 	ctxdur := time.Duration(5) * time.Second
 	ctx := authremote.ContextWithTimeout(ctxdur)
 	ctx = authremote.DerivedContextWithRouting(ctx, make(map[string]string), true)

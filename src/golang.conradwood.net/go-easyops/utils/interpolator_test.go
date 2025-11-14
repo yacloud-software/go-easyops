@@ -16,7 +16,7 @@ func TestInterpolate(t *testing.T) {
 func testinterpol(t *testing.T, ipm map[float64]float64, num, expected float64) {
 	ip := &Interpolator{}
 	ip.AddReferencePoints(ipm)
-	res := ip.Interpolate(num)
+	res := ip.LinearInterpolate(num)
 	if res == expected {
 		return
 	}

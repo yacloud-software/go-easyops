@@ -156,7 +156,7 @@ func (cm *ConnectionManager) debugf(format string, args ...interface{}) {
 	}
 	prefix := fmt.Sprintf("[go-easyops router/cntmgr %s]", cm.servicename)
 	txt := fmt.Sprintf(format, args...)
-	fmt.Printf(prefix + txt)
+	fmt.Print(prefix + txt)
 }
 func (ct *ConnectionTarget) Close() {
 	ct.lock.Lock()

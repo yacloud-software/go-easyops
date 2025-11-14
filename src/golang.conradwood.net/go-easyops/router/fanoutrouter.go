@@ -230,7 +230,7 @@ func (fr *FanoutRouter) debugf(format string, args ...interface{}) {
 	}
 	prefix := fmt.Sprintf("[go-easyops router/fanout %s]", fr.cm.ServiceName())
 	txt := fmt.Sprintf(format, args...)
-	fmt.Printf(prefix + txt)
+	fmt.Print(prefix + txt)
 }
 
 func infoprovider() []*common.InfoValue {

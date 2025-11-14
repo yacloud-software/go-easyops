@@ -65,15 +65,16 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	pb "golang.conradwood.net/apis/registry"
-	"golang.conradwood.net/go-easyops/certificates"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
 	"net"
 	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
+
+	pb "golang.conradwood.net/apis/registry"
+	"golang.conradwood.net/go-easyops/certificates"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 )
 
 var (
@@ -122,7 +123,10 @@ func DialTCPWrapper(serviceName string) (net.Conn, error) {
 	if len(list[0].Location.Address) == 0 {
 		return nil, fmt.Errorf("No tcp location found for name %s - is it running?", serviceName)
 	}
-	adr := fmt.Sprintf("%s:%d", list[0].Location.Address[0].Host, list[0].Location.Address[0].Port)
+	hostname_s := list[0].Location.Address[0].Host
+	port_s := fmt.Sprintf("%d", list[0].Location.Address[0].Port)
+
+	adr := net.JoinHostPort(hostname_s, port_s)
 	conn, err := net.Dial("tcp", adr)
 	if err != nil {
 		return nil, err

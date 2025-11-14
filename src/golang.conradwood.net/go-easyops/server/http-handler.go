@@ -189,14 +189,14 @@ func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 }
 
 func healthzHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
-	fmt.Fprintf(w, getHealthString())
+	fmt.Fprintf(w, "%s", getHealthString())
 }
 
 // this services the /service-info/ url
 func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	p := req.URL.Path
 	if strings.HasPrefix(p, "/internal/service-info/name") {
-		fmt.Fprintf(w, (sd.name))
+		fmt.Fprint(w, (sd.name))
 	} else if strings.HasPrefix(p, "/internal/service-info/version") {
 		serveVersion(w, req, sd)
 	} else if strings.HasPrefix(p, "/internal/service-info/grpc-connections") {
@@ -226,7 +226,7 @@ func serveInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		sb.WriteString("-------------------- " + v + "\n")
 		sb.WriteString(s + "\n")
 	}
-	fmt.Fprintf(w, sb.String())
+	fmt.Fprint(w, sb.String())
 
 }
 
@@ -287,7 +287,7 @@ func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		sb.WriteString(`</section></body></html>`)
 		x := sb.String()
 		x = strings.ReplaceAll(x, "\n", "<br/>\n")
-		fmt.Fprintf(w, x)
+		fmt.Fprint(w, x)
 	}
 }
 
