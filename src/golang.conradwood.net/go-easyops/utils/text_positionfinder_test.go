@@ -144,6 +144,6 @@ func expect_content(t *testing.T, ct []byte, pf *textPositionFinder) {
 		ta.NewRow()
 	}
 	t.Errorf("modification produced incorrect result")
-	t.Logf("\n" + ta.ToPrettyString())
+	t.Logf("\n%s", ta.ToPrettyString())
 	//	t.Logf("New Content:\n%s\n", string(pf.Content()))
 }

@@ -8,6 +8,7 @@ import (
 )
 
 func TestMulti() {
+	test_multi(500, "foo\n", "prefix", "prefixfoo\n")
 	test_multi(500, "foo\nbar\n", "prefix", "prefixfoo\nprefixbar\n")
 	test_multi(500, "foo\nbar\n\n", "prefix", "prefixfoo\nprefixbar\n")
 	test_multi(500, "\nfoo\nbar\n\n", "prefix", "prefix\nprefixfoo\nprefixbar\n")
