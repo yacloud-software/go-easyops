@@ -49,7 +49,11 @@ func (ip *Interpolator) AddReferencePoint(number, value float64) {
 		last = ir
 	}
 }
-func (ip *Interpolator) Interpolate(number float64) float64 {
+
+/*
+fast and quick interpolation using linear interpolation
+*/
+func (ip *Interpolator) LinearInterpolate(number float64) float64 {
 	ir1, ir2 := ip.findReferences(number)
 	if ir2 == nil {
 		// max out
