@@ -30,14 +30,30 @@ func (ip *Interpolator) AddReferencePoints(points map[float64]float64) {
 func (ip *Interpolator) AddReferencePoint(number, value float64) {
 	ip.Lock()
 	defer ip.Unlock()
-	if len(ip.referencepoints) == 0 {
+	if len(ip.referencepoints) == 0 && number != 0 {
 		ip.referencepoints = append(ip.referencepoints, &interpolator_referencepoint{number: 0, value: 0})
 	}
+
+	// remove any that have same number
+	var res []*interpolator_referencepoint
+	for _, rp := range ip.referencepoints {
+		if rp.number == number {
+			continue
+		}
+		res = append(res, rp)
+	}
+	ip.referencepoints = res
+
+	// now append new number to it
 	ip.referencepoints = append(ip.referencepoints, &interpolator_referencepoint{number: number, value: value})
+
+	// and sort
 	sort.Slice(ip.referencepoints, func(i, j int) bool {
 		return ip.referencepoints[i].number < ip.referencepoints[j].number
 	})
 	var last *interpolator_referencepoint
+
+	// sanity check if ordering is ok
 	for _, ir := range ip.referencepoints {
 		if last == nil {
 			last = ir
