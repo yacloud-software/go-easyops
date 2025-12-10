@@ -163,6 +163,7 @@ func OpenWithInfo(dbhost, dbdb, dbuser, dbpw string) (*DB, error) {
 	var err error
 	var now string
 	if dbdb == "" {
+		utils.PrintStack("database parameters missing")
 		return nil, errors.Errorf("Please specify -dbdb flag")
 	}
 	dbinfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=require", dbhost, dbuser, dbpw, dbdb)
