@@ -96,3 +96,9 @@ enum Health {
   STOPPING=3;
 }
 
+message Date {
+  uint32 Day=1; // 1..31
+  uint32 Month=2; // 1..12
+  uint32 Year=3; // 4 digits (e.g. 2026)
+}
+
