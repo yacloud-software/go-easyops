@@ -3,11 +3,12 @@ package http
 import (
 	"context"
 	"fmt"
-	"golang.conradwood.net/go-easyops/errors"
-	"golang.yacloud.eu/apis/urlcacher"
 	"io"
 	"net/http"
 	"time"
+
+	"golang.conradwood.net/go-easyops/errors"
+	"golang.yacloud.eu/apis/urlcacher"
 )
 
 var (
@@ -99,7 +100,7 @@ func (h *cHTTP) Get(url string) *HTTPResponse {
 		r := uint64(len(data.Data))
 		l = l + r
 	}
-	hr.body = buf
+	hr.setBody(buf)
 	return hr
 }
 func (h *cHTTP) GetStream(url string) *HTTPResponse {

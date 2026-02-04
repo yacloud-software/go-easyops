@@ -5,14 +5,15 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"golang.conradwood.net/go-easyops/errors"
-	"golang.conradwood.net/go-easyops/prometheus"
-	"google.golang.org/grpc/codes"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"golang.conradwood.net/go-easyops/errors"
+	"golang.conradwood.net/go-easyops/prometheus"
+	"google.golang.org/grpc/codes"
 )
 
 var (
@@ -359,7 +360,7 @@ retry:
 			hr.err = err
 			return hr
 		}
-		hr.body = pbody
+		hr.setBody(pbody)
 	}
 	if resp.StatusCode == 404 {
 		if h.doMetric() {

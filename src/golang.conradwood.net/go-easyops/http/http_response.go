@@ -1,6 +1,8 @@
 package http
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -13,7 +15,8 @@ type header struct {
 type HTTPResponse struct {
 	httpCode         int
 	ht               *HTTP
-	body             []byte
+	xbody            []byte
+	body_retrieved   bool
 	err              error
 	finalurl         string
 	header           map[string]string
@@ -46,7 +49,24 @@ func (h *HTTPResponse) AllHeaders() []*header {
 	return h.allheaders
 }
 func (h *HTTPResponse) Body() []byte {
-	return h.body
+	if h.body_retrieved {
+		return h.xbody
+	}
+	if h.resp == nil {
+		return nil
+	}
+	b := &bytes.Buffer{}
+	_, err := io.Copy(b, h.BodyReader())
+	if err != nil {
+		fmt.Printf("[go-easyops] http - bodyreader for \"%s\" failed silently (%s)\n", h.finalurl, err)
+		return nil
+	}
+	h.setBody(b.Bytes())
+	return h.xbody
+}
+func (h *HTTPResponse) setBody(b []byte) {
+	h.xbody = b
+	h.body_retrieved = true
 }
 func (h *HTTPResponse) Error() error {
 	return h.err
