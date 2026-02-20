@@ -81,7 +81,7 @@ func GetStackLines() []string {
 		if n != -1 {
 			fname = fname[n+5:]
 		}
-		res = append(res, fmt.Sprintf(" %s in %s:%d\n", name, fname, frame.Line))
+		res = append(res, fmt.Sprintf(" %s in %s:%d", name, fname, frame.Line))
 	}
 	return res
 }
