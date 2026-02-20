@@ -53,4 +53,3 @@ require (
 	golang.yacloud.eu/apis/autodeployercommon v1.1.4400 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
 )
-
