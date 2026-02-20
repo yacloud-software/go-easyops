@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// very weird string flag thing
 func FlagStrings(name, help string, values map[string]string) *flag_string_t {
 	t := &flag_string_t{name: name, help: help, values: values}
 	var vals []string
