@@ -6,15 +6,15 @@ option go_package = "golang.conradwood.net/apis/framework";
 option java_package = "golang.conradwood.net.framework";
 
 // deprecated
-message CallTrace {
+message DEPRECATED_CallTrace {
   string Service = 1;
   string Method = 2;
   string Message = 3;
 }
 
 // deprecated
-message FrameworkMessageDetail {
-  repeated CallTrace CallTraces = 1;
+message DEPRECATED_FrameworkMessageDetail {
+  repeated DEPRECATED_CallTrace CallTraces = 1;
   string Message = 2;
   string RequestID = 3;
 }
