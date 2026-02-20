@@ -22,11 +22,20 @@ func PrintStack(format string, args ...interface{}) {
 
 // get stack in a human readable format
 func GetStack(format string, args ...interface{}) string {
+	sx := GetStackLines()
 	s := fmt.Sprintf("Stacktrace for: "+format+"\n", args...)
+	s = s + strings.Join(sx, "\n")
+	s = s + "---end stacktrace\n"
+	return s
+}
+
+// get stack, line by line in a human readable format
+func GetStackLines() []string {
+	var res []string
 	pc := make([]uintptr, 128)
 	num := runtime.Callers(0, pc)
 	if num == 0 {
-		return "[nostack]"
+		return []string{"[nostack]"}
 	}
 	pc = pc[:num] // pass only valid pcs to runtime.CallersFrames
 	frames := runtime.CallersFrames(pc)
@@ -72,10 +81,9 @@ func GetStack(format string, args ...interface{}) string {
 		if n != -1 {
 			fname = fname[n+5:]
 		}
-		s = s + fmt.Sprintf(" %s in %s:%d\n", name, fname, frame.Line)
+		res = append(res, fmt.Sprintf(" %s in %s:%d\n", name, fname, frame.Line))
 	}
-	s = s + "---end stacktrace\n"
-	return s
+	return res
 }
 
 // returns a single line with the calling function immedialy preceding the function which invoked this one
