@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	//	fw "golang.conradwood.net/apis/framework"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"

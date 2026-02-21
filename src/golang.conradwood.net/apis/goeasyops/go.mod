@@ -4,9 +4,9 @@ go 1.24.0
 
 require (
 	github.com/golang/protobuf v1.5.4
-	golang.conradwood.net/apis/auth v1.1.4417
-	golang.conradwood.net/apis/common v1.1.4417
-	golang.yacloud.eu/apis/session v1.1.4417
+	golang.conradwood.net/apis/auth v1.1.4424
+	golang.conradwood.net/apis/common v1.1.4424
+	golang.yacloud.eu/apis/session v1.1.4424
 )
 
 require (

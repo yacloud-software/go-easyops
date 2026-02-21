@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	fw "golang.conradwood.net/apis/framework"
-
 	//	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/cmdline"
 
@@ -94,10 +93,10 @@ func (sd *serverDef) StreamAuthInterceptor(srv interface{}, stream grpc.ServerSt
 
 	// get status from error
 	st := status.Convert(err)
-	fm := fw.CallTrace{
-		Message: fmt.Sprintf("[go-easyops] GRPC error in method %s.%s()", def.name, method),
-		Method:  method,
-		Service: def.name,
+	fm := goeasyops.GRPCError{
+		UserMessage: fmt.Sprintf("[go-easyops] GRPC error in method %s.%s()", def.name, method),
+		MethodName:  method,
+		ServiceName: def.name,
 	}
 
 	// add details

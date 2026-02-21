@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"golang.conradwood.net/apis/common"
-	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/apis/goeasyops"
 	goe "golang.conradwood.net/apis/goeasyops"
 	"google.golang.org/grpc/status"
@@ -69,12 +68,6 @@ func ErrorString(err error) string {
 			}
 		}
 
-		fmd, ok := a.(*fw.FrameworkMessageDetail)
-		if ok {
-			unknown = false
-			s = s + deli + fmd2string(fmd)
-		}
-
 		ge, ok := a.(*goe.GRPCErrorList)
 		if unknown && ok {
 			unknown = false
@@ -91,12 +84,6 @@ func ErrorString(err error) string {
 		if unknown && ok {
 			unknown = false
 			s = s + deli + fmt.Sprintf("CALLTRACE: %v", x)
-		}
-
-		x2, ok := a.(*fw.CallTrace)
-		if unknown && ok {
-			unknown = false
-			s = s + deli + fmt.Sprintf("CALLTRACE: %v", x2)
 		}
 
 		proto, ok := a.(proto.Message)
@@ -125,23 +112,6 @@ func ErrorString(err error) string {
 	s = fmt.Sprintf("(N) %s %s", cs_s, gel_s)
 	return s
 
-}
-
-func fmd2string(fmd *fw.FrameworkMessageDetail) string {
-	s := ""
-	for _, ct := range fmd.CallTraces {
-		if ct.Service != "" {
-			spl := strings.SplitN(ct.Service, ".", 2)
-			sn := ct.Service
-			if len(spl) == 2 {
-				sn = spl[1]
-			}
-			s = fmt.Sprintf("(1 %s.%s)", sn, ct.Method)
-		} else {
-			s = fmt.Sprintf("(2 %s)", ct.Message)
-		}
-	}
-	return s
 }
 
 func ge2string(fmd *goe.GRPCErrorList) string {

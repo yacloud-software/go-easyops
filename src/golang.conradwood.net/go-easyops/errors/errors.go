@@ -12,7 +12,6 @@ import (
 	"fmt"
 
 	"golang.conradwood.net/apis/common"
-	fw "golang.conradwood.net/apis/framework"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/errors/shared"
 
@@ -183,7 +182,6 @@ type GEError struct {
 }
 type GEEntry struct {
 	txt string
-	fmd *fw.FrameworkMessageDetail
 }
 
 func (g *GEError) MultilineError() string {
@@ -193,9 +191,6 @@ func (g *GEError) MultilineError() string {
 			res = res + d.txt + "\n"
 			continue
 		}
-		for _, ct := range d.fmd.CallTraces {
-			res = res + ct.Method + ":" + ct.Message + "\n"
-		}
 	}
 	return res
 }
@@ -204,13 +199,9 @@ func UnmarshalError(err error) *GEError {
 	st := status.Convert(err)
 	res.code = st.Code()
 	for _, a := range st.Details() {
-		fmd, ok := a.(*fw.FrameworkMessageDetail)
-		if !ok {
-			s := fmt.Sprintf("\"%v\" ", a)
-			res.details = append(res.details, &GEEntry{txt: s})
-			continue
-		}
-		res.details = append(res.details, &GEEntry{fmd: fmd})
+		s := fmt.Sprintf("\"%v\" ", a)
+		res.details = append(res.details, &GEEntry{txt: s})
+		continue
 
 	}
 

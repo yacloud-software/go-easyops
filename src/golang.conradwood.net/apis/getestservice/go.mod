@@ -1,11 +1,11 @@
-module golang.conradwood.net/apis/getestservice
+apmodule golang.conradwood.net/apis/getestservice
 
 go 1.24.0
 
 require (
 	github.com/golang/protobuf v1.5.4
-	golang.conradwood.net/apis/auth v1.1.4417
-	golang.conradwood.net/apis/common v1.1.4416
+	golang.conradwood.net/apis/auth v1.1.4424
+	golang.conradwood.net/apis/common v1.1.4424
 	golang.conradwood.net/go-easyops v0.1.39410
 	golang.org/x/net v0.49.0
 	google.golang.org/grpc v1.78.0
@@ -23,7 +23,6 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.conradwood.net/apis/autodeployer v1.1.4251 // indirect
 	golang.conradwood.net/apis/deploymonkey v1.1.4251 // indirect
-	golang.conradwood.net/apis/framework v1.1.4251 // indirect
 	golang.conradwood.net/apis/goeasyops v1.1.4251 // indirect
 	golang.conradwood.net/apis/grafanadata v1.1.4251 // indirect
 	golang.conradwood.net/apis/objectstore v1.1.4186 // indirect

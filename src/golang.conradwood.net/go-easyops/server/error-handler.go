@@ -7,7 +7,6 @@ import (
 	"time"
 
 	el "golang.conradwood.net/apis/errorlogger"
-	fw "golang.conradwood.net/apis/framework"
 	ge "golang.conradwood.net/apis/goeasyops"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/authremote"
@@ -91,18 +90,7 @@ func log(l *le) {
 		CallingService: svc,
 		Errors:         &ge.GRPCErrorList{},
 	}
-	/*
-		for _, a := range st.Details() {
-			if a == nil {
-				continue
-			}
-			fmd, ok := a.(*fw.FrameworkMessageDetail)
-			if !ok {
-				continue
-			}
-			e.Messages = append(e.Messages, fmd)
-		}
-	*/
+
 	for _, a := range st.Details() {
 		if a == nil {
 			continue
@@ -174,38 +162,4 @@ func AddErrorDetail(st *status.Status, ct *ge.GRPCError) *status.Status {
 		}
 	*/
 	return stn
-}
-func AddStatusDetail(st *status.Status, ct *fw.CallTrace) *status.Status {
-	return st
-	/*
-		// add details (and keep previous)
-		add := &fw.FrameworkMessageDetail{Message: ct.Message}
-		odet := st.Details()
-		if cmdline.IsDebugRPCServer() {
-			fancyPrintf("Error %s (%s) (%s)\n", st.Err(), st.Message(), utils.ErrorString(st.Err()))
-		}
-		for _, d := range odet {
-			if cmdline.IsDebugRPCServer() {
-				fancyPrintf("keeping error %v\n", d)
-			}
-			fmd, ok := d.(*fw.FrameworkMessageDetail)
-			if ok {
-				add.CallTraces = append(add.CallTraces, fmd.CallTraces...)
-			} else {
-				add.CallTraces = append(add.CallTraces, &fw.CallTrace{Message: fmt.Sprintf("%v", d)})
-
-			}
-		}
-		add.CallTraces = append(add.CallTraces, ct)
-		stn, errx := st.WithDetails(add)
-
-		// if adding details failed, just return the undecorated error message
-		if errx != nil {
-			if cmdline.IsDebugRPCServer() {
-				fancyPrintf("failed to get status with detail: %s", errx)
-			}
-			return st
-		}
-		return stn
-	*/
 }
