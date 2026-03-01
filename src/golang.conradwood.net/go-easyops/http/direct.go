@@ -67,14 +67,16 @@ type HTTP struct {
 	jar        *Cookies
 	transport  *transport // nil for default
 	debug      bool
+	last_url   string
 }
 
 func (h *HTTP) Debugf(format string, args ...interface{}) {
 	if !*debug && !h.debug {
 		return
 	}
+	prefix := fmt.Sprintf("[go-easyops/http %s] ", h.last_url)
 	s := fmt.Sprintf(format, args...)
-	fmt.Printf("[go-easyops/http] %s", s)
+	fmt.Print(prefix + s)
 }
 func (h *HTTP) SetDebug(b bool) {
 	h.debug = b
@@ -141,6 +143,7 @@ func (h *HTTP) Head(url string) *HTTPResponse {
 	return hr
 }
 func (h *HTTP) GetStream(url string) *HTTPResponse {
+	h.last_url = url
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -154,6 +157,7 @@ func (h *HTTP) GetStream(url string) *HTTPResponse {
 	return h.do(hr, req, false)
 }
 func (h *HTTP) Get(url string) *HTTPResponse {
+	h.last_url = url
 	h.Debugf("Get request to \"%s\"\n", url)
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
@@ -169,6 +173,7 @@ func (h *HTTP) Get(url string) *HTTPResponse {
 	return hr
 }
 func (h *HTTP) Delete(url string, body []byte) *HTTPResponse {
+	h.last_url = url
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -184,6 +189,7 @@ func (h *HTTP) Delete(url string, body []byte) *HTTPResponse {
 	return hr
 }
 func (h *HTTP) Post(url string, body []byte) *HTTPResponse {
+	h.last_url = url
 	hr := &HTTPResponse{ht: h}
 	if h.err != nil {
 		hr.err = h.err
@@ -262,12 +268,18 @@ func (h *HTTP) SetCreds(username, password string) {
 	h.password = password
 }
 func (h *HTTP) do(hr *HTTPResponse, req *http.Request, readbody bool) *HTTPResponse {
+	h.last_url = fmt.Sprintf("%s", req.URL)
 	cr := &cred_producer{host: req.Host}
 	if h.username != "" {
-		h.Debugf("Setting username %s\n", h.username)
+		h.Debugf("adding username %s to cred producer\n", h.username)
 		cr.AddUsernamePassword(h.username, h.password)
 	}
-	retry_counter := 0
+	retry_counter := -1
+	var resp *http.Response
+	var err error
+	var started time.Time
+	var hclient *http.Client
+
 retry:
 	retry_counter++
 	if h.jar == nil {
@@ -277,19 +289,18 @@ retry:
 	ctx := context.Background()
 	username := "none"
 	var creds *creds
-	if retry_counter > 1 {
-		creds = cr.GetCredentials()
-		if creds != nil {
-			username = creds.username
-			req.SetBasicAuth(creds.username, creds.password)
-		}
+	creds = cr.GetCredentialsByIndex(retry_counter)
+	if creds != nil {
+		username = creds.username
+		req.SetBasicAuth(creds.username, creds.password)
 	}
-	h.Debugf("request attempt #%d started (username=%s, cookies=%d)\n", retry_counter, username, len(h.jar.cookies))
+
+	h.Debugf("request attempt #%d started (username=%s, cookies=%d, gotcreds=%v)\n", retry_counter, username, len(h.jar.cookies), (creds != nil))
 	tr := mytr
 	if hr.ht.transport != nil {
 		tr = hr.ht.transport
 	}
-	hclient := &http.Client{Transport: tr, Jar: h.jar}
+	hclient = &http.Client{Transport: tr, Jar: h.jar}
 	h.jar.Print()
 	if h.headers != nil {
 		for k, v := range h.headers {
@@ -308,27 +319,41 @@ retry:
 		h.Debugf("Adding cookie %s\n", c.Name)
 		req.Header.Add("Cookie", fmt.Sprintf("%s=%s", c.Name, c.Value))
 	}
-	started := time.Now()
+	started = time.Now()
 	if h.doMetric() {
 		callcounter.With(h.promLabels()).Inc()
 	}
 	h.Debugf("http: %s %s\n", req.Method, req.URL)
-	resp, err := hclient.Do(req)
+	if creds != nil {
+		username = creds.username
+		req.SetBasicAuth(creds.username, creds.password)
+	}
+
+	resp, err = hclient.Do(req)
+
 	if resp != nil {
+		h.Debugf("[go-easyops/http] url %s responded with status code: %d\n", req.URL, resp.StatusCode)
 		if resp.StatusCode == 401 {
-			if creds != nil {
-				if *debug {
-					fmt.Printf("url failed for user %s\n", creds.username)
-				}
+			if retry_counter == 0 && cr.Count() > 0 {
+				h.Debugf("retrying because we got some creds\n")
+				goto retry
+			}
+			if creds == nil {
+				h.Debugf("no credentials (retrycounter=%d)\n", retry_counter)
+			} else {
+				h.Debugf("url failed for user %s, got credentials\n", creds.username)
 				goto retry
 			}
 		}
+	} else {
+		h.Debugf("url %s - no response\n", req.URL)
 	}
 	if resp != nil {
 		hr.httpCode = resp.StatusCode
 		hr.finalurl = resp.Request.URL.String()
 	}
 	if err != nil {
+		h.Debugf("url failed: %s\n", err)
 		if h.doMetric() {
 			failcounter.With(h.promLabels()).Inc()
 		}
@@ -389,7 +414,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if *debug {
 		//		fmt.Printf("Request: %#v\n", req)
 		//		fmt.Printf("Body: \"%v\"\n", req.Body)
-		fmt.Printf("URL: %s\n", req.URL)
+		//		fmt.Printf("[go-easyops/http] URL: %s\n", req.URL)
 	}
 	return t.t.RoundTrip(req)
 }

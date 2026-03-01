@@ -39,3 +39,17 @@ func (c *cred_producer) GetCredentials() *creds {
 	c.used++
 	return res
 }
+
+// idx 0 == no creds
+func (c *cred_producer) GetCredentialsByIndex(idx int) *creds {
+	if idx == 0 {
+		return nil
+	}
+	if idx > len(c.known_creds) {
+		return nil
+	}
+	return c.known_creds[idx-1]
+}
+func (c *cred_producer) Count() int {
+	return len(c.known_creds)
+}
