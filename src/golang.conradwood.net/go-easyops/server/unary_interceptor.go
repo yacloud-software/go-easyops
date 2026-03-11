@@ -55,8 +55,8 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 		ctx_build_by = 1
 		outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
 		if err != nil {
-			outbound_ctx = in_ctx
-			//return nil, err
+			//outbound_ctx = in_ctx
+			return nil, err
 		}
 		cmdline.DebugfContext("(unaryinterceptor) Inbound Context: %s\n%s\n----\n", ctx.Context2String(in_ctx), shared.LocalState2string(ctx.GetLocalState(in_ctx)))
 		cmdline.DebugfContext("(unaryinterceptor) New Context    : %s\n%s\n----\n", ctx.Context2String(outbound_ctx), shared.LocalState2string(ctx.GetLocalState(outbound_ctx)))
