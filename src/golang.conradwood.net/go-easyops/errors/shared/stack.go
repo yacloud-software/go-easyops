@@ -8,6 +8,7 @@ import (
 var (
 	STACK_FILTER = []string{
 		"golang.conradwood.net/go-easyops/errors",
+		"golang.conradwood.net/go-easyops/common/common_errors.go",
 		"runtime",
 	}
 )

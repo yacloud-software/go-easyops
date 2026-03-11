@@ -3,7 +3,6 @@ package utils
 import (
 	"flag"
 	"fmt"
-	"golang.org/x/sys/unix"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -11,6 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	cm "golang.conradwood.net/go-easyops/common"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -74,12 +76,12 @@ func SafelyWriteFile(filename string, content []byte) error {
 	}
 	err := ioutil.WriteFile(tmpfile, content, 0666)
 	if err != nil {
-		return err
+		return cm.Wrap(err)
 	}
 	err = os.Rename(tmpfile, filename)
 	if err != nil {
 		os.Remove(tmpfile)
-		return err
+		return cm.Wrap(err)
 	}
 	return nil
 }
@@ -88,7 +90,7 @@ func SafelyWriteFile(filename string, content []byte) error {
 func WriteFile(filename string, content []byte) error {
 	unix.Umask(000)
 	err := ioutil.WriteFile(filename, content, 0666)
-	return err
+	return cm.Wrap(err)
 }
 
 // like ioutil - but with open permissions to share. if necessary creates directories
@@ -99,7 +101,7 @@ func WriteFileCreateDir(filename string, content []byte) error {
 		os.MkdirAll(dir, 0777)
 	}
 	err := ioutil.WriteFile(filename, content, 0666)
-	return err
+	return cm.Wrap(err)
 }
 
 // like ioutil - but with open permissions to share
@@ -232,37 +234,37 @@ func RemoveAll(dir string) error {
 	// reset permissions and try again
 	err = ChmodR(dir, 0777, 0777)
 	if err != nil {
-		return err
+		return cm.Wrap(err)
 	}
 	err = os.RemoveAll(dir)
 	if err != nil {
-		return err
+		return cm.Wrap(err)
 	}
 
-	return err
+	return cm.Wrap(err)
 }
 
 // recursively chmod a dir and files and subdirectories. applies 'dirmask' to dirs and 'filemask' to files
 func ChmodR(dir string, dirmask, filemask fs.FileMode) error {
 	err := os.Chmod(dir, dirmask)
 	if err != nil {
-		return err
+		return cm.Wrap(err)
 	}
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return err
+		return cm.Wrap(err)
 	}
 	for _, f := range files {
 		if f.IsDir() {
 			err = ChmodR(dir+"/"+f.Name(), dirmask, filemask)
 			if err != nil {
-				return err
+				return cm.Wrap(err)
 			}
 			continue
 		}
 		err = os.Chmod(dir+"/"+f.Name(), filemask)
 		if err != nil {
-			return err
+			return cm.Wrap(err)
 		}
 	}
 	return nil

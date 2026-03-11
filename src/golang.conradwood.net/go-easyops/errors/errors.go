@@ -13,6 +13,7 @@ import (
 
 	"golang.conradwood.net/apis/common"
 	"golang.conradwood.net/go-easyops/auth"
+	cm "golang.conradwood.net/go-easyops/common"
 	"golang.conradwood.net/go-easyops/errors/shared"
 
 	//	"golang.conradwood.net/go-easyops/utils"
@@ -50,6 +51,10 @@ type HTTPError struct {
 	ErrorString         string
 	ExtendedErrorString string
 	ErrorMessage        string
+}
+
+func init() {
+	cm.RegisterErr(ErrorString, shared.ErrorStringWithStackTrace, shared.ErrorStringWithStackTrace, Wrap, Errorf)
 }
 
 // error if context is not root user or one of the services listed

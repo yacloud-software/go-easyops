@@ -205,7 +205,11 @@ func (c *contextBuilder) Inbound2Outbound(ctx context.Context, svc *auth.SignedU
 	res := &ge.InContext{}
 	err := utils.Unmarshal(mds, res)
 	if err != nil {
-		fmt.Printf("[go-easyops] warning invalid inbound v2 context (%s)\n", err)
+		/*
+			fmt.Println(utils.Hexdump("[go-easyops ctx] ", []byte(mds)))
+			utils.WriteFile("/tmp/ctx.bin", []byte(mds))
+		*/
+		fmt.Printf("[go-easyops] warning invalid inbound v2 context (%s)\n", common.Err2Str(err))
 		return nil, false
 	}
 
