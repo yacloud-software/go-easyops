@@ -51,6 +51,7 @@ const (
 )
 
 var (
+	no_auth          = flag.Bool("ge_rpc_server_no_auth", false, "if true rpc server needs NO AUTHENTICATION at all")
 	debug_rpc_client = flag.Bool("ge_debug_rpc_client", false, "set to true to debug remote invokations")
 	debug_rpc_serve  = flag.Bool("ge_debug_rpc_server", false, "debug the grpc server ")
 	default_timeout  = flag.Duration("ge_ctx_deadline", time.Duration(10)*time.Second, "the default timeout for contexts. do not change in production")
@@ -411,4 +412,7 @@ func IsEasyopsFlag(name string) bool {
 		}
 	}
 	return false
+}
+func NoAuthRequired() bool {
+	return *no_auth
 }
