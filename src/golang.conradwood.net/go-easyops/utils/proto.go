@@ -21,7 +21,8 @@ func Marshal(req proto.Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	b64 := base64.StdEncoding.EncodeToString(data)
+	enc := base64.StdEncoding.WithPadding(base64.NoPadding)
+	b64 := enc.EncodeToString(data)
 	return b64, nil
 }
 
