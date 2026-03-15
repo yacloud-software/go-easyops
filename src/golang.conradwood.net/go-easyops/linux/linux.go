@@ -131,7 +131,9 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	printOutput(l.ComName(), output)
 	curCmd = ""
 	if err != nil {
-		fmt.Printf("[go-easyops] ---- %s -----\n%s\n---- end output----\n", strings.Join(cmd, " "), output)
+		if *LogExe {
+			fmt.Printf("[go-easyops] ---- %s -----\n%s\n---- end output----\n", strings.Join(cmd, " "), output)
+		}
 		return output, errors.Wrap(err)
 	}
 	return output, nil
