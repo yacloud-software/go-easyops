@@ -7,15 +7,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"golang.conradwood.net/go-easyops/auth"
-	"golang.conradwood.net/go-easyops/ctx"
-	"golang.conradwood.net/go-easyops/errors"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.conradwood.net/go-easyops/auth"
+	"golang.conradwood.net/go-easyops/ctx"
+	"golang.conradwood.net/go-easyops/errors"
 )
 
 const (
@@ -127,9 +128,7 @@ func (l *linux) SafelyExecuteWithDir(cmd []string, dir string, stdin io.Reader) 
 	c.Env = os.Environ()
 	l.env(c)
 	output, err := l.syncExecute(c, l.Runtime, !l.runforever)
-	if *LogExe {
-		printOutput(l.ComName(), output)
-	}
+	printOutput(l.ComName(), output)
 	curCmd = ""
 	if err != nil {
 		fmt.Printf("[go-easyops] ---- %s -----\n%s\n---- end output----\n", strings.Join(cmd, " "), output)
@@ -182,6 +181,9 @@ func (l *linux) syncExecute(c *exec.Cmd, timeout time.Duration, hastimeout bool)
 }
 
 func printOutput(cmd string, output string) {
+	if !*LogExe {
+		return
+	}
 	fmt.Printf("====BEGIN OUTPUT OF %s====\n", cmd)
 	fmt.Printf("%s\n", output)
 	fmt.Printf("====END OUTPUT OF %s====\n", cmd)
