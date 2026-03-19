@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"fmt"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -51,4 +52,13 @@ func WriteYaml(filename string, data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// returns a string, likely to go over many lines. if an error returns returns a single line with the errormessage
+func ObjectToYamlString(obj any) string {
+	b, err := MarshalYaml(obj)
+	if err != nil {
+		return fmt.Sprintf("ERROR: %s\n", err)
+	}
+	return string(b)
 }
