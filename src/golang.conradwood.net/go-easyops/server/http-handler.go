@@ -12,6 +12,7 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+	"time"
 
 	cm "golang.conradwood.net/apis/common"
 	"golang.conradwood.net/go-easyops/appinfo"
@@ -386,7 +387,13 @@ func pleaseShutdown(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
 
 // this services the /pleaseshutdown url
 func pleaseUnregister(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
+	turnoff := time.Now()
 	flag_for_re_register_services = false
 	SetHealth(cm.Health_STOPPING)
 	fmt.Fprintf(w, "stopped re-registering. eventually it should timeout and be dropped from the registry\n")
+	go func() {
+		time.Sleep(time.Duration(10) * time.Minute)
+		fmt.Printf("Stopping, because re-registering was turned off at %s\n", utils.TimeString(turnoff))
+		os.Exit(0)
+	}()
 }
