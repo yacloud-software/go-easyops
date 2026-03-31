@@ -13,12 +13,12 @@ import (
 	"strconv"
 	"strings"
 
+	cm "golang.conradwood.net/apis/common"
 	"golang.conradwood.net/go-easyops/appinfo"
 	"golang.conradwood.net/go-easyops/auth"
 	"golang.conradwood.net/go-easyops/client"
 	"golang.conradwood.net/go-easyops/cmdline"
 	"golang.conradwood.net/go-easyops/common"
-	gcom "golang.conradwood.net/go-easyops/common"
 	pp "golang.conradwood.net/go-easyops/profiling"
 	"golang.conradwood.net/go-easyops/utils"
 	"google.golang.org/grpc"
@@ -169,6 +169,7 @@ func debugCpuHandler(w http.ResponseWriter, req *http.Request) {
 func helpHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	s := `<html><body>
 <a href="/internal/pleaseshutdown">shutdown</a><br/>
+<a href="/internal/unregister">unregister</a><br/>
 <a href="/internal/health">server health</a><br/>
 <a href="/internal/service-info/version">VersionInfo</a><br/>
 <a href="/internal/service-info/metrics">metrics</a><br/>
@@ -219,7 +220,7 @@ func serveServiceInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 // serve /internal/service-info/grpc-callers
 func serveInfo(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 	w.Header().Set("content-type", "text/plain")
-	ms := gcom.GetText()
+	ms := common.GetText()
 	sb := strings.Builder{}
 
 	for v, s := range ms {
@@ -381,4 +382,11 @@ func pleaseShutdown(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
 	fmt.Printf("Received request to shutdown.\n")
 	s.Stop()   // maybe even s.GracefulStop() ?
 	os.Exit(0) // i'd prefer not to exit here unless something is relying on it.
+}
+
+// this services the /pleaseshutdown url
+func pleaseUnregister(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
+	flag_for_re_register_services = false
+	health = cm.Health_STOPPING
+	fmt.Fprintf(w, "stopped re-registering. eventually it should timeout and be dropped from the registry\n")
 }

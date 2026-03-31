@@ -45,6 +45,8 @@ const (
 )
 
 var (
+	flag_for_re_register_services  = true
+	ge_re_register_services        = flag.Bool("ge_register_services", true, "if false, services will not be reregistered and eventually expire")
 	auto_kill                      = flag.Bool("ge_autokill_instance_on_port", false, "if true, kill an instance on that grpc port before starting service")
 	never_register_service_as_user = flag.Bool("ge_never_register_service_as_user", false, "if true, do not register service as user, even if it is run locally with a user token")
 	reg_tags                       = flag.String("ge_routing_tags", "", "comma seperated list of key-value pairs. For example -tags=foo=bar,foobar=true")
@@ -400,6 +402,9 @@ func startHttpServe(sd *serverDef, grpcServer *grpc.Server, conn net.Listener) e
 		mux.HandleFunc("/internal/pleaseshutdown", func(w http.ResponseWriter, req *http.Request) {
 			pleaseShutdown(w, req, grpcServer)
 		})
+		mux.HandleFunc("/internal/unregister", func(w http.ResponseWriter, req *http.Request) {
+			pleaseUnregister(w, req, grpcServer)
+		})
 		mux.HandleFunc("/internal/health", func(w http.ResponseWriter, req *http.Request) {
 			healthzHandler(w, req, sd)
 		})
@@ -574,7 +579,16 @@ func AddRegistry(sd *serverDef) (string, error) {
 	return sd.registered_id, nil
 }
 
+func re_register_services() bool {
+	if flag_for_re_register_services && *ge_re_register_services {
+		return true
+	}
+	return true
+}
 func reRegister() {
+	if re_register_services() {
+		return
+	}
 	// register any that are not yet registered
 	for _, sd := range knownServices {
 		AddRegistry(sd)
