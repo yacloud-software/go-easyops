@@ -586,7 +586,7 @@ func re_register_services() bool {
 	return true
 }
 func reRegister() {
-	if re_register_services() {
+	if !re_register_services() {
 		return
 	}
 	// register any that are not yet registered

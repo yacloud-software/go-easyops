@@ -387,6 +387,6 @@ func pleaseShutdown(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
 // this services the /pleaseshutdown url
 func pleaseUnregister(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
 	flag_for_re_register_services = false
-	health = cm.Health_STOPPING
+	SetHealth(cm.Health_STOPPING)
 	fmt.Fprintf(w, "stopped re-registering. eventually it should timeout and be dropped from the registry\n")
 }
