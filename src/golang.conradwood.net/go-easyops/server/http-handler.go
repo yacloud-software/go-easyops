@@ -380,7 +380,7 @@ func paraHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 func pleaseShutdown(w http.ResponseWriter, req *http.Request, s *grpc.Server) {
 	stopping(make(chan bool, 10))
 	fmt.Fprintf(w, "OK\n")
-	fmt.Printf("Received request to shutdown.\n")
+	fmt.Printf("[go-easyops] Received request to shutdown.\n")
 	s.Stop()   // maybe even s.GracefulStop() ?
 	os.Exit(0) // i'd prefer not to exit here unless something is relying on it.
 }
