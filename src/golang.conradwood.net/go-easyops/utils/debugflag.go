@@ -9,7 +9,11 @@ import (
 func DebugFlag(name string) *debugFlag {
 	res := &debugFlag{name: name}
 	helptext := fmt.Sprintf("Enable debug mode for \"%s\"", name)
-	flag.Var(res, "debug_"+name, helptext)
+	n := "debug_" + name
+	if name == "" {
+		n = "debug"
+	}
+	flag.Var(res, n, helptext)
 	return res
 }
 
