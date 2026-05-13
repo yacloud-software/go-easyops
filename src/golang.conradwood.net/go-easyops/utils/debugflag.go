@@ -60,7 +60,11 @@ func (t *debugFlag) BoolValue() bool {
 }
 
 func (t *debugFlag) Printf(format string, args ...any) {
-	prefix := fmt.Sprintf("[%s] ", t.name)
+	n := t.name
+	if n == "" {
+		n = "debug"
+	}
+	prefix := fmt.Sprintf("[%s] ", n)
 	txt := fmt.Sprintf(format, args...)
 	fmt.Print(prefix + txt)
 }
