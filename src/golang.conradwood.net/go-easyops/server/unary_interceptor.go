@@ -49,10 +49,8 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	var outbound_ctx context.Context
 	var err error
 
-	ctx_build_by := 0
 	// we try both types of context parsing (since we can be called by either, old or new service)
 	if cmdline.ContextWithBuilder() {
-		ctx_build_by = 1
 		outbound_ctx, _, err = sd.V1inbound2outbound(in_ctx, cs)
 		if err != nil {
 			//outbound_ctx = in_ctx
@@ -66,9 +64,11 @@ func (sd *serverDef) UnaryAuthInterceptor(in_ctx context.Context, req interface{
 	if err != nil {
 		return nil, err
 	}
-	if cmdline.IsDebugRPCServer() {
-		fmt.Printf("[go-easyops] context created through path %d\n", ctx_build_by)
-	}
+	/*
+		if cmdline.IsDebugRPCServer() {
+			fmt.Printf("[go-easyops] context created through path %d\n", ctx_build_by)
+		}
+	*/
 	//fmt.Printf("LS: %#v\n", ls)
 	//fmt.Printf("Method: \"%s\"\n", method)
 	stdMetrics.concurrent_server_requests.With(prometheus.Labels{

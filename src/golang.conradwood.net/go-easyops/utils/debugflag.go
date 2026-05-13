@@ -9,11 +9,7 @@ import (
 func DebugFlag(name string) *debugFlag {
 	res := &debugFlag{name: name}
 	helptext := fmt.Sprintf("Enable debug mode for \"%s\"", name)
-	n := "debug_" + name
-	if name == "" {
-		n = "debug"
-	}
-	flag.Var(res, n, helptext)
+	flag.Var(res, "debug_"+name, helptext)
 	return res
 }
 
@@ -60,11 +56,7 @@ func (t *debugFlag) BoolValue() bool {
 }
 
 func (t *debugFlag) Printf(format string, args ...any) {
-	n := t.name
-	if n == "" {
-		n = "debug"
-	}
-	prefix := fmt.Sprintf("[%s] ", n)
+	prefix := fmt.Sprintf("[%s] ", t.name)
 	txt := fmt.Sprintf(format, args...)
 	fmt.Print(prefix + txt)
 }
