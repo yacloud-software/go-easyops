@@ -238,6 +238,11 @@ func (t *Table) SetMaxLen(col, width int) {
 	t.maxlenCol[col] = width
 }
 
+// get rows of this table
+func (t *Table) GetRows() []*Row {
+	return t.rows
+}
+
 // gets "printing" rows. Multi-line text or text that is wrapped will create an extra row
 func (t *Table) GetPrintingRows() []*Row {
 	var res []*Row
