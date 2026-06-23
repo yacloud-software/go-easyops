@@ -369,6 +369,8 @@ func paraHandler(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 		if err != nil {
 			fmt.Printf("[go-easyops] failed to send parameter change via ipc (%s=%s): %s\n", name, value[0], err)
 			// no further action, considering this somewhat optional for now
+		} else {
+			fmt.Printf("[go-easyops] set parameter %s to %s\n", name, value[0])
 		}
 
 	}
