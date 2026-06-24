@@ -2,8 +2,10 @@ package prometheus
 
 import (
 	"fmt"
+
 	pm "github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
+
 	//	"os"
 	"strings"
 	"sync"
@@ -26,10 +28,10 @@ type CounterOpts pm.CounterOpts
 type Desc pm.Desc
 type Metric pm.Metric
 
-func NewDesc(fqName, help string, variableLabels []string, constLabels Labels) *Desc {
-	d := pm.NewDesc(fqName, help, variableLabels, pm.Labels(constLabels))
-	return *Desc(d)
-}
+	func NewDesc(fqName, help string, variableLabels []string, constLabels Labels) *Desc {
+		d := pm.NewDesc(fqName, help, variableLabels, pm.Labels(constLabels))
+		return *Desc(d)
+	}
 */
 func NewHistogramVec(opts HistogramOpts, label_names []string) *HistogramVec {
 	return (&HistogramVec{opts: opts, labelnames: label_names}).init()
@@ -172,6 +174,7 @@ func NonstandMetricNames(reg *pm.Registry) ([]string, error) {
 	return res, nil
 }
 
+// default: 15 minutes
 func SetExpiry(expiry time.Duration) {
 	promreg.Expiry = expiry
 }
