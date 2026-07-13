@@ -278,7 +278,7 @@ func serveGRPCCallers(w http.ResponseWriter, req *http.Request, sd *serverDef) {
 					errs := caller.Errors()
 					rate := caller.ErrorRate()
 					sb.WriteString(fmt.Sprintf("called %d times by: %s (last at %s), failures %d, failure-rate: %0.1f", usages, user_s, last_call, errs, rate))
-					sb.WriteString(`%%`)
+					sb.WriteString(`%`)
 					sb.WriteString("\n")
 					sb.WriteString("</li>")
 				}
