@@ -10,7 +10,14 @@ var (
 	tribool tribool_t
 )
 
-func TriboolNoFlag() *tribool_t {
+type TriBool interface {
+	SetBool(b bool)
+	IsSet() bool
+	BoolValue() bool
+	IsEqualTo(b bool) bool
+}
+
+func TriboolNoFlag() TriBool {
 	return &tribool_t{}
 }
 func Tribool(name, help string) *tribool_t {
