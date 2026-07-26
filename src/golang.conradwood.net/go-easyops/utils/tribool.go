@@ -35,6 +35,10 @@ func (t *tribool_t) Set(s string) error {
 	t.isset = true
 	return nil
 }
+func (t *tribool_t) SetBool(b bool) {
+	t.value = b
+	t.isset = true
+}
 func (t *tribool_t) String() string {
 	if t == nil {
 		return "tribool description"
@@ -57,4 +61,12 @@ func (t *tribool_t) IsSet() bool {
 func (t *tribool_t) BoolValue() bool {
 	return t.value
 
+}
+
+// if not set it is always false, otherwise compares b with bool
+func (t *tribool_t) IsEqualTo(b bool) bool {
+	if !t.IsSet() {
+		return false
+	}
+	return b == t.BoolValue()
 }
