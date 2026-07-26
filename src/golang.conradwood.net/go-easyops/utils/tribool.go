@@ -10,6 +10,9 @@ var (
 	tribool tribool_t
 )
 
+func TriboolNoFlag() *tribool_t {
+	return &tribool_t{}
+}
 func Tribool(name, help string) *tribool_t {
 	t := &tribool_t{name: name, help: help}
 	flag.Var(t, name, help)
